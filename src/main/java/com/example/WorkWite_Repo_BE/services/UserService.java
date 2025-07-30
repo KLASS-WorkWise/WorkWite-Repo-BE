@@ -1,3 +1,5 @@
+
+// ...existing code...
 package com.example.WorkWite_Repo_BE.services;
 
 import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
@@ -101,5 +103,13 @@ public class UserService {
         }
         user.getUserRoles().add(userRole);
         userJpaResponsitory.save(user);
+    }
+
+    //  xóa user
+    public void deleteUser(Long id) {
+        if (!userJpaResponsitory.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy user với id: " + id);
+        }
+        userJpaResponsitory.deleteById(id);
     }
 }
