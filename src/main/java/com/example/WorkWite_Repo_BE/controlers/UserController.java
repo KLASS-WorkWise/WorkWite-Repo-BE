@@ -1,3 +1,5 @@
+
+// ...existing code...
 package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
@@ -51,6 +53,13 @@ public class UserController {
             @PathVariable String roleName) {
         userService.assignRoleToUser(userId, roleName);
         return ResponseEntity.ok("Đã gán role " + roleName + " cho user " + userId);
+    }
+
+    // xóa user theo id
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("Đã xóa user với id: " + id);
     }
 
 }

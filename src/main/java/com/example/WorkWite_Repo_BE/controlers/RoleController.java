@@ -1,3 +1,4 @@
+
 package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateRoleRequestDto;
@@ -44,4 +45,32 @@ public class RoleController {
                         role.getName()))
                 .toList();
     }
+
+    // Cập nhật role
+    @PatchMapping("/{id}")
+    public ResponseEntity<RoleResponseDto> updateRole(@PathVariable Integer id,
+            @RequestBody CreateRoleRequestDto requestDto) {
+        Role role = roleJpaResponsitory.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy role với id: " + id));
+        role.setName(requestDto.getName());
+        role.setCode(requestDto.getCode());
+        role.setDescription(requestDto.getDescription());
+        Role updatedRole = roleJpaResponsitory.save(role);
+        RoleResponseDto responseDto = new RoleResponseDto(
+                updatedRole.getId() != null ? updatedRole.getId().toString() : null,
+                updatedRole.getCode(),
+                updatedRole.getName());
+        return ResponseEntity.ok(responseDto);
+    }
+
+    // Xóa role
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRole(@PathVariable Integer id) {
+        if (!roleJpaResponsitory.existsById(id)) {
+            return ResponseEntity.badRequest().body("Không tìm thấy role với id: " + id);
+        }
+        roleJpaResponsitory.deleteById(id);
+        return ResponseEntity.ok("Đã xóa role với id: " + id);
+    }
+
 }
