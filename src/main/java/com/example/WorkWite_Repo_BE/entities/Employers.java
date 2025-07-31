@@ -35,7 +35,4 @@ public class Employers {
 
     @Column(name = "media_urls", columnDefinition = "TEXT")
     private String mediaUrls;
-
-    @Column(name = "email", columnDefinition = "TEXT")
-    private String email;
 }
