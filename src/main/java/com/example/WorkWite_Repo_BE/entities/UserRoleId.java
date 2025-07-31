@@ -11,15 +11,15 @@ import java.util.Objects;
 @Embeddable
 public class UserRoleId implements Serializable {
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     @Column(name = "role_id")
-    private Integer roleId;
+    private String roleId;
 
     public UserRoleId() {
     }
 
-    public UserRoleId(Long userId, Integer roleId) {
+    public UserRoleId(String userId, String roleId) {
         this.userId = userId;
         this.roleId = roleId;
     }

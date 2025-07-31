@@ -6,10 +6,7 @@ import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UpdateUserRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
-import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
-import com.example.WorkWite_Repo_BE.entities.UserRole;
-import com.example.WorkWite_Repo_BE.repositories.RoleJpaResponsitory;
 import com.example.WorkWite_Repo_BE.repositories.UserJpaResponsitory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,36 +19,27 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserJpaResponsitory userJpaResponsitory;
-    private final RoleJpaResponsitory roleJpaResponsitory;
 
-    public UserService(UserJpaResponsitory userJpaResponsitory, RoleJpaResponsitory roleJpaResponsitory) {
+    public UserService(UserJpaResponsitory userJpaResponsitory) {
         this.userJpaResponsitory = userJpaResponsitory;
-        this.roleJpaResponsitory = roleJpaResponsitory;
     }
 
     public UserResponseDto createUser(CreateUserRequestDto userDto) {
         User user = new User();
-        user.setUsername(userDto.getUsername());
+        user.setUsername(userDto.getName());
         user.setEmail(userDto.getEmail());
-        user.setPhone(userDto.getPhone());
         user.setPassword(userDto.getPassword());
-        user.setEnabled(true);
         User savedUser = userJpaResponsitory.save(user);
         return convertUserDto(savedUser);
     }
 
     private UserResponseDto convertUserDto(User user) {
-        List<String> roleNames = user.getUserRoles() == null ? List.of()
-                : user.getUserRoles().stream()
-                        .filter(ur -> ur.getRole() != null)
-                        .map(ur -> ur.getRole().getName())
-                        .collect(Collectors.toList());
+        // Map User.username -> UserResponseDto.name, roles để empty list
         return new UserResponseDto(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPhone(),
-                roleNames);
+                java.util.Collections.emptyList());
     }
 
     public List<UserResponseDto> getAllUser() {
@@ -78,35 +66,17 @@ public class UserService {
                 .build();
     }
 
-    public UserResponseDto updateUser(Long id, UpdateUserRequestDto userDto) {
+    public UserResponseDto updateUser(String id, UpdateUserRequestDto userDto) {
         User existingUser = this.userJpaResponsitory.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user với id: " + id));
         existingUser.setUsername(userDto.getUsername());
-        existingUser.setPhone(userDto.getPhone());
         existingUser.setPassword(userDto.getPassword());
         User updatedUser = this.userJpaResponsitory.save(existingUser);
         return convertUserDto(updatedUser);
     }
 
-    public void assignRoleToUser(Long userId, String roleName) {
-        User user = userJpaResponsitory.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
-        Role role = roleJpaResponsitory.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy role: " + roleName));
-        // Tạo UserRole mới
-        UserRole userRole = new UserRole();
-        userRole.setUser(user);
-        userRole.setRole(role);
-        userRole.setEnabled(true);
-        if (user.getUserRoles() == null) {
-            user.setUserRoles(new java.util.ArrayList<>());
-        }
-        user.getUserRoles().add(userRole);
-        userJpaResponsitory.save(user);
-    }
-
-    //  xóa user
-    public void deleteUser(Long id) {
+    // xóa user
+    public void deleteUser(String id) {
         if (!userJpaResponsitory.existsById(id)) {
             throw new RuntimeException("Không tìm thấy user với id: " + id);
         }

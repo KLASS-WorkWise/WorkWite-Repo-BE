@@ -19,16 +19,14 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserRole {
     @EmbeddedId
-    private UserRoleId id = new UserRoleId();
+    private UserRoleId id = new UserRoleId();   // UserRoleId là class chứa 2 field: userId và roleId → nó sẽ làm khóa chính kép (PK) cho bảng user_roles
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @MapsId("userId")  //field user này gắn với khóa chính userId trong UserRoleId.
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("roleId")
-    @JsonIgnore
     private Role role;
 
     @Column(nullable = false)

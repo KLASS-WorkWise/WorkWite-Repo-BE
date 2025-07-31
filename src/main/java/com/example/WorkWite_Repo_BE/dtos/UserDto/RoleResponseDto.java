@@ -23,6 +23,16 @@ public class RoleResponseDto implements Serializable {
     private String code;
     private String name;
 
+
+
+    // public dưới laf để format theo cấu trúc dễ đọc hiểu nhất dạng    :
+
+//    RoleResponseDto dto = RoleResponseDto.builder()
+//            .id("1")
+//            .code("ADMIN")
+//            .name("Administrator")
+
+
     public RoleResponseDto(String id, String code, String name) {
         this.id = id;
         this.code = code;

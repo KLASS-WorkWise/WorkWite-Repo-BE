@@ -16,15 +16,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    // String message = "hello bạn đầu với project Crud";
 
     // khởi tạo cóntructor
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    // create user
     @PostMapping
-    public UserResponseDto createUser(@Valid @RequestBody CreateUserRequestDto userDto) {
+    public UserResponseDto createUser(@Valid @RequestBody CreateUserRequestDto userDto) { // tạo theo file CreateDto đã
+                                                                                          // chỉ định
         return userService.createUser(userDto);
     }
 
@@ -41,23 +42,14 @@ public class UserController {
     // update user theo id
     @PatchMapping("/{id}")
     public UserResponseDto updateUser(
-            @PathVariable Long id,
+            @PathVariable String id,
             @Valid @RequestBody UpdateUserRequestDto userDto) {
         return userService.updateUser(id, userDto);
     }
 
-    // phân quyền cho user
-    @PostMapping("/{userId}/roles/{roleName}")
-    public ResponseEntity<?> assignRole(
-            @PathVariable Long userId,
-            @PathVariable String roleName) {
-        userService.assignRoleToUser(userId, roleName);
-        return ResponseEntity.ok("Đã gán role " + roleName + " cho user " + userId);
-    }
-
     // xóa user theo id
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("Đã xóa user với id: " + id);
     }

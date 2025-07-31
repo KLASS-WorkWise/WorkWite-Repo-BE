@@ -1,76 +1,59 @@
 
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateRoleRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.RoleResponseDto;
-import com.example.WorkWite_Repo_BE.entities.Role;
-import com.example.WorkWite_Repo_BE.repositories.RoleJpaResponsitory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import jakarta.validation.Valid;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateRoleRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.UpdateRoleRequestDto;
+import com.example.WorkWite_Repo_BE.entities.Role;
+import com.example.WorkWite_Repo_BE.services.RoleService;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.UserIdsRequestDto;
+
+// ...existing code...
 
 @RestController
-@RequestMapping("api/role")
+@RequestMapping("/api/security/roles")
 public class RoleController {
-    private final RoleJpaResponsitory roleJpaResponsitory;
+    private final RoleService roleService;
 
-    public RoleController(RoleJpaResponsitory roleJpaResponsitory) {
-        this.roleJpaResponsitory = roleJpaResponsitory;
+    public RoleController(RoleService roleService) {
+        this.roleService = roleService;
     }
 
-    // Tạo mới role (sử dụng DTO)
-    @PostMapping
-    public ResponseEntity<RoleResponseDto> createRole(@RequestBody CreateRoleRequestDto requestDto) {
-        Role role = new Role();
-        role.setName(requestDto.getName());
-        role.setCode(requestDto.getCode());
-        role.setDescription(requestDto.getDescription());
-        Role savedRole = roleJpaResponsitory.save(role);
-        RoleResponseDto responseDto = new RoleResponseDto(
-                savedRole.getId() != null ? savedRole.getId().toString() : null,
-                savedRole.getCode(),
-                savedRole.getName());
-        return ResponseEntity.ok(responseDto);
+    @PostMapping()
+    public Role create(@RequestBody @Valid CreateRoleRequestDto data) {
+        return roleService.create(data);
     }
 
-    // Lấy danh sách tất cả role (sử dụng DTO)
-    @GetMapping
-    public List<RoleResponseDto> getAllRoles() {
-        List<Role> roles = roleJpaResponsitory.findAll();
-        return roles.stream()
-                .map(role -> new RoleResponseDto(
-                        role.getId() != null ? role.getId().toString() : null,
-                        role.getCode(),
-                        role.getName()))
-                .toList();
-    }
-
-    // Cập nhật role
     @PatchMapping("/{id}")
-    public ResponseEntity<RoleResponseDto> updateRole(@PathVariable Integer id,
-            @RequestBody CreateRoleRequestDto requestDto) {
-        Role role = roleJpaResponsitory.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy role với id: " + id));
-        role.setName(requestDto.getName());
-        role.setCode(requestDto.getCode());
-        role.setDescription(requestDto.getDescription());
-        Role updatedRole = roleJpaResponsitory.save(role);
-        RoleResponseDto responseDto = new RoleResponseDto(
-                updatedRole.getId() != null ? updatedRole.getId().toString() : null,
-                updatedRole.getCode(),
-                updatedRole.getName());
-        return ResponseEntity.ok(responseDto);
+    public Role update(@PathVariable("id") String id, @RequestBody @Valid UpdateRoleRequestDto data) {
+        return roleService.update(id, data);
     }
 
-    // Xóa role
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRole(@PathVariable Integer id) {
-        if (!roleJpaResponsitory.existsById(id)) {
-            return ResponseEntity.badRequest().body("Không tìm thấy role với id: " + id);
-        }
-        roleJpaResponsitory.deleteById(id);
-        return ResponseEntity.ok("Đã xóa role với id: " + id);
+    @GetMapping()
+    public Iterable<Role> getRoles() {
+        return roleService.getRoles();
     }
 
+    @PatchMapping("/{id}/add-users-to-role")
+    public ResponseEntity<String> addUsersToRole(@PathVariable("id") String id,
+            @RequestBody UserIdsRequestDto request) {
+        roleService.addUsersToRole(id, request.getUserIds());
+        return ResponseEntity.ok("Users added to role successfully!");
+    }
+
+    @PatchMapping("/{id}/remove-users-from-role")
+    public ResponseEntity<String> removeUsersFromRole(@PathVariable("id") String id,
+            @RequestBody UserIdsRequestDto request) {
+        roleService.removeUsersFromRole(id, request.getUserIds());
+        return ResponseEntity.ok("Users removed from role successfully!");
+    }
 }

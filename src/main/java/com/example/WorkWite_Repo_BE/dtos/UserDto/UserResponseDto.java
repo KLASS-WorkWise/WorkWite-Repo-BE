@@ -1,22 +1,26 @@
 package com.example.WorkWite_Repo_BE.dtos.UserDto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class UserResponseDto {
-    private Long id;
-    private String username;
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserResponseDto implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+    //Thêm field mới
+    //Xóa field không quan trọng , ko sinh ra ID mới khi tác động
+
+    private String id;
+    private String name;
     private String email;
-    private String phone;
-    private List<String> roles;
-
-
-    public UserResponseDto(Long id, String username, String email, String phone, List<String> roles) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.phone = phone;
-        this.roles = roles;
-    }
+    private List<RoleResponseDto> roles;
 }

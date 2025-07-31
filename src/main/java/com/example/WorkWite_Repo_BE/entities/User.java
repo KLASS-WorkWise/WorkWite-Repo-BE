@@ -14,24 +14,22 @@ import java.util.List;
 public class User {
     @Id
     @Column(name = "user_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true)  // ko dc null | phải là giá trị duy nhất ko dc trùng
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String phone;
 
-    private boolean enabled;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER )  // một user có nhiều Role,
+    // mappedBy = "user" có nghĩa là ta éo giữ khóa phụ : ta ko tạo ra khóa phụ , nó nằm ở bên bảng entity userRole
+    // giúp ko cần tạo bảng trung gian dư thừa , ko có mappedBy là nó tạo thêm bảng trung gian để  tránh tạo cột thừa trong DB và ràng buộc ai là chủ của mối quan hệ.
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRole> userRoles;
+
 
 }

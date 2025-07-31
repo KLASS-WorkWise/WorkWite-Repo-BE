@@ -12,8 +12,8 @@ import java.util.List;
 public class Role {
     @Id
     @Column(name = "role_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -24,6 +24,6 @@ public class Role {
     @Column(length = 500)
     private String description;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "role",  fetch = FetchType.LAZY)  // nó chỉ lấy dữ liệu và đổ ra dlieu có trong bảng role ko kéo theo các bảng kháccó liên kết vs role
     private List<UserRole> userRoles;
 }
