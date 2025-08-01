@@ -28,8 +28,11 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER )  // một user có nhiều Role,
     // mappedBy = "user" có nghĩa là ta éo giữ khóa phụ : ta ko tạo ra khóa phụ , nó nằm ở bên bảng entity userRole
     // giúp ko cần tạo bảng trung gian dư thừa , ko có mappedBy là nó tạo thêm bảng trung gian để  tránh tạo cột thừa trong DB và ràng buộc ai là chủ của mối quan hệ.
-
     private List<UserRole> userRoles;
+
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Employers employers;
 
 
 }

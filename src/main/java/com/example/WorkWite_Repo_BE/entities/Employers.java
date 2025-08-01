@@ -41,6 +41,10 @@ public class Employers {
     @Column(name = "media_urls", columnDefinition = "TEXT")
     private String mediaUrls;
 
-    @OneToMany(mappedBy = "employer",cascade = CascadeType.ALL)
-        private List<JobPosting> jobPostings = new ArrayList<>();
+    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL)
+    private List<JobPosting> jobPostings = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true, columnDefinition = "VARCHAR(50)")
+    private User user;
 }

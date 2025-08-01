@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
+
 public class EmployerResponseDto {
+    private String userId; // Thêm trường userId
     private String companyName;
     private String website;
     private String logo_url;
@@ -18,7 +20,10 @@ public class EmployerResponseDto {
     private String benefits;
     private String media_url;
 
-    public EmployerResponseDto(String companyName, String website, String logo_url, String address, String email, String industry, String culture, String benefits, String media_url) {
+    public EmployerResponseDto(String userId, String companyName, String website, String logo_url, String address,
+            String email,
+            String industry, String culture, String benefits, String media_url) {
+        this.userId = userId;
         this.companyName = companyName;
         this.website = website;
         this.logo_url = logo_url;
@@ -30,5 +35,11 @@ public class EmployerResponseDto {
         this.media_url = media_url;
     }
 
-}
+    public String getUserId() {
+        return userId;
+    }
 
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+}

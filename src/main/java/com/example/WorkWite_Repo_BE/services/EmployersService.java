@@ -3,7 +3,10 @@ package com.example.WorkWite_Repo_BE.services;
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.EmployerResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.PaginatedEmployerRespondeDto;
 import com.example.WorkWite_Repo_BE.entities.Employers;
+import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.repositories.EmployersJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.UserJpaResponsitory;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,14 +18,17 @@ import java.util.stream.Collectors;
 @Service
 public class EmployersService {
     private final EmployersJpaRepository employersJpaRepository;
+    private final UserJpaResponsitory userJpaResponsitory;
 
-
-    public EmployersService(EmployersJpaRepository employersJpaRepository) {
+    public EmployersService(EmployersJpaRepository employersJpaRepository, UserJpaResponsitory userJpaResponsitory) {
         this.employersJpaRepository = employersJpaRepository;
+        this.userJpaResponsitory = userJpaResponsitory;
     }
 
     private EmployerResponseDto convertToDto(Employers employers) {
+        String userId = employers.getUser() != null ? employers.getUser().getId() : null;
         return new EmployerResponseDto(
+                userId,
                 employers.getCompanyName(),
                 employers.getWebsite(),
                 employers.getLogoUrl(),
@@ -31,8 +37,7 @@ public class EmployersService {
                 employers.getIndustry(),
                 employers.getCulture(),
                 employers.getBenefits(),
-                employers.getMediaUrls()
-        );
+                employers.getMediaUrls());
     }
 
     public PaginatedEmployerRespondeDto getAllEmployers(int page, int size) {
@@ -54,7 +59,11 @@ public class EmployersService {
                 .hasPrevious(employersPage.hasPrevious())
                 .build();
     }
+
     public EmployerResponseDto createEmployer(EmployerResponseDto employerResponseDto) {
+        // Lấy user từ userId truyền lên DTO
+        User user = userJpaResponsitory.findById(employerResponseDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + employerResponseDto.getUserId()));
         Employers employers = new Employers();
         employers.setCompanyName(employerResponseDto.getCompanyName());
         employers.setWebsite(employerResponseDto.getWebsite());
@@ -65,6 +74,8 @@ public class EmployersService {
         employers.setCulture(employerResponseDto.getCulture());
         employers.setBenefits(employerResponseDto.getBenefits());
         employers.setMediaUrls(employerResponseDto.getMedia_url());
+        // Gán user cho employer
+        employers.setUser(user);
 
         Employers createdEmployer = this.employersJpaRepository.save(employers);
 
@@ -80,9 +91,10 @@ public class EmployersService {
     public void deleteEmployerById(Long id) {
         this.employersJpaRepository.deleteById(id);
     }
+
     public EmployerResponseDto updateEmployerById(Long id, EmployerResponseDto employerResponseDto) {
         Employers employer = this.employersJpaRepository.findById(id).orElse(null);
-        assert  employer != null;
+        assert employer != null;
         employer.setWebsite(employerResponseDto.getWebsite());
         employer.setLogoUrl(employerResponseDto.getLogo_url());
         employer.setAddress(employerResponseDto.getAddress());
@@ -99,4 +111,3 @@ public class EmployersService {
 
     }
 }
-
