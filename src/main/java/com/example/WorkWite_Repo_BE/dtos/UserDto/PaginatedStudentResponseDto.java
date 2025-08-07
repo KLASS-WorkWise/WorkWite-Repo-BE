@@ -1,13 +1,17 @@
 package com.example.WorkWite_Repo_BE.dtos.UserDto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
 
 @Data
 @Builder
-public class PaginatedUserResponseDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaginatedStudentResponseDto {
     private List<UserResponseDto> data;
     private int pageNumber;
     private int pageSize;

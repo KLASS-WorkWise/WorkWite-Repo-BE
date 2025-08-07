@@ -1,37 +1,27 @@
-
-// ...existing code...
 package com.example.WorkWite_Repo_BE.services;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.UpdateUserRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
-import com.example.WorkWite_Repo_BE.repositories.UserJpaResponsitory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import com.example.WorkWite_Repo_BE.exceptions.HttpException;
+import com.example.WorkWite_Repo_BE.repositories.RoleJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private final UserJpaResponsitory userJpaResponsitory;
-
-    public UserService(UserJpaResponsitory userJpaResponsitory) {
-        this.userJpaResponsitory = userJpaResponsitory;
-    }
-
-    public UserResponseDto createUser(CreateUserRequestDto userDto) {
-        User user = new User();
-        user.setUsername(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());
-        User savedUser = userJpaResponsitory.save(user);
-        return convertUserDto(savedUser);
-    }
+    private final JwtService jwtService;
+    private final UserJpaRepository userJpaRepository;
+    private final RoleJpaRepository roleJpaRepository;
 
     private UserResponseDto convertUserDto(User user) {
         // Map User.username -> UserResponseDto.name, roles để empty list
@@ -39,47 +29,52 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                java.util.Collections.emptyList());
+                null
+                
+                // java.util.Collections.emptyList());
+        );
     }
 
-    public List<UserResponseDto> getAllUser() {
-        List<User> user = this.userJpaResponsitory.findAll();
-        return user.stream()
-                .map(this::convertUserDto)
-                .collect(Collectors.toList());
-    }
+    public LoginResponseDto login(LoginRequestDto request) throws Exception {
+        // Find the user by email (username)
+        User user = this.userJpaRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED));
 
-    public PaginatedUserResponseDto getAllUserPaginated(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<User> userPage = this.userJpaResponsitory.findAll(pageable);
-        List<UserResponseDto> userDtos = userPage.getContent().stream()
-                .map(this::convertUserDto)
-                .collect(Collectors.toList());
-        return PaginatedUserResponseDto.builder()
-                .data(userDtos)
-                .pageNumber(userPage.getNumber())
-                .pageSize(userPage.getSize())
-                .totalRecords(userPage.getTotalElements())
-                .totalPages(userPage.getTotalPages())
-                .hasNext(userPage.hasNext())
-                .hasPrevious(userPage.hasPrevious())
+        // Verify password
+        if (!request.getPassword().equals(user.getPassword())) {
+            throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Generate a new access token (with full data + roles)
+        String accessToken = jwtService.generateAccessToken(user);
+
+        return LoginResponseDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .accessToken(accessToken)
                 .build();
     }
 
-    public UserResponseDto updateUser(String id, UpdateUserRequestDto userDto) {
-        User existingUser = this.userJpaResponsitory.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với id: " + id));
-        existingUser.setUsername(userDto.getUsername());
-        existingUser.setPassword(userDto.getPassword());
-        User updatedUser = this.userJpaResponsitory.save(existingUser);
-        return convertUserDto(updatedUser);
+    public void register(RegisterRequestDto request) {
+        if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(request.getPassword());
+        Role userRole = roleJpaRepository.findByName("USER").orElseGet(() -> {
+            Role r = new Role();
+            r.setName("USER");
+            return roleJpaRepository.save(r);
+        });
+        user.setRoles(List.of(userRole));
+        userJpaRepository.save(user);
     }
 
-    // xóa user
-    public void deleteUser(String id) {
-        if (!userJpaResponsitory.existsById(id)) {
-            throw new RuntimeException("Không tìm thấy user với id: " + id);
-        }
-        userJpaResponsitory.deleteById(id);
+    public List<UserResponseDto> getAllUser() {
+        List<User> user = this.userJpaRepository.findAll();
+        return user.stream()
+                .map(this::convertUserDto)
+                .collect(Collectors.toList());
     }
 }

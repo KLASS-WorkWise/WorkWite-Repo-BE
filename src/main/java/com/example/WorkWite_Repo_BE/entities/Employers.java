@@ -45,6 +45,7 @@ public class Employers {
     private List<JobPosting> jobPostings = new ArrayList<>();
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false, unique = true, columnDefinition = "VARCHAR(50)")
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
 }
