@@ -4,6 +4,7 @@ import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto;
 import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.exceptions.HttpException;
@@ -30,9 +31,29 @@ public class UserService {
                 user.getUsername(),
                 user.getEmail(),
                 null
-                
-                // java.util.Collections.emptyList());
+
+        // java.util.Collections.emptyList());
         );
+    }
+
+    public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
+        User user = userJpaRepository.findById(id)
+                .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+        if (request.getUsername() != null)
+            user.setUsername(request.getUsername());
+        if (request.getEmail() != null)
+            user.setEmail(request.getEmail());
+        if (request.getPassword() != null)
+            user.setPassword(request.getPassword());
+        userJpaRepository.save(user);
+        return convertUserDto(user);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userJpaRepository.existsById(id)) {
+            throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+        }
+        userJpaRepository.deleteById(id);
     }
 
     public LoginResponseDto login(LoginRequestDto request) throws Exception {
@@ -77,4 +98,5 @@ public class UserService {
                 .map(this::convertUserDto)
                 .collect(Collectors.toList());
     }
+
 }
