@@ -1,18 +1,18 @@
 -- create table roles (id, name)
 CREATE TABLE IF NOT EXISTS roles (
-    id BIGINT  AUTO_INCREMENT PRIMARY KEY,  -- nếu có bảng trong entity rồi thì kdl ở đây phải trùng theo để nó ko tạo mới còn chưa có thì nó tạo mới
+    id BIGINT AUTO_INCREMENT PRIMARY KEY, -- nếu có bảng trong entity rồi thì kdl ở đây phải trùng theo để nó ko tạo mới còn chưa có thì nó tạo mới
     name VARCHAR(255) NOT NULL UNIQUE
 );
 -- create table users (id, username, password)
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT  AUTO_INCREMENT PRIMARY KEY,  -- nếu có bảng trong entity rồi thì kdl ở đây phải trùng theo để nó ko tạo mới còn chưa có thì nó tạo mới
+    id BIGINT AUTO_INCREMENT PRIMARY KEY, -- nếu có bảng trong entity rồi thì kdl ở đây phải trùng theo để nó ko tạo mới còn chưa có thì nó tạo mới
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL
 );
 -- create table users_roles (user_id, role_id)
 CREATE TABLE IF NOT EXISTS users_roles (
-    user_id BIGINT  NOT NULL,   -- nếu có bảng trong entity rồi thì kdl ở đây phải trùng theo để nó ko tạo mới còn chưa có thì nó tạo mới
-    role_id BIGINT  NOT NULL,
+    user_id BIGINT NOT NULL, -- nếu có bảng trong entity rồi thì kdl ở đây phải trùng theo để nó ko tạo mới còn chưa có thì nó tạo mới
+    role_id BIGINT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, role_id)
@@ -32,13 +32,13 @@ WHERE
 
 INSERT INTO
     roles (name)
-SELECT 'Managers'
+SELECT 'Employers'
 WHERE
     NOT EXISTS (
         SELECT 1
         FROM roles
         WHERE
-            name = 'Managers'
+            name = 'Employers'
     );
 
 INSERT INTO
@@ -54,7 +54,7 @@ WHERE
 
 INSERT INTO
     users (username, password)
-SELECT 'hoangle191205@gmail.com', '123456789'   -- chưa có thằng hoangle191205@gamil.com vs password : 123456789 thì nó tạo cho mik
+SELECT 'hoangle191205@gmail.com', '123456789' -- chưa có thằng hoangle191205@gamil.com vs password : 123456789 thì nó tạo cho mik
 WHERE
     NOT EXISTS (
         SELECT 1
@@ -76,7 +76,7 @@ FROM (
         SELECT id
         FROM roles
         WHERE
-            name = 'Administrators'   -- và nó add thg hoàng vs quyền admin
+            name = 'Administrators' -- và nó add thg hoàng vs quyền admin
         LIMIT 1
     ) r
 WHERE

@@ -18,12 +18,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class RoleService {
+
+    // Thay đổi role của user (xóa hết role cũ, chỉ giữ role mới)
+    public void changeUserRole(Long userId, Long newRoleId) {
+        User user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+        Role newRole = roleJpaRepository.findById(newRoleId)
+                .orElseThrow(() -> new HttpException("Role not found", HttpStatus.NOT_FOUND));
+        user.getRoles().clear();
+        user.getRoles().add(newRole);
+        userJpaRepository.save(user);
+    }
+
     // Chuẩn hóa hàm convertToDto cho Role entity
     private RoleResponseDto convertToDto(Role role) {
         RoleResponseDto dto = new RoleResponseDto();
         dto.setId(role.getId());
         dto.setName(role.getName());
-        dto.setDescription(role.getDescription());
         return dto;
     }
 
@@ -54,17 +65,6 @@ public class RoleService {
             userJpaRepository.save(user);
         }
         roleJpaRepository.deleteById(id);
-    }
-
-    public void assignRoleToUser(Long userId, Long roleId) {
-        User user = userJpaRepository.findById(userId)
-                .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
-        Role role = roleJpaRepository.findById(roleId)
-                .orElseThrow(() -> new HttpException("Role not found", HttpStatus.NOT_FOUND));
-        if (!user.getRoles().contains(role)) {
-            user.getRoles().add(role);
-            userJpaRepository.save(user);
-        }
     }
 
     public void removeRoleFromUser(Long userId, Long roleId) {

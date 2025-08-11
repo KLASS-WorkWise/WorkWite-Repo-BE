@@ -1,7 +1,6 @@
 
 package com.example.WorkWite_Repo_BE.services;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterRequestDto;
@@ -46,29 +45,6 @@ public class UserService {
         return users.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-    }
-
-    public UserResponseDto createUser(CreateUserRequestDto request) {
-        if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
-        }
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setEmail(request.getEmail());
-        user.setFullName(request.getFullName());
-
-        // Gán role mặc định nếu có
-        Role userRole = roleJpaRepository.findByName("USER").orElseGet(() -> {
-            Role r = new Role();
-            r.setName("USER");
-            return roleJpaRepository.save(r);
-        });
-        user.setRoles(List.of(userRole));
-
-        userJpaRepository.save(user);
-
-        return convertToDto(user);
     }
 
     public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
@@ -126,6 +102,9 @@ public class UserService {
     }
 
     public RegisterResponseDto register(RegisterRequestDto request) {
+        if (!request.getPassword().equals(request.getRepassword())) {
+            throw new RuntimeException("Mật khẩu nhập lại không khớp!");
+        }
         if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
@@ -136,9 +115,9 @@ public class UserService {
         user.setFullName(request.getFullName());
 
         // Gán role mặc định nếu có
-        Role userRole = roleJpaRepository.findByName("USER").orElseGet(() -> {
+        Role userRole = roleJpaRepository.findByName("Users").orElseGet(() -> {
             Role r = new Role();
-            r.setName("USER");
+            r.setName("Users");
             return roleJpaRepository.save(r);
         });
         user.setRoles(List.of(userRole));
