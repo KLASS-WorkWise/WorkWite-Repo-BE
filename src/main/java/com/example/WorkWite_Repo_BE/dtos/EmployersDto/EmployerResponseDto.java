@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.dtos.EmployersDto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,39 +8,25 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-
+@AllArgsConstructor
 public class EmployerResponseDto {
-    private String userId; // Thêm trường userId
-    private String companyName;
-    private String website;
-    private String logo_url;
-    private String address;
+    private Boolean status;
     private String email;
-    private String industry;
-    private String culture;
-    private String benefits;
-    private String media_url;
+    private String phoneNumber;
+    private String avatar;
+    private String username;
+    private String password;
+    private String fullName;
 
-    public EmployerResponseDto(String userId, String companyName, String website, String logo_url, String address,
-            String email,
-            String industry, String culture, String benefits, String media_url) {
-        this.userId = userId;
-        this.companyName = companyName;
-        this.website = website;
-        this.logo_url = logo_url;
-        this.address = address;
+    public EmployerResponseDto(String username, String password, String fullName,
+                               String email, String phoneNumber, String avatar, boolean status) {
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
         this.email = email;
-        this.industry = industry;
-        this.culture = culture;
-        this.benefits = benefits;
-        this.media_url = media_url;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+        this.phoneNumber = phoneNumber;
+        this.avatar = avatar;
+        this.status = status;
     }
 }
+

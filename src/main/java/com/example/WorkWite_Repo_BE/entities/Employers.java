@@ -2,50 +2,25 @@ package com.example.WorkWite_Repo_BE.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
-@Table(name = "employers")
-@Data
-public class Employers {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@DiscriminatorValue("EMPLOYER")
+@PrimaryKeyJoinColumn(name = "id")
+public class Employers extends User {
 
-    @Column(name = "company_name", length = 150)
-    private String companyName;
-
-    @Column(name = "website", length = 255)
-    private String website;
-
-    @Column(name = "logo_url", length = 255)
-    private String logoUrl;
-
-    @Column(name = "address", length = 255)
-    private String address;
-
-    @Column(name = "email", columnDefinition = "TEXT")
-    private String email;
-
-    @Column(name = "industry", length = 100)
-    private String industry;
-
-    @Column(name = "culture", columnDefinition = "TEXT")
-    private String culture;
-
-    @Column(name = "benefits", columnDefinition = "TEXT")
-    private String benefits;
-
-    @Column(name = "media_urls", columnDefinition = "TEXT")
-    private String mediaUrls;
-
-    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL)
-    private List<JobPosting> jobPostings = new ArrayList<>();
-
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    private Boolean status;
+    private String phoneNumber;
+    private String avatar;
+    private String fullName;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "company_information_id", referencedColumnName = "id")
+    private CompanyInformation companyInformation;
 
 }
