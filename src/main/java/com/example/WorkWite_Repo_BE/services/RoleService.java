@@ -34,6 +34,16 @@ public class RoleService {
         if (!roleJpaRepository.existsById(id)) {
             throw new HttpException("Role not found", HttpStatus.NOT_FOUND);
         }
+        // Gỡ role khỏi tất cả user trước khi xóa role
+        Role role = roleJpaRepository.findById(id)
+                .orElseThrow(() -> new HttpException("Role not found", HttpStatus.NOT_FOUND));
+        List<User> usersWithRole = userJpaRepository.findAll().stream()
+                .filter(u -> u.getRoles() != null && u.getRoles().contains(role))
+                .collect(Collectors.toList());
+        for (User user : usersWithRole) {
+            user.getRoles().remove(role);
+            userJpaRepository.save(user);
+        }
         roleJpaRepository.deleteById(id);
     }
 
