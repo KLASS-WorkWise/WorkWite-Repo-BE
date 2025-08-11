@@ -10,6 +10,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {
+    @PostMapping("/change")
+    public void changeUserRole(@RequestParam Long userId, @RequestParam Long newRoleId) {
+        roleService.changeUserRole(userId, newRoleId);
+    }
+
     private final RoleService roleService;
 
     public RoleController(RoleService roleService) {
@@ -31,10 +36,6 @@ public class RoleController {
         roleService.deleteRole(id);
     }
 
-    @PostMapping("/assign")
-    public void assignRoleToUser(@RequestParam Long userId, @RequestParam Long roleId) {
-        roleService.assignRoleToUser(userId, roleId);
-    }
 
     @PostMapping("/remove")
     public void removeRoleFromUser(@RequestParam Long userId, @RequestParam Long roleId) {
