@@ -18,6 +18,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class RoleService {
+    // Chuẩn hóa hàm convertToDto cho Role entity
+    private RoleResponseDto convertToDto(Role role) {
+        RoleResponseDto dto = new RoleResponseDto();
+        dto.setId(role.getId());
+        dto.setName(role.getName());
+        dto.setDescription(role.getDescription());
+        return dto;
+    }
+
     private final RoleJpaRepository roleJpaRepository;
     private final UserJpaRepository userJpaRepository;
 
@@ -27,7 +36,7 @@ public class RoleService {
         if (request.getName() != null)
             role.setName(request.getName());
         roleJpaRepository.save(role);
-        return new RoleResponseDto(role.getId(), role.getName());
+        return convertToDto(role);
     }
 
     public void deleteRole(Long id) {
@@ -71,7 +80,7 @@ public class RoleService {
 
     public List<RoleResponseDto> getAllRoles() {
         return roleJpaRepository.findAll().stream()
-                .map(r -> new RoleResponseDto(r.getId(), r.getName()))
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 }

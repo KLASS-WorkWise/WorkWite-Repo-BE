@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 
 public class UserResponseDto {
     private Long id;
-    private String name;
+    private String username;
     private String email;
-    private String address;
+    private String fullName;
+    private String status;
+    private java.util.List<String> roles;
 }

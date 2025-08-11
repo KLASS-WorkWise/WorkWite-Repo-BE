@@ -27,22 +27,24 @@ public class UserService {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
 
-    private UserResponseDto convertUserDto(User user) {
-        // Map User.username -> UserResponseDto.name, roles để empty list
-        return new UserResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                null
-
-        // java.util.Collections.emptyList());
-        );
+    // Chuẩn hóa hàm convertToDto cho User entity
+    private UserResponseDto convertToDto(User user) {
+        UserResponseDto dto = new UserResponseDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
+        dto.setStatus(user.getStatus());
+        if (user.getRoles() != null) {
+            dto.setRoles(user.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toList()));
+        }
+        return dto;
     }
 
     public List<UserResponseDto> getAllUsers() {
         List<User> users = this.userJpaRepository.findAll();
         return users.stream()
-                .map(this::convertUserDto)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -66,12 +68,7 @@ public class UserService {
 
         userJpaRepository.save(user);
 
-        return new UserResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                null // hoặc truyền thêm trường nếu UserResponseDto có
-        );
+        return convertToDto(user);
     }
 
     public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
@@ -84,7 +81,7 @@ public class UserService {
         if (request.getPassword() != null)
             user.setPassword(request.getPassword());
         userJpaRepository.save(user);
-        return convertUserDto(user);
+        return convertToDto(user);
     }
 
     public void deleteUser(Long id) {
