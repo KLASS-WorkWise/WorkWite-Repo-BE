@@ -1,115 +1,118 @@
-
-// ...existing code...
 package com.example.WorkWite_Repo_BE.services;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.UpdateUserRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto;
 import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
-import com.example.WorkWite_Repo_BE.entities.UserRole;
-import com.example.WorkWite_Repo_BE.repositories.RoleJpaResponsitory;
-import com.example.WorkWite_Repo_BE.repositories.UserJpaResponsitory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import com.example.WorkWite_Repo_BE.exceptions.HttpException;
+import com.example.WorkWite_Repo_BE.repositories.RoleJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private final UserJpaResponsitory userJpaResponsitory;
-    private final RoleJpaResponsitory roleJpaResponsitory;
-
-    public UserService(UserJpaResponsitory userJpaResponsitory, RoleJpaResponsitory roleJpaResponsitory) {
-        this.userJpaResponsitory = userJpaResponsitory;
-        this.roleJpaResponsitory = roleJpaResponsitory;
-    }
-
-    public UserResponseDto createUser(CreateUserRequestDto userDto) {
-        User user = new User();
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
-        user.setPhone(userDto.getPhone());
-        user.setPassword(userDto.getPassword());
-        user.setEnabled(true);
-        User savedUser = userJpaResponsitory.save(user);
-        return convertUserDto(savedUser);
-    }
+    private final JwtService jwtService;
+    private final UserJpaRepository userJpaRepository;
+    private final RoleJpaRepository roleJpaRepository;
 
     private UserResponseDto convertUserDto(User user) {
-        List<String> roleNames = user.getUserRoles() == null ? List.of()
-                : user.getUserRoles().stream()
-                        .filter(ur -> ur.getRole() != null)
-                        .map(ur -> ur.getRole().getName())
-                        .collect(Collectors.toList());
+        // Map User.username -> UserResponseDto.name, roles để empty list
         return new UserResponseDto(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPhone(),
-                roleNames);
+                null
+
+        // java.util.Collections.emptyList());
+        );
+    }
+
+    public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
+        User user = userJpaRepository.findById(id)
+                .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+        if (request.getUsername() != null)
+            user.setUsername(request.getUsername());
+        if (request.getEmail() != null)
+            user.setEmail(request.getEmail());
+        if (request.getPassword() != null)
+            user.setPassword(request.getPassword());
+        userJpaRepository.save(user);
+        return convertUserDto(user);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userJpaRepository.existsById(id)) {
+            throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+        }
+        userJpaRepository.deleteById(id);
+    }
+
+    public LoginResponseDto login(LoginRequestDto request) throws Exception {
+        // Find the user by email (username)
+        User user = this.userJpaRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED));
+
+        // Verify password
+        if (!request.getPassword().equals(user.getPassword())) {
+            throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Generate a new access token (with full data + roles)
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = "dummy_refresh_token"; // TODO: sinh refresh token thực tế nếu có
+
+        // Map roles
+        List<LoginResponseDto.RoleDto> roles = user.getRoles() != null ? user.getRoles().stream()
+                .map(role -> LoginResponseDto.RoleDto.builder()
+                        .id(role.getId())
+                        .name(role.getName())
+                        .build())
+                .collect(Collectors.toList()) : null;
+
+        LoginResponseDto.LoggedInUserDto loggedInUser = LoginResponseDto.LoggedInUserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .isActive(true) // hoặc user.isActive() nếu có trường này
+                .roles(roles)
+                .build();
+
+        return LoginResponseDto.builder()
+                .access_token(accessToken)
+                .refresh_token(refreshToken)
+                .loggedInUser(loggedInUser)
+                .build();
+    }
+
+    public void register(RegisterRequestDto request) {
+        if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(request.getPassword());
+        Role userRole = roleJpaRepository.findByName("USER").orElseGet(() -> {
+            Role r = new Role();
+            r.setName("USER");
+            return roleJpaRepository.save(r);
+        });
+        user.setRoles(List.of(userRole));
+        userJpaRepository.save(user);
     }
 
     public List<UserResponseDto> getAllUser() {
-        List<User> user = this.userJpaResponsitory.findAll();
+        List<User> user = this.userJpaRepository.findAll();
         return user.stream()
                 .map(this::convertUserDto)
                 .collect(Collectors.toList());
     }
 
-    public PaginatedUserResponseDto getAllUserPaginated(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<User> userPage = this.userJpaResponsitory.findAll(pageable);
-        List<UserResponseDto> userDtos = userPage.getContent().stream()
-                .map(this::convertUserDto)
-                .collect(Collectors.toList());
-        return PaginatedUserResponseDto.builder()
-                .data(userDtos)
-                .pageNumber(userPage.getNumber())
-                .pageSize(userPage.getSize())
-                .totalRecords(userPage.getTotalElements())
-                .totalPages(userPage.getTotalPages())
-                .hasNext(userPage.hasNext())
-                .hasPrevious(userPage.hasPrevious())
-                .build();
-    }
-
-    public UserResponseDto updateUser(Long id, UpdateUserRequestDto userDto) {
-        User existingUser = this.userJpaResponsitory.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với id: " + id));
-        existingUser.setUsername(userDto.getUsername());
-        existingUser.setPhone(userDto.getPhone());
-        existingUser.setPassword(userDto.getPassword());
-        User updatedUser = this.userJpaResponsitory.save(existingUser);
-        return convertUserDto(updatedUser);
-    }
-
-    public void assignRoleToUser(Long userId, String roleName) {
-        User user = userJpaResponsitory.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
-        Role role = roleJpaResponsitory.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy role: " + roleName));
-        // Tạo UserRole mới
-        UserRole userRole = new UserRole();
-        userRole.setUser(user);
-        userRole.setRole(role);
-        userRole.setEnabled(true);
-        if (user.getUserRoles() == null) {
-            user.setUserRoles(new java.util.ArrayList<>());
-        }
-        user.getUserRoles().add(userRole);
-        userJpaResponsitory.save(user);
-    }
-
-    //  xóa user
-    public void deleteUser(Long id) {
-        if (!userJpaResponsitory.existsById(id)) {
-            throw new RuntimeException("Không tìm thấy user với id: " + id);
-        }
-        userJpaResponsitory.deleteById(id);
-    }
 }
