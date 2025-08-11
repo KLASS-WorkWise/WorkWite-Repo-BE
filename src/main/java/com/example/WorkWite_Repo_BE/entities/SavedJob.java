@@ -12,28 +12,23 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 @Entity
-@Table(name = "applications")
-public class Application {
+@Table(name = "candidate")
+public class SavedJob {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "job_id")
-    private JobPosting jobPosting;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "candidate_id")
     private Candidate candidate;
 
-    @Column(name = "cover_letter")
-    private String coverLetter;
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private JobPosting jobPosting;
 
-    private String status;
+    @Column(name = "saved_at")
+    private LocalDateTime savedAt;
 
-    @Column(name = "applied_at")
-    private LocalDateTime appliedAt;
 
 }

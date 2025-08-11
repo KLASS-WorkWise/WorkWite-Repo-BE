@@ -23,10 +23,12 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserJpaResponsitory userJpaResponsitory;
     private final RoleJpaResponsitory roleJpaResponsitory;
+    private final CandidatesServices candidatesServices;
 
-    public UserService(UserJpaResponsitory userJpaResponsitory, RoleJpaResponsitory roleJpaResponsitory) {
+    public UserService(UserJpaResponsitory userJpaResponsitory, RoleJpaResponsitory roleJpaResponsitory, CandidatesServices candidatesServices) {
         this.userJpaResponsitory = userJpaResponsitory;
         this.roleJpaResponsitory = roleJpaResponsitory;
+        this.candidatesServices = candidatesServices;
     }
 
     public UserResponseDto createUser(CreateUserRequestDto userDto) {
@@ -37,6 +39,7 @@ public class UserService {
         user.setPassword(userDto.getPassword());
         user.setEnabled(true);
         User savedUser = userJpaResponsitory.save(user);
+        candidatesServices.createCandidateForUser(user);
         return convertUserDto(savedUser);
     }
 

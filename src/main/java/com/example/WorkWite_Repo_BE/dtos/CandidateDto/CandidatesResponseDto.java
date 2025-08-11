@@ -1,27 +1,29 @@
 package com.example.WorkWite_Repo_BE.dtos.CandidateDto;
 
+import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.AppResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
+import com.example.WorkWite_Repo_BE.entities.User;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 @Data
-@Builder
 public class CandidatesResponseDto {
     private Long id;
-    private String phone;
-    private String address;
-    private String bio;
-    private String experience;
-    private String education;
-    private String skills;
+    private User user;
+    private List<SaveJobResponseDto> savedJobs;
+    private List<ResumeResponseDto> resumes;
+    //còn aplly chua update đc
 
-    public CandidatesResponseDto(Long id, String phone, String address, String bio, String experience, String education, String skills) {
+    public CandidatesResponseDto(Long id, User user, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
         this.id = id;
-        this.phone = phone;
-        this.address = address;
-        this.bio = bio;
-        this.experience = experience;
-        this.education = education;
-        this.skills = skills;
-
+        this.user = user;
+        this.savedJobs = savedJobs;
+        this.resumes = resumes;
     }
-}
+
+   }
