@@ -7,12 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class UserResponseDto {
+public class RegisterResponseDto {
     private Long id;
-    private String username;
     private String email;
-    private String fullName;
-    private String status;
-    private java.util.List<String> roles;
+    private String fullname;
+    private String username;
 }

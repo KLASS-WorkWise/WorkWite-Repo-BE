@@ -11,8 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class LoginResponseDto {
-    private String access_token;
-    private String refresh_token;
+
     private LoggedInUserDto loggedInUser;
 
     @Data
@@ -21,17 +20,17 @@ public class LoginResponseDto {
     @Builder
     public static class LoggedInUserDto {
         private Long id;
+        private String fullName;
         private String username;
-        private Boolean isActive;
-        private List<RoleDto> roles;
+        private String status;
+        private List<String> roles;
     }
 
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
     public static class RoleDto {
-        private Long id;
-        private String name;
+        // Đã bỏ, không dùng nữa
     }
+
+    private String access_token;
+    private String refresh_token;
 }

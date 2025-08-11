@@ -1,3 +1,4 @@
+
 package com.example.WorkWite_Repo_BE.services;
 
 import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginRequestDto;
@@ -13,6 +14,7 @@ import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterResponseDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,16 +26,25 @@ public class UserService {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
 
-    private UserResponseDto convertUserDto(User user) {
-        // Map User.username -> UserResponseDto.name, roles để empty list
-        return new UserResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                null
+    // Chuẩn hóa hàm convertToDto cho User entity
+    private UserResponseDto convertToDto(User user) {
+        UserResponseDto dto = new UserResponseDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
+        dto.setStatus(user.getStatus());
+        if (user.getRoles() != null) {
+            dto.setRoles(user.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toList()));
+        }
+        return dto;
+    }
 
-        // java.util.Collections.emptyList());
-        );
+    public List<UserResponseDto> getAllUsers() {
+        List<User> users = this.userJpaRepository.findAll();
+        return users.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
@@ -46,7 +57,7 @@ public class UserService {
         if (request.getPassword() != null)
             user.setPassword(request.getPassword());
         userJpaRepository.save(user);
-        return convertUserDto(user);
+        return convertToDto(user);
     }
 
     public void deleteUser(Long id) {
@@ -70,18 +81,16 @@ public class UserService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = "dummy_refresh_token"; // TODO: sinh refresh token thực tế nếu có
 
-        // Map roles
-        List<LoginResponseDto.RoleDto> roles = user.getRoles() != null ? user.getRoles().stream()
-                .map(role -> LoginResponseDto.RoleDto.builder()
-                        .id(role.getId())
-                        .name(role.getName())
-                        .build())
+        // Map roles: chỉ lấy tên role
+        List<String> roles = user.getRoles() != null ? user.getRoles().stream()
+                .map(Role::getName)
                 .collect(Collectors.toList()) : null;
 
         LoginResponseDto.LoggedInUserDto loggedInUser = LoginResponseDto.LoggedInUserDto.builder()
                 .id(user.getId())
+                .fullName(user.getFullName())
                 .username(user.getUsername())
-                .isActive(true) // hoặc user.isActive() nếu có trường này
+                .status("active")
                 .roles(roles)
                 .build();
 
@@ -92,27 +101,33 @@ public class UserService {
                 .build();
     }
 
-    public void register(RegisterRequestDto request) {
+    public RegisterResponseDto register(RegisterRequestDto request) {
+        if (!request.getPassword().equals(request.getRepassword())) {
+            throw new RuntimeException("Mật khẩu nhập lại không khớp!");
+        }
         if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
-        Role userRole = roleJpaRepository.findByName("USER").orElseGet(() -> {
+        user.setEmail(request.getEmail());
+        user.setFullName(request.getFullName());
+
+        // Gán role mặc định nếu có
+        Role userRole = roleJpaRepository.findByName("Users").orElseGet(() -> {
             Role r = new Role();
-            r.setName("USER");
+            r.setName("Users");
             return roleJpaRepository.save(r);
         });
         user.setRoles(List.of(userRole));
+
         userJpaRepository.save(user);
-    }
 
-    public List<UserResponseDto> getAllUser() {
-        List<User> user = this.userJpaRepository.findAll();
-        return user.stream()
-                .map(this::convertUserDto)
-                .collect(Collectors.toList());
+        return new RegisterResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getUsername());
     }
-
 }
