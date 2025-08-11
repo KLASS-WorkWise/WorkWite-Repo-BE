@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmployerResponseDto {
-    private Boolean status;
+    private String status;
     private String email;
     private String phoneNumber;
     private String avatar;
@@ -18,15 +18,5 @@ public class EmployerResponseDto {
     private String password;
     private String fullName;
 
-    public EmployerResponseDto(String username, String password, String fullName,
-                               String email, String phoneNumber, String avatar, boolean status) {
-        this.username = username;
-        this.password = password;
-        this.fullName = fullName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.avatar = avatar;
-        this.status = status;
-    }
 }
 

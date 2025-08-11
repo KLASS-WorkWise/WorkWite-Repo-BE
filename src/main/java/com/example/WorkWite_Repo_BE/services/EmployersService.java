@@ -39,7 +39,7 @@ public class EmployersService {
     public PaginatedEmployerRespondeDto getAllEmployers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Employers> employersPage = this.employersJpaRepository.findAll(pageable);
+        Page<Employers> employersPage = this.employersJpaRepository.findAllEmployersWithRole(pageable);
 
         List<EmployerResponseDto> employerDto = employersPage.getContent().stream()
                 .map(this::convertToDto)
@@ -62,7 +62,6 @@ public class EmployersService {
         employers.setFullName(employerResponseDto.getFullName());
         employers.setEmail(employerResponseDto.getEmail());
         employers.setPhoneNumber(employerResponseDto.getPhoneNumber());
-        employers.setStatus(employerResponseDto.getStatus());
         employers.setAvatar(employerResponseDto.getAvatar());
 
         Employers createdEmployer = this.employersJpaRepository.save(employers);
@@ -87,7 +86,6 @@ public class EmployersService {
         employers.setFullName(employerResponseDto.getFullName());
         employers.setEmail(employerResponseDto.getEmail());
         employers.setPhoneNumber(employerResponseDto.getPhoneNumber());
-        employers.setStatus(employerResponseDto.getStatus());
         employers.setAvatar(employerResponseDto.getAvatar());
 
         Employers updatedEmployer = this.employersJpaRepository.save(employers);

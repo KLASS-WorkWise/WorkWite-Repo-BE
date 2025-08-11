@@ -11,11 +11,10 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@DiscriminatorValue("EMPLOYER")
+@DiscriminatorValue("Employer")
 @PrimaryKeyJoinColumn(name = "id")
 public class Employers extends User {
 
-    private Boolean status;
     private String phoneNumber;
     private String avatar;
     private String fullName;
