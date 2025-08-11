@@ -68,11 +68,27 @@ public class UserService {
 
         // Generate a new access token (with full data + roles)
         String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = "dummy_refresh_token"; // TODO: sinh refresh token thực tế nếu có
 
-        return LoginResponseDto.builder()
+        // Map roles
+        List<LoginResponseDto.RoleDto> roles = user.getRoles() != null ? user.getRoles().stream()
+                .map(role -> LoginResponseDto.RoleDto.builder()
+                        .id(role.getId())
+                        .name(role.getName())
+                        .build())
+                .collect(Collectors.toList()) : null;
+
+        LoginResponseDto.LoggedInUserDto loggedInUser = LoginResponseDto.LoggedInUserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .accessToken(accessToken)
+                .isActive(true) // hoặc user.isActive() nếu có trường này
+                .roles(roles)
+                .build();
+
+        return LoginResponseDto.builder()
+                .access_token(accessToken)
+                .refresh_token(refreshToken)
+                .loggedInUser(loggedInUser)
                 .build();
     }
 
