@@ -1,4 +1,4 @@
-package com.example.WorkWite_Repo_BE.dtos.EmployersDto;
+package com.example.WorkWite_Repo_BE.dtos.UserDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,11 +11,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaginatedEmployerRespondeDto {
-    private List<EmployerResponseDto> data;
+public class PaginatedStudentResponseDto {
+    private List<UserResponseDto> data;
     private int pageNumber;
     private int pageSize;
-    private Long totalRecords;
+    private long totalRecords;
     private int totalPages;
     private boolean hasNext;
     private boolean hasPrevious;

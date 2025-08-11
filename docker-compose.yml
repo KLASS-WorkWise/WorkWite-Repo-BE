@@ -1,0 +1,39 @@
+# docker-compose.yml
+# This file is used to define and run multi-container Docker applications.
+# It sets up a Spring Boot application with a MySQL database.
+services:
+  app:
+    image: lnqhuy130803/jobbox-java-spring-boot:latest  # đây là image dự kiến mik muốn tạo sau dấu / đặt tên tự do
+    # trc dấu / là cái tên docker hub của mik , còn cái : lastest là cái bắt buộc nên có
+    ports:
+      - '8080:8080'    # số 8080 sau dấu : là số dc định nghĩa bên file Dockerfile bên kia định nghiax như nào thì bên này như z
+      # còn trc dấu : là khi docker chạy lên nó dùng 8080 đó để giao tiếp vs nó, dùng postman để test thì lấy cái trc daasu : test, số trc dấu : để số bnh cũng dc
+    environment:
+      # phầnn ở dưới laf phải cấu hình theo file application.properties nó đọc từ đó qua
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/spring3  # cái db : 3306 là tên service của db trong docker-compose.yml nó chạy nội bộ trong docker chứ đổi db thành localhost là nó chạy cái của mik thì die
+      SPRING_DATASOURCE_USERNAME: developer3
+      SPRING_DATASOURCE_PASSWORD: developer_password3
+    depends_on:   # nó phải phụ thuộc và db ( database ) thg db chạy lên ko bị gì thì thg app mới dc chạy
+      db:
+        condition: service_healthy
+  db:  # định nghĩa db cho mtrg của mik
+    image: mysql:latest   # mysql là 1 cái của thế giới đã dc định nghĩa từ trc đó , ở đaya ta đag lôi nó xún và install vào mtrg máy ảo của mik 1 phiên bảng mysql mới nhất , ở đây muốn ghi phiên bảng nào thì sau dấu : đổi lastes thành version cty quy định
+    restart: always  # có j trục trặc thì nó quay lại
+    environment:  # khi kéo cái mysql mới từ thế giới về thì phải đặt tên + pass cho nó chớ
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: spring3  # ở đây đặt là phải trùng vs thg trên dòng 13-15 đã định nghĩa
+      MYSQL_USER: developer3
+      MYSQL_PASSWORD: developer_password3
+    ports:   #      - # lên docker destop thì sau dấu : là cái của docker ko có đụng dô 3306 phía sau dấu : nó liên kết vs 3306 dòng 13 nếu đổi ở đây thì trên dòng 13 cx phải đổi   - # còn trc dấu : nếu bị xung đột khi cày 2 thg mysql work bench và cái mysql khác thì đổi thành số khác trc dấu :
+      - '3307:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      # This healthcheck ensures that the MySQL service is ready before the app starts.
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-proot_password']
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+volumes:
+  db_data:

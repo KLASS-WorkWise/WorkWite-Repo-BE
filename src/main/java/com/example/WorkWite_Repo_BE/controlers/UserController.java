@@ -1,65 +1,93 @@
-
-// ...existing code...
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedStudentResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.UpdateUserRequestDto;
+import com.example.WorkWite_Repo_BE.repositories.UserProjection;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("api/user")
+import java.util.List;
+
+@RestController()
+@RequestMapping("/api/students")
 public class UserController {
-
     private final UserService userService;
-    // String message = "hello bạn đầu với project Crud";
 
-    // khởi tạo cóntructor
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @PostMapping
-    public UserResponseDto createUser(@Valid @RequestBody CreateUserRequestDto userDto) {
-        return userService.createUser(userDto);
+    // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
+    // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
+    @GetMapping()
+    public List<UserResponseDto> getAllUser() {
+        return this.userService.getAllUser();
     }
 
-    // lấy toàn bộ user theo phân trang :
-    @GetMapping("/allusser")
-    public PaginatedUserResponseDto getHetAllUser(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        System.out.println("page: " + page);
-        System.out.println("size: " + size);
-        return this.userService.getAllUserPaginated(page, size); // gọi đúng tên hàm
-    }
+    // @GetMapping("/paging")
+    // public PaginatedStudentResponseDto getAllStudentsPaginated(
+    // @RequestParam(defaultValue = "1") int page,
+    // @RequestParam(defaultValue = "5") int size) {
+    // System.out.println("page: " + page);
+    // System.out.println("size: " + size);
+    // return this.userService.getAllStudentsPaginated(page, size);
+    // }
 
-    // update user theo id
+    // @PostMapping()
+    // public UserResponseDto createStudent(@RequestBody @Valid
+    // CreateStudentRequestDto createStudentRequestDto) {
+    // return this.userService.createStudent(createStudentRequestDto);
+    // }
+
+    // @GetMapping("/{id}")
+    // public UserResponseDto getStudentById(@PathVariable("id") Long id) {
+    // return this.userService.getStudentById(id);
+    // }
+
     @PatchMapping("/{id}")
-    public UserResponseDto updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateUserRequestDto userDto) {
-        return userService.updateUser(id, userDto);
+    public UserResponseDto updateUser(@PathVariable("id") Long id,
+            @RequestBody @Valid com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto request) {
+        return this.userService.updateUser(id, request);
     }
 
-    // phân quyền cho user
-    @PostMapping("/{userId}/roles/{roleName}")
-    public ResponseEntity<?> assignRole(
-            @PathVariable Long userId,
-            @PathVariable String roleName) {
-        userService.assignRoleToUser(userId, roleName);
-        return ResponseEntity.ok("Đã gán role " + roleName + " cho user " + userId);
-    }
-
-    // xóa user theo id
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("Đã xóa user với id: " + id);
+    public void deleteUser(@PathVariable("id") Long id) {
+        this.userService.deleteUser(id);
     }
 
+    // @DeleteMapping("/soft-delete/{id}")
+    // public void softDeleteStudent(@PathVariable("id") Long id) {
+    // this.userService.softDeleteStudent(id);
+    // }
+
+    // @GetMapping("/get-all/deleted/false")
+    // public List<UserResponseDto> findAvailableStudents() {
+    // return this.stuuserServicedentService.findAvailableStudents();
+    // }
+
+    // @GetMapping("/get-all/status")
+    // public List<UserResponseDto> findByStatus(@RequestParam("status")
+    // StudentStatus status) {
+
+    // return this.userService.findByStatus(status);
+    // }
+
+    // @GetMapping("/get-all/department/{id}")
+    // public List<UserResponseDto> findByDepartment(@PathVariable("id") Long
+    // departmentId) {
+
+    // return this.userService.findByDepartmentId(departmentId);
+    // }
+
+    // @GetMapping("/get-all/name")
+    // public List<UserProjection> findByName(@RequestParam("name") String name) {
+    // return this.userService.findByNameContainingIgnoreCase(name);
+    // }
+
+    // @GetMapping("/get-all/email")
+    // public List<UserProjection> findByEmail(@RequestParam("email") String email)
+    // {
+    // return this.userService.searchByEmailContainingIgnoreCase(email);
+    // }
 }
