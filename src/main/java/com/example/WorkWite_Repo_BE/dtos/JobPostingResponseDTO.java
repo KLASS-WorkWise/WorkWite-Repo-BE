@@ -1,7 +1,6 @@
 package com.example.WorkWite_Repo_BE.dtos;
 
 import lombok.Data;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -14,7 +13,10 @@ public class JobPostingResponseDTO {
     private String salaryRange;
     private String jobType;
     private String category;
-    private LocalDate deadline;
+    private String requiredSkills;
+    private Integer minExperience;
+    private String requiredDegree;
+    private LocalDateTime endAt;
     private String status;
     private LocalDateTime createdAt;
 }
