@@ -19,7 +19,17 @@ import java.util.stream.Collectors;
 @Service
 public class RoleService {
 
-    // Thay đổi role của user (xóa hết role cũ, chỉ giữ role mới)
+    private RoleResponseDto convertToDto(Role role) {
+        RoleResponseDto dto = new RoleResponseDto();
+        dto.setId(role.getId());
+        dto.setName(role.getName());
+        return dto;
+    }
+        private final RoleJpaRepository roleJpaRepository;
+    private final UserJpaRepository userJpaRepository;
+    
+    
+    // Thay đổi role của user
     public void changeUserRole(Long userId, Long newRoleId) {
         User user = userJpaRepository.findById(userId)
                 .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
@@ -30,43 +40,11 @@ public class RoleService {
         userJpaRepository.save(user);
     }
 
-    // Chuẩn hóa hàm convertToDto cho Role entity
-    private RoleResponseDto convertToDto(Role role) {
-        RoleResponseDto dto = new RoleResponseDto();
-        dto.setId(role.getId());
-        dto.setName(role.getName());
-        return dto;
-    }
 
-    private final RoleJpaRepository roleJpaRepository;
-    private final UserJpaRepository userJpaRepository;
 
-    public RoleResponseDto updateRole(Long id, RoleUpdateRequestDto request) {
-        Role role = roleJpaRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Role not found", HttpStatus.NOT_FOUND));
-        if (request.getName() != null)
-            role.setName(request.getName());
-        roleJpaRepository.save(role);
-        return convertToDto(role);
-    }
 
-    public void deleteRole(Long id) {
-        if (!roleJpaRepository.existsById(id)) {
-            throw new HttpException("Role not found", HttpStatus.NOT_FOUND);
-        }
-        // Gỡ role khỏi tất cả user trước khi xóa role
-        Role role = roleJpaRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Role not found", HttpStatus.NOT_FOUND));
-        List<User> usersWithRole = userJpaRepository.findAll().stream()
-                .filter(u -> u.getRoles() != null && u.getRoles().contains(role))
-                .collect(Collectors.toList());
-        for (User user : usersWithRole) {
-            user.getRoles().remove(role);
-            userJpaRepository.save(user);
-        }
-        roleJpaRepository.deleteById(id);
-    }
 
+    // xóa role khỏi user
     public void removeRoleFromUser(Long userId, Long roleId) {
         User user = userJpaRepository.findById(userId)
                 .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
@@ -78,6 +56,7 @@ public class RoleService {
         }
     }
 
+    // get tát cả role
     public List<RoleResponseDto> getAllRoles() {
         return roleJpaRepository.findAll().stream()
                 .map(this::convertToDto)

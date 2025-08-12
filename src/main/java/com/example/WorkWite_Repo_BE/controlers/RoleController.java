@@ -10,10 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {
-    @PostMapping("/change")
-    public void changeUserRole(@RequestParam Long userId, @RequestParam Long newRoleId) {
-        roleService.changeUserRole(userId, newRoleId);
-    }
 
     private final RoleService roleService;
 
@@ -26,19 +22,16 @@ public class RoleController {
         return roleService.getAllRoles();
     }
 
-    @PatchMapping("/{id}")
-    public RoleResponseDto updateRole(@PathVariable("id") Long id, @RequestBody RoleUpdateRequestDto request) {
-        return roleService.updateRole(id, request);
+
+    // thay đổi role của user
+    @PostMapping("/change/{userId}/{newRoleId}")
+    public void changeUserRole(@PathVariable Long userId, @PathVariable Long newRoleId) {
+        roleService.changeUserRole(userId, newRoleId);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteRole(@PathVariable("id") Long id) {
-        roleService.deleteRole(id);
-    }
-
-
-    @PostMapping("/remove")
-    public void removeRoleFromUser(@RequestParam Long userId, @RequestParam Long roleId) {
+    // xóa role đó khỏi user
+    @PostMapping("/remove/{userId}/{roleId}")
+    public void removeRoleFromUser(@PathVariable Long userId, @PathVariable Long roleId) {
         roleService.removeRoleFromUser(userId, roleId);
     }
 }
