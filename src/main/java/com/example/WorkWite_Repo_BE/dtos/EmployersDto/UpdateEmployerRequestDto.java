@@ -14,13 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEmployerRequestDto {
-    @NotBlank(message = "Username không được để trống")
-    @Size(min = 4, max = 50, message = "Username phải từ 4 đến 50 ký tự")
-    private String username;
+//    @NotBlank(message = "Username không được để trống")
+//    @Size(min = 4, max = 50, message = "Username phải từ 4 đến 50 ký tự")
+//    private String username;
 
-    @NotBlank(message = "Password không được để trống")
-    @Size(min = 6, message = "Password phải có ít nhất 6 ký tự")
-    private String password;
 
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
@@ -36,5 +33,5 @@ public class UpdateEmployerRequestDto {
     @NotBlank(message = "Tên không được để trống")
     private String fullName;
 
-    private String status;
+//    private String status;
 }
