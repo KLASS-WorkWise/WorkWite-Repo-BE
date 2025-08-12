@@ -21,6 +21,7 @@ public class CompanyInformationService {
     public CompanyInformationService(CompanyInformationJpaRepository companyInformationJpaRepository) {
         this.companyInformationJpaRepository = companyInformationJpaRepository;
     }
+
     private CompanyInformationReponseDto convertToDto(CompanyInformation companyInformationReponseDto) {
         return new CompanyInformationReponseDto(
                 companyInformationReponseDto.getEmployee(),
@@ -78,9 +79,11 @@ public class CompanyInformationService {
 
         return convertToDto(companyInformation);
     }
+
     public void deleteCompany(Long id) {
         this.companyInformationJpaRepository.deleteById(id);
     }
+
     public CompanyInformationReponseDto getCompanyInformation(Long id) {
 
         CompanyInformation companyInformation = this.companyInformationJpaRepository.findById(id).orElse(null);
@@ -88,7 +91,8 @@ public class CompanyInformationService {
         return convertToDto(companyInformation);
     }
 
-    public  CompanyInformationReponseDto updateCompany(Long id, UpdateCompanyInformationRequesDto companyInformationReponseDto) {
+    public CompanyInformationReponseDto updateCompany(Long id,
+            UpdateCompanyInformationRequesDto companyInformationReponseDto) {
         CompanyInformation companyInformation = this.companyInformationJpaRepository.findById(id).orElse(null);
         assert companyInformation != null;
         companyInformation.setEmployee(companyInformationReponseDto.getEmployee());
@@ -108,6 +112,5 @@ public class CompanyInformationService {
 
         return convertToDto(updatedCompanyInformation);
     }
-
 
 }

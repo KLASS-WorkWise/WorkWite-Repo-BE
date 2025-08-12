@@ -23,13 +23,13 @@ public class EmployersService {
     private final EmployersJpaRepository employersJpaRepository;
     private final CompanyInformationJpaRepository companyInformationRepository;
 
-
-    public EmployersService(EmployersJpaRepository employersJpaRepository, CompanyInformationJpaRepository companyInformationRepository) {
+    public EmployersService(EmployersJpaRepository employersJpaRepository,
+            CompanyInformationJpaRepository companyInformationRepository) {
         this.employersJpaRepository = employersJpaRepository;
         this.companyInformationRepository = companyInformationRepository;
     }
 
-    public EmployerResponseDto convertDto (Employers employers) {
+    public EmployerResponseDto convertDto(Employers employers) {
         return new EmployerResponseDto(
                 employers.getId(),
                 employers.getUser().getUsername(),
@@ -37,8 +37,7 @@ public class EmployersService {
                 employers.getUser().getFullName(),
                 employers.getUser().getStatus(),
                 employers.getPhoneNumber(),
-                employers.getAvatar()
-        );
+                employers.getAvatar());
     }
 
     @Transactional
@@ -64,8 +63,5 @@ public class EmployersService {
 
         return convertDto(savedEmployer);
     }
-
-
-
 
 }

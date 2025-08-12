@@ -17,9 +17,9 @@ public class EmployersControler {
     }
 
     @PatchMapping("/{id}/profile")
-    public EmployerResponseDto updateEmployerProfile(@PathVariable Long id, @RequestBody UpdateEmployerRequestDto employerResponseDto){
+    public EmployerResponseDto updateEmployerProfile(@PathVariable Long id,
+            @RequestBody UpdateEmployerRequestDto employerResponseDto) {
         return employersService.updateEmployerProfile(id, employerResponseDto);
     }
 
 }
-

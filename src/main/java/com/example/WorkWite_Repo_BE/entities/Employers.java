@@ -19,7 +19,7 @@ public class Employers {
     private String phoneNumber;
     private String avatar;
 
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    @OneToOne(optional = false, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @MapsId // Lấy id từ User
     @JoinColumn(name = "id") // cột id vừa là PK vừa là FK
     private User user;

@@ -22,14 +22,17 @@ public class RoleController {
         return roleService.getAllRoles();
     }
 
-
     // thay đổi role của user
     @PostMapping("/change/{userId}/{newRoleId}")
     public void changeUserRole(@PathVariable Long userId, @PathVariable Long newRoleId) {
         roleService.changeUserRole(userId, newRoleId);
     }
 
-    // xóa role đó khỏi user
+    @DeleteMapping("/{id}")
+    public void deleteRole(@PathVariable("id") Long id) {
+        roleService.deleteRole(id);
+    }
+
     @PostMapping("/remove/{userId}/{roleId}")
     public void removeRoleFromUser(@PathVariable Long userId, @PathVariable Long roleId) {
         roleService.removeRoleFromUser(userId, roleId);
