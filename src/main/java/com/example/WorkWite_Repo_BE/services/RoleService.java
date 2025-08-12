@@ -3,11 +3,14 @@ package com.example.WorkWite_Repo_BE.services;
 
 import com.example.WorkWite_Repo_BE.dtos.RoleDto.RoleUpdateRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.RoleDto.RoleResponseDto;
+import com.example.WorkWite_Repo_BE.entities.Employers;
 import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.exceptions.HttpException;
+import com.example.WorkWite_Repo_BE.repositories.EmployersJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.RoleJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ public class RoleService {
         return dto;
     }
 
+
     private final RoleJpaRepository roleJpaRepository;
     private final UserJpaRepository userJpaRepository;
 
@@ -49,7 +53,6 @@ public class RoleService {
         roleJpaRepository.save(role);
         return convertToDto(role);
     }
-
     public void deleteRole(Long id) {
         if (!roleJpaRepository.existsById(id)) {
             throw new HttpException("Role not found", HttpStatus.NOT_FOUND);
