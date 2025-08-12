@@ -2,7 +2,7 @@
 
 ## Auth :
 - Register : POST  : http://localhost:8080/api/auth/register               Done
-- Login : POST  : http://localhost:8080/api/auth/loginDoneDone
+- Login : POST  : http://localhost:8080/api/auth/login                     Done
 
 ## Users :  + access_token :   
 ### username : hoangle191205@gmail.com
@@ -15,5 +15,13 @@
 ## Role Api :
 - GetAllRole :   GET     http://localhost:8080/api/roles                   Done
 - UpdateRole :   PATCH   http://localhost:8080/api/roles/{id}              Done
-- AddRoleForUser POST    http://localhost:8080/api/roles/assign?userId={userId}&roleId={roleId}
-- RemoveRoleUser : POST  http://localhost:8080/api/roles/remove?userId={userId}&roleId={roleId}
+- AddRoleForUser POST    http://localhost:8080/api/roles/assign?userId={userId}&roleId={roleId}   Done
+- RemoveRoleUser : POST  http://localhost:8080/api/roles/remove?userId={userId}&roleId={roleId}   Done
+
+## Employers Api :
+
+
+## Candidate Api :
+
+
+## Job Posting Api : 
