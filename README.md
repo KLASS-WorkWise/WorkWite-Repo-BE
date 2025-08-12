@@ -9,7 +9,7 @@
 ### password : 123456789
 - GetAllUser : GET  :   http://localhost:8080/api/users                    Done
 - UpdateUser : PATCH :  http://localhost:8080/api/users/{id}               Done
-- DeleteUser : DELETE : DELETE http://localhost:8080/api/users/{id}
+- DeleteUser : DELETE : DELETE http://localhost:8080/api/users/{id}        Done
 
 
 ## Role Api :
