@@ -11,6 +11,5 @@ import java.util.List;
 
 @Repository
 public interface EmployersJpaRepository extends JpaRepository<Employers, Long> {
-    @Query("SELECT e FROM Employers e JOIN e.roles r WHERE r.name = 'Employer'")
-    Page<Employers> findAllEmployersWithRole(Pageable pageable);
+
 }

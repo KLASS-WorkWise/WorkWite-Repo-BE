@@ -11,15 +11,20 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@DiscriminatorValue("Employer")
-@PrimaryKeyJoinColumn(name = "id")
-public class Employers extends User {
+public class Employers {
+
+    @Id
+    private Long id; // Sẽ dùng chung với id của User
 
     private String phoneNumber;
     private String avatar;
-    private String fullName;
+
+    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    @MapsId // Lấy id từ User
+    @JoinColumn(name = "id") // cột id vừa là PK vừa là FK
+    private User user;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "company_information_id", referencedColumnName = "id")
     private CompanyInformation companyInformation;
-
 }

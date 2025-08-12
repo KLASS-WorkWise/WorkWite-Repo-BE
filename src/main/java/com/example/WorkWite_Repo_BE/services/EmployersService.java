@@ -5,8 +5,11 @@ import com.example.WorkWite_Repo_BE.dtos.EmployersDto.EmployerResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.PaginatedEmployerRespondeDto;
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.UpdateEmployerRequestDto;
 import com.example.WorkWite_Repo_BE.entities.Employers;
+import com.example.WorkWite_Repo_BE.entities.User;
+import com.example.WorkWite_Repo_BE.repositories.CompanyInformationJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.EmployersJpaRepository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,79 +21,51 @@ import java.util.stream.Collectors;
 @Service
 public class EmployersService {
     private final EmployersJpaRepository employersJpaRepository;
+    private final CompanyInformationJpaRepository companyInformationRepository;
 
 
-    public EmployersService(EmployersJpaRepository employersJpaRepository) {
+    public EmployersService(EmployersJpaRepository employersJpaRepository, CompanyInformationJpaRepository companyInformationRepository) {
         this.employersJpaRepository = employersJpaRepository;
+        this.companyInformationRepository = companyInformationRepository;
     }
 
-    private EmployerResponseDto convertToDto(Employers employers) {
+    public EmployerResponseDto convertDto (Employers employers) {
         return new EmployerResponseDto(
-                employers.getUsername(),
-                employers.getPassword(),
-                employers.getFullName(),
-                employers.getEmail(),
+                employers.getId(),
+                employers.getUser().getUsername(),
+                employers.getUser().getEmail(),
+                employers.getUser().getFullName(),
+                employers.getUser().getStatus(),
                 employers.getPhoneNumber(),
-                employers.getAvatar(),
-                employers.getStatus()
+                employers.getAvatar()
         );
     }
 
-    public PaginatedEmployerRespondeDto getAllEmployers(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    @Transactional
+    public EmployerResponseDto updateEmployerProfile(Long id, UpdateEmployerRequestDto dto) {
+        Employers employer = employersJpaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employer not found"));
 
-        Page<Employers> employersPage = this.employersJpaRepository.findAllEmployersWithRole(pageable);
+        // Update User
+        User user = employer.getUser();
+        user.setUsername(dto.getUsername());
+        // Nếu cần mã hoá mật khẩu:
+        // user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setPassword(dto.getPassword());
+        user.setEmail(dto.getEmail());
+        user.setFullName(dto.getFullName());
+        user.setStatus(dto.getStatus());
 
-        List<EmployerResponseDto> employerDto = employersPage.getContent().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        // Update Employers
+        employer.setPhoneNumber(dto.getPhoneNumber());
+        employer.setAvatar(dto.getAvatar());
 
-        return PaginatedEmployerRespondeDto.builder()
-                .data(employerDto)
-                .pageNumber(employersPage.getNumber())
-                .pageSize(employersPage.getSize())
-                .totalPages(employersPage.getTotalPages())
-                .totalRecords(employersPage.getTotalElements())
-                .hasNext(employersPage.hasNext())
-                .hasPrevious(employersPage.hasPrevious())
-                .build();
-    }
-    public EmployerResponseDto createEmployer(CreateEmployerRequestDto employerResponseDto) {
-        Employers employers = new Employers();
-        employers.setUsername(employerResponseDto.getUsername());
-        employers.setPassword(employerResponseDto.getPassword());
-        employers.setFullName(employerResponseDto.getFullName());
-        employers.setEmail(employerResponseDto.getEmail());
-        employers.setPhoneNumber(employerResponseDto.getPhoneNumber());
-        employers.setAvatar(employerResponseDto.getAvatar());
+        Employers savedEmployer = employersJpaRepository.save(employer);
 
-        Employers createdEmployer = this.employersJpaRepository.save(employers);
-
-        return convertToDto(createdEmployer);
+        return convertDto(savedEmployer);
     }
 
-    public EmployerResponseDto getEmployerById(Long id) {
-        Employers employer = this.employersJpaRepository.findById(id).orElse(null);
 
-        return convertToDto(employer);
-    }
 
-    public void deleteEmployerById(Long id) {
-        this.employersJpaRepository.deleteById(id);
-    }
-    public EmployerResponseDto updateEmployerById(Long id, UpdateEmployerRequestDto employerResponseDto) {
-        Employers employers = this.employersJpaRepository.findById(id).orElse(null);
-        assert  employers != null;
-        employers.setUsername(employerResponseDto.getUsername());
-        employers.setPassword(employerResponseDto.getPassword());
-        employers.setFullName(employerResponseDto.getFullName());
-        employers.setEmail(employerResponseDto.getEmail());
-        employers.setPhoneNumber(employerResponseDto.getPhoneNumber());
-        employers.setAvatar(employerResponseDto.getAvatar());
 
-        Employers updatedEmployer = this.employersJpaRepository.save(employers);
-
-        return convertToDto(updatedEmployer);
-
-    }
 }

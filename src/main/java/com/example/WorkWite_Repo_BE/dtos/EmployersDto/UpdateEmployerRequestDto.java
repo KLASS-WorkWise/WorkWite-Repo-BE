@@ -35,4 +35,6 @@ public class UpdateEmployerRequestDto {
 
     @NotBlank(message = "Tên không được để trống")
     private String fullName;
+
+    private String status;
 }
