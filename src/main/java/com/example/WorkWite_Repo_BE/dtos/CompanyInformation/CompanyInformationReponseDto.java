@@ -12,12 +12,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompanyInformationReponseDto {
+    private Long id;
     private Integer employee;
     private String companyName;
     private String logoUrl;
     private String bannerUrl;
     private String email;
-    private Integer phone;
+    private String phone;
     private String description;
     private LocalDateTime lastPosted;
     private String address;

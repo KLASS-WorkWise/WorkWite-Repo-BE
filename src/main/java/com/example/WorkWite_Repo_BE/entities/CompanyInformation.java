@@ -24,7 +24,7 @@ public class CompanyInformation {
     private String logoUrl;
     private String bannerUrl;
     private String email;
-    private Integer phone;
+    private String phone;
     private String description;
     private LocalDateTime lastPosted;
     private String address;
