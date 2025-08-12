@@ -1,9 +1,7 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.CreateUserRequestDto;
 // import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
-import com.example.WorkWite_Repo_BE.repositories.UserProjection;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -36,11 +34,6 @@ public class UserController {
     // }
 
     ;
-
-    @PostMapping()
-    public UserResponseDto createUser(@RequestBody @Valid CreateUserRequestDto createUserRequestDto) {
-        return this.userService.createUser(createUserRequestDto);
-    }
 
     // @GetMapping("/{id}")
     // public UserResponseDto getUserById(@PathVariable("id") Long id) {
