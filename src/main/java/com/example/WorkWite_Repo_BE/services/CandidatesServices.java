@@ -97,6 +97,7 @@ public class CandidatesServices {
         Candidate candidate = this.candidateJpaRepository.findById(id).orElse(null);
         if(candidate != null) {
             candidate.getUser().setEmail(updateCandidateRequest.getEmail());
+            candidate.getUser().setFullName(updateCandidateRequest.getFullName());
             Candidate updatedCandidate = this.candidateJpaRepository.save(candidate);
             return convertToDto(updatedCandidate);
         }

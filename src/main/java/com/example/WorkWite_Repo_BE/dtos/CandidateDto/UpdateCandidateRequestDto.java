@@ -16,5 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UpdateCandidateRequestDto {
     private String email;
+    private String fullName;
+
 }
 
