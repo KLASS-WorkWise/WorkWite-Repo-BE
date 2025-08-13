@@ -7,6 +7,10 @@ import com.example.WorkWite_Repo_BE.entities.Resume;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.repositories.ResumeJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.EducationJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.AwardJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.ActivityJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.ExperienceJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,15 +26,23 @@ public class ResumeService {
     private final ExperienceService experienceService;
     private final ActivityService activityService;
     private final AwardService awardService;
+    private final EducationJpaRepository educationJpaRepository;
+    private final AwardJpaRepository awardJpaRepository;
+    private final ActivityJpaRepository activityJpaRepository;
+    private final ExperienceJpaRepository experienceJpaRepository;
 
 
-    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService) {
+    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository) {
         this.resumeRepository = resumeRepository;
         this.candidateJpaRepository = candidateJpaRepository;
         this.educationService = educationService;
         this.experienceService = experienceService;
         this.activityService = activityService;
         this.awardService = awardService;
+        this.educationJpaRepository = educationJpaRepository;
+        this.awardJpaRepository = awardJpaRepository;
+        this.activityJpaRepository = activityJpaRepository;
+        this.experienceJpaRepository = experienceJpaRepository;
     }
 
     private ResumeResponseDto convertToDto(Resume resume) {
@@ -41,6 +53,7 @@ public class ResumeService {
         } else {
             createdAtStr = null;
         }
+        // Fix: tra ve list rỗng nếu không có dữ liệu
         return new ResumeResponseDto(
                 resume.getId(),
                 resume.getProfilePicture(),
@@ -49,10 +62,10 @@ public class ResumeService {
                 resume.getPhone(),
                 createdAtStr,
                 resume.getJobTitle(),
-                resume.getActivities(),
-                resume.getEducations(),
-                resume.getAwards(),
-                resume.getApplications(),
+                resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
+                resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
+                resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
+                resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
                 resume.getSummary()
         );
     }
@@ -93,6 +106,16 @@ public class ResumeService {
         }
 
         Resume resumeWithChildren = resumeRepository.findById(resume1.getId()).orElse(null);
+        // Truy vấn từng list liên quan
+        List educations = educationJpaRepository.findByResumeId(resume1.getId());
+        List awards = awardJpaRepository.findByResumeId(resume1.getId());
+        List activities = activityJpaRepository.findByResumeId(resume1.getId());
+        List experiences = experienceJpaRepository.findByResumeId(resume1.getId());
+        // Gán vào resumeWithChildren
+        resumeWithChildren.setEducations(educations);
+        resumeWithChildren.setAwards(awards);
+        resumeWithChildren.setActivities(activities);
+        resumeWithChildren.setExperiences(experiences);
         return convertToDto(resumeWithChildren);
     }
 

@@ -33,5 +33,11 @@ public class CandidateController {
         return this.candidatesServices.updateCandidateById(id, updateRequest);
     }
 
+    //get candidate by id
+    @GetMapping("/{id}")
+    public CandidatesResponseDto getCandidateById(@PathVariable("id") Long id) {
+        return this.candidatesServices.getCandidateById(id);
+    }
+
 }
 
