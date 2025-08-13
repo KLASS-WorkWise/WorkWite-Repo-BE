@@ -1,4 +1,5 @@
 
+
 package com.example.WorkWite_Repo_BE.services;
 
 
@@ -44,6 +45,13 @@ public class UserService {
         return users.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    // Lấy user theo id, trả về DTO
+    public UserResponseDto getUserById(Long id) {
+        User user = userJpaRepository.findById(id)
+                .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+        return convertToDto(user);
     }
 
     public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {

@@ -1,9 +1,12 @@
+
 package com.example.WorkWite_Repo_BE.controlers;
 
 // import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +27,17 @@ public class UserController {
         return this.userService.getAllUsers();
     }
 
+    // Lấy user theo id
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            var user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+    }
+
     // @GetMapping("/paging")
     // public PaginatedUserResponseDto getAllUsersPaginated(
     // @RequestParam(defaultValue = "1") int page,
@@ -35,10 +49,6 @@ public class UserController {
 
     ;
 
-    // @GetMapping("/{id}")
-    // public UserResponseDto getUserById(@PathVariable("id") Long id) {
-    // return this.userService.getUserById(id);
-    // }
 
     @PatchMapping("/{id}")
     public UserResponseDto updateUser(@PathVariable("id") Long id,

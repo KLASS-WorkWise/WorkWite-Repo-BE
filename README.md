@@ -9,7 +9,7 @@
 
 | Method | Endpoint             | Name           | Status    | Body mẫu |
 | ------ | -------------------- | -------------- | --------- | -------- |
-| GET    | `/api/users`         | Get all users  | ✅ Done   |          |
+| GET    | `/api/users`         | Get all users  | ✅ Done   |     ` + accestoken `     |
 | PATCH  | `/api/users/{id}`    | Update user    | ✅ Done   | `{ "fullName": "New Name", ... }` |
 | DELETE | `/api/users/{id}`    | Xóa user    | ✅ Done   |          |
 
