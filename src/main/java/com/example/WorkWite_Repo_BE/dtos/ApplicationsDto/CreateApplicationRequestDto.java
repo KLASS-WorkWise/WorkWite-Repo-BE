@@ -1,6 +1,6 @@
 package com.example.WorkWite_Repo_BE.dtos.ApplicationsDto;
 
-import com.example.WorkWite_Repo_BE.entities.Candidates;
+import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
 
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +21,7 @@ public class CreateApplicationRequestDto {
     private JobPosting jobPosting;
 
     @NotNull(message = "Candidate is required")
-    private Candidates candidate;
+    private Candidate candidate;
 
     @NotNull(message = "coverLetter is required")
     private String coverLetter;
