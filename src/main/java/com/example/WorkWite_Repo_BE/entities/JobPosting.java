@@ -3,7 +3,6 @@ package com.example.WorkWite_Repo_BE.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,12 +35,21 @@ public class JobPosting {
     @Column(name = "category", length = 100)
     private String category;
 
-    @Column(name = "deadline")
-    private LocalDate deadline;
+    @Column(name = "required_skills", columnDefinition = "TEXT")
+    private String requiredSkills;
 
-    @Column(name = "status")
-    private String status;
+    @Column(name = "min_experience")
+    private Integer minExperience;
+
+    @Column(name = "required_degree", length = 255)
+    private String requiredDegree;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "end_at")
+    private LocalDateTime endAt;
+
+    @Column(name = "status")
+    private String status;
 }
