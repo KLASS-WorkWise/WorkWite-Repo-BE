@@ -39,12 +39,16 @@ public class EmployersService {
                 employers.getPhoneNumber(),
                 employers.getAvatar());
     }
+
+    // getByid
     public EmployerResponseDto getEmployerById(Long id) {
         Employers employer = employersJpaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employer not found with id: " + id));
 
         return convertDto(employer);
     }
+
+    // Get all theo phân trang
     public PaginatedEmployerRespondeDto getPaginatedEmployers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
@@ -64,6 +68,7 @@ public class EmployersService {
                 .build();
     }
 
+    // update
     @Transactional
     public EmployerResponseDto updateEmployerProfile(Long id, UpdateEmployerRequestDto dto) {
         Employers employer = employersJpaRepository.findById(id)
@@ -71,12 +76,12 @@ public class EmployersService {
 
         // Update User
         User user = employer.getUser();
-//        user.setUsername(dto.getUsername());
+        // user.setUsername(dto.getUsername());
         // Nếu cần mã hoá mật khẩu:
         // user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
-//        user.setStatus(dto.getStatus());
+        // user.setStatus(dto.getStatus());
 
         // Update Employers
         employer.setPhoneNumber(dto.getPhoneNumber());
