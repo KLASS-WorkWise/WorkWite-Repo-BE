@@ -1,6 +1,5 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.dtos.RoleDto.RoleUpdateRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.RoleDto.RoleResponseDto;
 import com.example.WorkWite_Repo_BE.services.RoleService;
 import org.springframework.web.bind.annotation.*;

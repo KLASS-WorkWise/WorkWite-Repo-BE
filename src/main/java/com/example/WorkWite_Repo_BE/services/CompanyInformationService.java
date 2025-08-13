@@ -5,12 +5,17 @@ import com.example.WorkWite_Repo_BE.dtos.CompanyInformation.CreateCompanyInforma
 import com.example.WorkWite_Repo_BE.dtos.CompanyInformation.PaginatedCompanyInformationRespondeDto;
 import com.example.WorkWite_Repo_BE.dtos.CompanyInformation.UpdateCompanyInformationRequesDto;
 import com.example.WorkWite_Repo_BE.entities.CompanyInformation;
+import com.example.WorkWite_Repo_BE.entities.Employers;
 import com.example.WorkWite_Repo_BE.repositories.CompanyInformationJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.EmployersJpaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,12 +23,14 @@ import java.util.stream.Collectors;
 public class CompanyInformationService {
     private final CompanyInformationJpaRepository companyInformationJpaRepository;
 
-    public CompanyInformationService(CompanyInformationJpaRepository companyInformationJpaRepository) {
+    public CompanyInformationService(CompanyInformationJpaRepository companyInformationJpaRepository, EmployersJpaRepository employersRepository) {
         this.companyInformationJpaRepository = companyInformationJpaRepository;
+        this.employersRepository = employersRepository;
     }
 
     private CompanyInformationReponseDto convertToDto(CompanyInformation companyInformationReponseDto) {
         return new CompanyInformationReponseDto(
+                companyInformationReponseDto.getId(),
                 companyInformationReponseDto.getEmployee(),
                 companyInformationReponseDto.getCompanyName(),
                 companyInformationReponseDto.getLogoUrl(),
@@ -59,25 +66,44 @@ public class CompanyInformationService {
                 .hasPrevious(companyInformationPage.hasPrevious())
                 .build();
     }
+    // Lấy công ty theo ID
+    public CompanyInformationReponseDto getCompanyById(Long id) {
+        CompanyInformation companyInfo = companyInformationJpaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
+        return convertToDto(companyInfo);
+    }
 
-    public CompanyInformationReponseDto create(CreateCompanyInformationRequesDto dto) {
-        CompanyInformation companyInfo = new CompanyInformation();
-        companyInfo.setEmployee(dto.getEmployee());
-        companyInfo.setCompanyName(dto.getCompanyName());
-        companyInfo.setLogoUrl(dto.getLogoUrl());
-        companyInfo.setBannerUrl(dto.getBannerUrl());
-        companyInfo.setEmail(dto.getEmail());
-        companyInfo.setPhone(dto.getPhone());
-        companyInfo.setDescription(dto.getDescription());
-        companyInfo.setLastPosted(dto.getLastPosted());
-        companyInfo.setAddress(dto.getAddress());
-        companyInfo.setLocation(dto.getLocation());
-        companyInfo.setWebsite(dto.getWebsite());
-        companyInfo.setIndustry(dto.getIndustry());
+    private final EmployersJpaRepository employersRepository;
 
-        CompanyInformation companyInformation = this.companyInformationJpaRepository.save(companyInfo);
+    @Transactional
+    public CompanyInformationReponseDto createCompanyInformation(Long employerId, CreateCompanyInformationRequesDto dto) {
+        Employers employer = employersRepository.findById(employerId)
+                .orElseThrow(() -> new RuntimeException("Employer not found with id: " + employerId));
 
-        return convertToDto(companyInformation);
+        CompanyInformation companyInfo = CompanyInformation.builder()
+                .employee(dto.getEmployee())
+                .companyName(dto.getCompanyName())
+                .logoUrl(dto.getLogoUrl())
+                .bannerUrl(dto.getBannerUrl())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .description(dto.getDescription())
+                .lastPosted(dto.getLastPosted() != null ? dto.getLastPosted() : LocalDateTime.now())
+                .address(dto.getAddress())
+                .location(dto.getLocation())
+                .website(dto.getWebsite())
+                .industry(dto.getIndustry())
+                .build();
+
+        // Gắn quan hệ
+        companyInfo.setEmployer(employer);
+        employer.setCompanyInformation(companyInfo);
+
+        // Lưu employer (sẽ cascade lưu luôn companyInfo)
+        employersRepository.save(employer);
+
+        // Trả về DTO
+        return convertToDto(companyInfo);
     }
 
     public void deleteCompany(Long id) {
@@ -91,26 +117,54 @@ public class CompanyInformationService {
         return convertToDto(companyInformation);
     }
 
-    public CompanyInformationReponseDto updateCompany(Long id,
-            UpdateCompanyInformationRequesDto companyInformationReponseDto) {
-        CompanyInformation companyInformation = this.companyInformationJpaRepository.findById(id).orElse(null);
-        assert companyInformation != null;
-        companyInformation.setEmployee(companyInformationReponseDto.getEmployee());
-        companyInformation.setCompanyName(companyInformationReponseDto.getCompanyName());
-        companyInformation.setLogoUrl(companyInformationReponseDto.getLogoUrl());
-        companyInformation.setBannerUrl(companyInformationReponseDto.getBannerUrl());
-        companyInformation.setEmail(companyInformationReponseDto.getEmail());
-        companyInformation.setPhone(companyInformationReponseDto.getPhone());
-        companyInformation.setDescription(companyInformationReponseDto.getDescription());
-        companyInformation.setLastPosted(companyInformationReponseDto.getLastPosted());
-        companyInformation.setAddress(companyInformationReponseDto.getAddress());
-        companyInformation.setLocation(companyInformationReponseDto.getLocation());
-        companyInformation.setWebsite(companyInformationReponseDto.getWebsite());
-        companyInformation.setIndustry(companyInformationReponseDto.getIndustry());
+    @Transactional
+    public CompanyInformationReponseDto patchCompanyInformation(Long employerId, UpdateCompanyInformationRequesDto dto) {
+        Employers employer = employersRepository.findById(employerId)
+                .orElseThrow(() -> new RuntimeException("Employer not found with id: " + employerId));
 
-        CompanyInformation updatedCompanyInformation = this.companyInformationJpaRepository.save(companyInformation);
+        CompanyInformation companyInfo = employer.getCompanyInformation();
+        if (companyInfo == null) {
+            throw new RuntimeException("Company information not found for employer with id: " + employerId);
+        }
 
-        return convertToDto(updatedCompanyInformation);
+        if (dto.getEmployee() != null) companyInfo.setEmployee(dto.getEmployee());
+        if (dto.getCompanyName() != null) companyInfo.setCompanyName(dto.getCompanyName());
+        if (dto.getLogoUrl() != null) companyInfo.setLogoUrl(dto.getLogoUrl());
+        if (dto.getBannerUrl() != null) companyInfo.setBannerUrl(dto.getBannerUrl());
+        if (dto.getEmail() != null) companyInfo.setEmail(dto.getEmail());
+        if (dto.getPhone() != null) companyInfo.setPhone(dto.getPhone());
+        if (dto.getDescription() != null) companyInfo.setDescription(dto.getDescription());
+        if (dto.getLastPosted() != null) companyInfo.setLastPosted(dto.getLastPosted());
+        if (dto.getAddress() != null) companyInfo.setAddress(dto.getAddress());
+        if (dto.getLocation() != null) companyInfo.setLocation(dto.getLocation());
+        if (dto.getWebsite() != null) companyInfo.setWebsite(dto.getWebsite());
+        if (dto.getIndustry() != null) companyInfo.setIndustry(dto.getIndustry());
+
+        CompanyInformation savedInfo = companyInformationJpaRepository.save(companyInfo);
+
+        return convertToDto(savedInfo);
     }
+
+    public PaginatedCompanyInformationRespondeDto searchCompaniesByName(String name, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("companyName").ascending());
+        Page<CompanyInformation> result = companyInformationJpaRepository.findByCompanyNameContainingIgnoreCase(name, pageable);
+
+        List<CompanyInformationReponseDto> companyInformationDto = result.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return PaginatedCompanyInformationRespondeDto.builder()
+                .data(companyInformationDto)
+                .pageNumber(result.getNumber())
+                .pageSize(result.getSize())
+                .totalPages(result.getTotalPages())
+                .totalRecords(result.getTotalElements())
+                .hasNext(result.hasNext())
+                .hasPrevious(result.hasPrevious())
+                .build();
+    }
+
+
+
 
 }

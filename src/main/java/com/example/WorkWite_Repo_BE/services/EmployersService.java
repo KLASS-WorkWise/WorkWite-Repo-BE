@@ -39,6 +39,30 @@ public class EmployersService {
                 employers.getPhoneNumber(),
                 employers.getAvatar());
     }
+    public EmployerResponseDto getEmployerById(Long id) {
+        Employers employer = employersJpaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employer not found with id: " + id));
+
+        return convertDto(employer);
+    }
+    public PaginatedEmployerRespondeDto getPaginatedEmployers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Employers> employersPage = employersJpaRepository.findAll(pageable);
+        List<EmployerResponseDto> employerResponseDtos = employersPage.getContent().stream()
+                .map(this::convertDto)
+                .collect(Collectors.toList());
+
+        return PaginatedEmployerRespondeDto.builder()
+                .data(employerResponseDtos)
+                .pageNumber(employersPage.getNumber())
+                .pageSize(employersPage.getSize())
+                .totalRecords(employersPage.getTotalElements())
+                .totalPages(employersPage.getTotalPages())
+                .hasNext(employersPage.hasNext())
+                .hasPrevious(employersPage.hasPrevious())
+                .build();
+    }
 
     @Transactional
     public EmployerResponseDto updateEmployerProfile(Long id, UpdateEmployerRequestDto dto) {
@@ -47,13 +71,12 @@ public class EmployersService {
 
         // Update User
         User user = employer.getUser();
-        user.setUsername(dto.getUsername());
+//        user.setUsername(dto.getUsername());
         // Nếu cần mã hoá mật khẩu:
         // user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
-        user.setStatus(dto.getStatus());
+//        user.setStatus(dto.getStatus());
 
         // Update Employers
         employer.setPhoneNumber(dto.getPhoneNumber());

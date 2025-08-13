@@ -30,8 +30,8 @@ public class CreateCompanyInformationRequesDto {
     @Size(max = 255, message = "Email không được vượt quá 255 ký tự")
     private String email;
 
-    @Digits(integer = 15, fraction = 0, message = "Số điện thoại không hợp lệ")
-    private Integer phone;
+    @Pattern(regexp = "\\d{1,15}", message = "Số điện thoại không hợp lệ, chỉ chứa tối đa 15 chữ số")
+    private String phone;
 
     @Size(max = 2000, message = "Mô tả không được vượt quá 2000 ký tự")
     private String description;

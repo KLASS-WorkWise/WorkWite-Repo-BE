@@ -16,7 +16,19 @@ public class EmployersControler {
         this.employersService = employersService;
     }
 
-    @PatchMapping("/{id}/profile")
+    @GetMapping("")
+    public PaginatedEmployerRespondeDto getAllEmployers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size) {
+        return this.employersService.getPaginatedEmployers(page, size);
+    }
+
+    @GetMapping("/{id}")
+    public EmployerResponseDto getEmployerById(@PathVariable Long id) {
+        return employersService.getEmployerById(id);
+    }
+
+    @PatchMapping("/profile/{id}")
     public EmployerResponseDto updateEmployerProfile(@PathVariable Long id,
             @RequestBody UpdateEmployerRequestDto employerResponseDto) {
         return employersService.updateEmployerProfile(id, employerResponseDto);
