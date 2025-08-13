@@ -8,12 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 @Repository
 public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
-	Page<JobPosting> findByCategoryContainingAndLocationContainingAndSalaryRangeContainingAndJobTypeContainingAndRequiredSkillsContainingAndRequiredDegreeContaining(
+	Page<JobPosting> findByCategoryContainingAndLocationContainingAndSalaryRangeContainingAndJobTypeContainingAndRequiredDegreeContaining(
 		String category,
 		String location,
 		String salaryRange,
 		String jobType,
-		String requiredSkills,
 		String requiredDegree,
 		Pageable pageable
 	);

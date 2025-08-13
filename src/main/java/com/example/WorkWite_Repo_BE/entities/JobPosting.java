@@ -4,6 +4,7 @@ package com.example.WorkWite_Repo_BE.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "job_postings")
@@ -35,8 +36,10 @@ public class JobPosting {
     @Column(name = "category", length = 100)
     private String category;
 
-    @Column(name = "required_skills", columnDefinition = "TEXT")
-    private String requiredSkills;
+    @ElementCollection
+    @CollectionTable(name = "job_posting_skills", joinColumns = @JoinColumn(name = "job_posting_id"))
+    @Column(name = "skill")
+    private List<String> requiredSkills;
 
     @Column(name = "min_experience")
     private Integer minExperience;
