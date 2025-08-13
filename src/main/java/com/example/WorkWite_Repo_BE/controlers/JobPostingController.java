@@ -30,9 +30,29 @@ public class JobPostingController {
     }
 
     @GetMapping
-    public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostings() {
-        List<JobPostingResponseDTO> responseDTOs = jobPostingService.getAllJobPostings();
-        return ResponseEntity.ok(responseDTOs);
+        public ResponseEntity<List<JobPostingResponseDTO>> searchJobPostings(
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) String location,
+        @RequestParam(required = false) String salaryRange,
+        @RequestParam(required = false) String jobType,
+        @RequestParam(required = false) String requiredSkills,
+        @RequestParam(required = false) String requiredDegree,
+        @RequestParam(required = false) Integer minExperience,
+        @RequestParam(defaultValue = "0") Integer page,
+        @RequestParam(defaultValue = "10") Integer size
+    ) {
+    List<JobPostingResponseDTO> responseDTOs = jobPostingService.searchJobPostings(
+        category,
+        location,
+        salaryRange,
+        jobType,
+        requiredSkills,
+        requiredDegree,
+        minExperience,
+        page,
+        size
+    );
+    return ResponseEntity.ok(responseDTOs);
     }
 
     @PutMapping("/{id}")
