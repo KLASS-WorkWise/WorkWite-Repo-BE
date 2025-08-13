@@ -30,15 +30,18 @@ public class JobPostingServiceImpl implements JobPostingService {
 
         JobPosting jobPosting = new JobPosting();
         jobPosting.setEmployer(employer);
-        jobPosting.setTitle(requestDTO.getTitle());
-        jobPosting.setDescription(requestDTO.getDescription());
-        jobPosting.setLocation(requestDTO.getLocation());
-        jobPosting.setSalaryRange(requestDTO.getSalaryRange());
-        jobPosting.setJobType(requestDTO.getJobType());
-        jobPosting.setCategory(requestDTO.getCategory());
-        jobPosting.setDeadline(requestDTO.getDeadline());
-        jobPosting.setStatus(requestDTO.getStatus());
-        jobPosting.setCreatedAt(LocalDateTime.now());
+    jobPosting.setTitle(requestDTO.getTitle());
+    jobPosting.setDescription(requestDTO.getDescription());
+    jobPosting.setLocation(requestDTO.getLocation());
+    jobPosting.setSalaryRange(requestDTO.getSalaryRange());
+    jobPosting.setJobType(requestDTO.getJobType());
+    jobPosting.setCategory(requestDTO.getCategory());
+    jobPosting.setRequiredSkills(requestDTO.getRequiredSkills());
+    jobPosting.setMinExperience(requestDTO.getMinExperience());
+    jobPosting.setRequiredDegree(requestDTO.getRequiredDegree());
+    jobPosting.setEndAt(requestDTO.getEndAt());
+    jobPosting.setStatus(requestDTO.getStatus());
+    jobPosting.setCreatedAt(requestDTO.getCreatedAt() != null ? requestDTO.getCreatedAt() : LocalDateTime.now());
 
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
         return mapToResponseDTO(savedJobPosting);
@@ -67,14 +70,17 @@ public class JobPostingServiceImpl implements JobPostingService {
                 .orElseThrow(() -> new RuntimeException("Employer not found with id: " + requestDTO.getEmployerId()));
 
         jobPosting.setEmployer(employer);
-        jobPosting.setTitle(requestDTO.getTitle());
-        jobPosting.setDescription(requestDTO.getDescription());
-        jobPosting.setLocation(requestDTO.getLocation());
-        jobPosting.setSalaryRange(requestDTO.getSalaryRange());
-        jobPosting.setJobType(requestDTO.getJobType());
-        jobPosting.setCategory(requestDTO.getCategory());
-        jobPosting.setDeadline(requestDTO.getDeadline());
-        jobPosting.setStatus(requestDTO.getStatus());
+    jobPosting.setTitle(requestDTO.getTitle());
+    jobPosting.setDescription(requestDTO.getDescription());
+    jobPosting.setLocation(requestDTO.getLocation());
+    jobPosting.setSalaryRange(requestDTO.getSalaryRange());
+    jobPosting.setJobType(requestDTO.getJobType());
+    jobPosting.setCategory(requestDTO.getCategory());
+    jobPosting.setRequiredSkills(requestDTO.getRequiredSkills());
+    jobPosting.setMinExperience(requestDTO.getMinExperience());
+    jobPosting.setRequiredDegree(requestDTO.getRequiredDegree());
+    jobPosting.setEndAt(requestDTO.getEndAt());
+    jobPosting.setStatus(requestDTO.getStatus());
 
         JobPosting updatedJobPosting = jobPostingRepository.save(jobPosting);
         return mapToResponseDTO(updatedJobPosting);
@@ -98,9 +104,43 @@ public class JobPostingServiceImpl implements JobPostingService {
         responseDTO.setSalaryRange(jobPosting.getSalaryRange());
         responseDTO.setJobType(jobPosting.getJobType());
         responseDTO.setCategory(jobPosting.getCategory());
-        responseDTO.setDeadline(jobPosting.getDeadline());
+        responseDTO.setRequiredSkills(jobPosting.getRequiredSkills());
+        responseDTO.setMinExperience(jobPosting.getMinExperience());
+        responseDTO.setRequiredDegree(jobPosting.getRequiredDegree());
+        responseDTO.setEndAt(jobPosting.getEndAt());
         responseDTO.setStatus(jobPosting.getStatus());
         responseDTO.setCreatedAt(jobPosting.getCreatedAt());
         return responseDTO;
+    }
+    @Override
+    public List<JobPostingResponseDTO> searchJobPostings(
+        String category,
+        String location,
+        String salaryRange,
+        String jobType,
+        String requiredSkills,
+        String requiredDegree,
+        Integer minExperience,
+        Integer page,
+        Integer size
+    ) {
+    org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+    org.springframework.data.domain.Page<JobPosting> jobPostingsPage = jobPostingRepository.findByCategoryContainingAndLocationContainingAndSalaryRangeContainingAndJobTypeContainingAndRequiredSkillsContainingAndRequiredDegreeContaining(
+        category != null ? category : "",
+        location != null ? location : "",
+        salaryRange != null ? salaryRange : "",
+        jobType != null ? jobType : "",
+        requiredSkills != null ? requiredSkills : "",
+        requiredDegree != null ? requiredDegree : "",
+        pageable
+    );
+    // Nếu filter minExperience, lọc tiếp trên kết quả
+    List<JobPosting> filtered = jobPostingsPage.getContent();
+    if (minExperience != null) {
+        filtered = filtered.stream()
+            .filter(jp -> jp.getMinExperience() != null && jp.getMinExperience() >= minExperience)
+            .collect(Collectors.toList());
+    }
+    return filtered.stream().map(this::mapToResponseDTO).collect(Collectors.toList());
     }
 }

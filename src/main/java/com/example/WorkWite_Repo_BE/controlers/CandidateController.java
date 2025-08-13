@@ -1,7 +1,6 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CandidatesResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CreatCandidateRequest;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
 import com.example.WorkWite_Repo_BE.services.CandidatesServices;
@@ -26,10 +25,6 @@ public class CandidateController {
         return this.candidatesServices.getCandidatesPaginated(page - 1 , size);
     }
 
-    @PostMapping
-    public CandidatesResponseDto createCandidate(@RequestBody CreatCandidateRequest creatCandidate) {
-        return this.candidatesServices.creatCandidate(creatCandidate);
-    }
 
     @PatchMapping("/{id}")
     public CandidatesResponseDto updateCandidate(
@@ -38,9 +33,5 @@ public class CandidateController {
         return this.candidatesServices.updateCandidateById(id, updateRequest);
     }
 
-    // DELETE by ID
-    @DeleteMapping("/{id}")
-    public void deleteCandidate(@PathVariable("id") Long id) {
-        this.candidatesServices.deletaCandidateById(id);
-    }
 }
+

@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import java.time.LocalDate;
 
 @Data
 public class JobPostingRequestDTO {
@@ -29,8 +28,26 @@ public class JobPostingRequestDTO {
     @Size(max = 100, message = "Category must not exceed 100 characters")
     private String category;
 
-    private LocalDate deadline;
+    private String requiredSkills;
 
-    @NotBlank(message = "Status is required")
+    private Integer minExperience;
+
+    private String requiredDegree;
+
+    private java.time.LocalDateTime createdAt;
+
+    // Add deadline field for test compatibility
+    private java.time.LocalDate deadline;
+
+    public void setDeadline(java.time.LocalDate deadline) {
+        this.deadline = deadline;
+    }
+
+    public java.time.LocalDate getDeadline() {
+        return this.deadline;
+    }
+
+    private java.time.LocalDateTime endAt;
+
     private String status;
 }
