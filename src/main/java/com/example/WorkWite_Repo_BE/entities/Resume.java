@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class Resume {
 
     @ManyToOne
     @JoinColumn(name = "candidate_id", nullable = false)
+    @JsonIgnore
     private Candidate candidate;
 
     @Column(name = "full_name")
@@ -36,6 +38,9 @@ public class Resume {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
+    @Column(name = "lob_title")
+    private String jobTitle;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -51,4 +56,6 @@ public class Resume {
     @OneToMany(mappedBy = "resume")
     private List<Experience> experiences;
 
+    @OneToMany(mappedBy = "resume")
+    private List<Application> applications;
 }

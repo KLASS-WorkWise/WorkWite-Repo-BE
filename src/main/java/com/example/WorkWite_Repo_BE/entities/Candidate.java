@@ -14,25 +14,21 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "candidates")
-public class Candidate extends User{
+public class Candidate{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    private String avatar;
-
-   @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
     private List<SavedJob> savedJobs;
 
-   @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
     private List<Application> applications;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
     private List<Resume> resumes;
-
 }

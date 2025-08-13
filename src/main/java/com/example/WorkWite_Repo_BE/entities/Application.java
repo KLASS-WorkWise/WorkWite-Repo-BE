@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,5 +36,10 @@ public class Application {
 
     @Column(name = "applied_at")
     private LocalDateTime appliedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "resume_id")
+    @JsonIgnore
+    private Resume resume;
 
 }

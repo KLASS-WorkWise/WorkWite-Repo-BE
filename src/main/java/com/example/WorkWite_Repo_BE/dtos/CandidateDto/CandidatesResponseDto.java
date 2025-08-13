@@ -14,28 +14,16 @@ import java.util.List;
 @Data
 public class CandidatesResponseDto {
     private Long id;
-
-    // feil của user
-    private String username;
-    private String email;
-    // candidate
-    private String phoneNumber;
-    private String name;
-    private String avatar;
+    private User user;
     private List<SaveJobResponseDto> savedJobs;
     private List<ResumeResponseDto> resumes;
     //còn aplly chua update đc
 
-    public CandidatesResponseDto(Long id, String username,String email,
-                                 String phoneNumber,String name, String avatar,List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
+    public CandidatesResponseDto(Long id, User user, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
         this.id = id;
-        this.username = username;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.name = name;
-        this.avatar = avatar;
+        this.user = user;
         this.savedJobs = savedJobs;
         this.resumes = resumes;
     }
 
-   }
+}

@@ -3,20 +3,20 @@ package com.example.WorkWite_Repo_BE.controlers;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CandidatesResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
-import com.example.WorkWite_Repo_BE.services.CandidatesServices_v1;
+import com.example.WorkWite_Repo_BE.services.CandidatesServices;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/candidates")
 
 public class CandidateController {
-    private final CandidatesServices_v1 candidatesServices;
+    private final CandidatesServices candidatesServices;
 
-    public CandidateController(CandidatesServices_v1 candidatesServices) {
+    public CandidateController(CandidatesServices candidatesServices) {
         this.candidatesServices = candidatesServices;
     }
 
-    @GetMapping()
+    @GetMapping("")
     public PaginatedCandidateResponseDto getAllCandidates(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
@@ -33,10 +33,5 @@ public class CandidateController {
         return this.candidatesServices.updateCandidateById(id, updateRequest);
     }
 
-    @GetMapping("/{id}")
-    public CandidatesResponseDto  getCandidateById(
-            @PathVariable("id") Long id
-    ){
-        return this.candidatesServices.getCandidateById(id);
-    }
 }
+

@@ -22,6 +22,7 @@ public class UserService {
     private final JwtService jwtService;
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
+    private final CandidatesServices candidatesServices;
 
 
     private UserResponseDto convertUserDto(User user) {
@@ -106,6 +107,7 @@ public class UserService {
         });
         user.setRoles(List.of(userRole));
         userJpaRepository.save(user);
+        candidatesServices.createCandidateForUser(user);
 
 
     }
