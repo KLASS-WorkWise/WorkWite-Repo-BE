@@ -1,12 +1,5 @@
 # 1. Auth
 
-| Method | Endpoint              | Name     | Status    | Body mẫu |
-| ------ | --------------------- | -------- | --------- | -------- |
-| POST   | `/api/auth/login`     | Login    | ✅ Done   | `{ "username": "hoangle191205@gmail.com", "password": "123456789" }` |
-| POST   | `/api/auth/register`  | Register | ✅ Done   | `{ "username": "abc", "password": "123", "repassword": "123", "email": "abc@gmail.com", "fullName": "Nguyen Van A" }` |
-
-# 2. User
-
 | Method | Endpoint             | Name           | Status    | Body mẫu |
 | ------ | -------------------- | -------------- | --------- | -------- |
 | GET    | `/api/users`         | Get all users  | ✅ Done   |          |
@@ -40,4 +33,5 @@
 | PATCH  | `/api/companies/{employerId}/update-company-info`                                      | Cập nhật thông tin công ty                      | ✅ Done   | `{ "companyName": "......", ... }` |
 | DELETE | `/api/company/{id}`                                              | Xóa thông tin công ty                           | ✅ Done   |          |
 | GET    | `/api/company/search?name={name}&page={page}&size={size}`        | Tìm kiếm công ty theo tên (phân trang)          | ✅ Done   |          |
+
 
