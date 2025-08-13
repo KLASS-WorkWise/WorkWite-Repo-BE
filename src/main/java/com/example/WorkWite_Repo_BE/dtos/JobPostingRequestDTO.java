@@ -36,6 +36,17 @@ public class JobPostingRequestDTO {
 
     private java.time.LocalDateTime createdAt;
 
+    // Add deadline field for test compatibility
+    private java.time.LocalDate deadline;
+
+    public void setDeadline(java.time.LocalDate deadline) {
+        this.deadline = deadline;
+    }
+
+    public java.time.LocalDate getDeadline() {
+        return this.deadline;
+    }
+
     private java.time.LocalDateTime endAt;
 
     private String status;

@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,5 +19,6 @@ public class Role {
     private String description;
 
     @ManyToMany(mappedBy = "roles")
+    @JsonIgnore
     private List<User> users;
 }

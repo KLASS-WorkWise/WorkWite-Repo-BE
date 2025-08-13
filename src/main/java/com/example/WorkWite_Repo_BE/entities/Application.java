@@ -1,8 +1,7 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import com.example.WorkWite_Repo_BE.entities.Candidates;
-import com.example.WorkWite_Repo_BE.entities.JobPosting;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +27,7 @@ public class Application {
 
     @ManyToOne
     @JoinColumn(name = "candidate_id")
-    private Candidates candidate;
+    private Candidate candidate;
 
     @Column(name = "cover_letter")
     private String coverLetter;
@@ -37,5 +36,10 @@ public class Application {
 
     @Column(name = "applied_at")
     private LocalDateTime appliedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "resume_id")
+    @JsonIgnore
+    private Resume resume;
 
 }

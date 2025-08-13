@@ -1,11 +1,9 @@
 
+
 package com.example.WorkWite_Repo_BE.services;
 
-import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.LoginResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto;
+
+import com.example.WorkWite_Repo_BE.dtos.UserDto.*;
 import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.exceptions.HttpException;
@@ -14,7 +12,6 @@ import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import com.example.WorkWite_Repo_BE.dtos.UserDto.RegisterResponseDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,9 +19,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class UserService {
+
     private final JwtService jwtService;
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
+    private final CandidatesServices candidatesServices;
+
 
     // Chuẩn hóa hàm convertToDto cho User entity
     private UserResponseDto convertToDto(User user) {
@@ -45,6 +45,13 @@ public class UserService {
         return users.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    // Lấy user theo id, trả về DTO
+    public UserResponseDto getUserById(Long id) {
+        User user = userJpaRepository.findById(id)
+                .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+        return convertToDto(user);
     }
 
     public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
@@ -123,6 +130,7 @@ public class UserService {
         user.setRoles(List.of(userRole));
 
         userJpaRepository.save(user);
+        candidatesServices.createCandidateForUser(user);
 
         return new RegisterResponseDto(
                 user.getId(),
