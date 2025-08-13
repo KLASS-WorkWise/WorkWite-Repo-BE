@@ -20,6 +20,8 @@ public class User {
     private String username;
     private String password;
     private String email;
+    private String fullName; // Thêm trường fullName
+    private String status; // Thêm trường status
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

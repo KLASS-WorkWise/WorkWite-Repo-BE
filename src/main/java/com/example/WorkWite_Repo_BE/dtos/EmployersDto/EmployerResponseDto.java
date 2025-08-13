@@ -1,5 +1,7 @@
 package com.example.WorkWite_Repo_BE.dtos.EmployersDto;
 
+import com.example.WorkWite_Repo_BE.entities.CompanyInformation;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,39 +9,22 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-
+@AllArgsConstructor
 public class EmployerResponseDto {
-    private String userId; // Thêm trường userId
-    private String companyName;
-    private String website;
-    private String logo_url;
-    private String address;
+    private Long id;
+
+    // Thông tin user
+    private String username;
     private String email;
-    private String industry;
-    private String culture;
-    private String benefits;
-    private String media_url;
+    private String fullName;
+    private String status;
 
-    public EmployerResponseDto(String userId, String companyName, String website, String logo_url, String address,
-            String email,
-            String industry, String culture, String benefits, String media_url) {
-        this.userId = userId;
-        this.companyName = companyName;
-        this.website = website;
-        this.logo_url = logo_url;
-        this.address = address;
-        this.email = email;
-        this.industry = industry;
-        this.culture = culture;
-        this.benefits = benefits;
-        this.media_url = media_url;
-    }
+    // Thông tin employers
+    private String phoneNumber;
+    private String avatar;
 
-    public String getUserId() {
-        return userId;
-    }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+
+
 }
+
