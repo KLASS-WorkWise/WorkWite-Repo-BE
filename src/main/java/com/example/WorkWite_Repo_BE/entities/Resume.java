@@ -59,4 +59,7 @@ public class Resume {
 
     @OneToMany(mappedBy = "resume")
     private List<Application> applications;
+
+    @OneToMany(mappedBy = "resume")
+    private List<Skill> skill;
 }

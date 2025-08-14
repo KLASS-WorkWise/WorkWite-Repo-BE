@@ -5,12 +5,7 @@ import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.UpdataResumeRequestDto;
 import com.example.WorkWite_Repo_BE.entities.Resume;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
-import com.example.WorkWite_Repo_BE.repositories.ResumeJpaRepository;
-import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
-import com.example.WorkWite_Repo_BE.repositories.EducationJpaRepository;
-import com.example.WorkWite_Repo_BE.repositories.AwardJpaRepository;
-import com.example.WorkWite_Repo_BE.repositories.ActivityJpaRepository;
-import com.example.WorkWite_Repo_BE.repositories.ExperienceJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +26,11 @@ public class ResumeService {
     private final AwardJpaRepository awardJpaRepository;
     private final ActivityJpaRepository activityJpaRepository;
     private final ExperienceJpaRepository experienceJpaRepository;
+    private final SkillService skillService;
+    private final SkillJpaRepository skillJpaRepository;
 
 
-    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository) {
+    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository, SkillService skillService, SkillJpaRepository skillJpaRepository) {
         this.resumeRepository = resumeRepository;
         this.candidateJpaRepository = candidateJpaRepository;
         this.educationService = educationService;
@@ -44,6 +41,8 @@ public class ResumeService {
         this.awardJpaRepository = awardJpaRepository;
         this.activityJpaRepository = activityJpaRepository;
         this.experienceJpaRepository = experienceJpaRepository;
+        this.skillService = skillService;
+        this.skillJpaRepository = skillJpaRepository;
     }
 
     private ResumeResponseDto convertToDto(Resume resume) {
@@ -67,14 +66,15 @@ public class ResumeService {
                 resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                 resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
                 resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
+                resume.getSkill() == null ? java.util.Collections.emptyList() : resume.getSkill(),
                 resume.getSummary()
         );
     }
 
     // Tạo mới Resume , activity, award, education,exp
-    public ResumeResponseDto creatResume(CreatResumeRequestDto creatResumeRequestDto) {
+    public ResumeResponseDto creatResume(Long candidateId, CreatResumeRequestDto creatResumeRequestDto) {
         Resume resume1 = new Resume();
-        Candidate candidate = candidateJpaRepository.findById(creatResumeRequestDto.getCandidateId()).orElse(null);
+        Candidate candidate = candidateJpaRepository.findById(candidateId).orElse(null);
         resume1.setCandidate(candidate);
         resume1.setFullName(creatResumeRequestDto.getFullName());
         resume1.setEmail(creatResumeRequestDto.getEmail());
@@ -105,6 +105,11 @@ public class ResumeService {
                 experienceService.createExperience(experience, resume1.getId());
             });
         }
+        if (creatResumeRequestDto.getSkills() != null) {
+            creatResumeRequestDto.getSkills().forEach(skill -> {
+                skillService.createSkill(skill, resume1.getId());
+            });
+        }
 
         Resume resumeWithChildren = resumeRepository.findById(resume1.getId()).orElse(null);
         // Truy vấn từng list liên quan
@@ -112,11 +117,13 @@ public class ResumeService {
         List awards = awardJpaRepository.findByResumeId(resume1.getId());
         List activities = activityJpaRepository.findByResumeId(resume1.getId());
         List experiences = experienceJpaRepository.findByResumeId(resume1.getId());
+        List skills = skillJpaRepository.findByResumeId(resume1.getId());
         // Gán vào resumeWithChildren
         resumeWithChildren.setEducations(educations);
         resumeWithChildren.setAwards(awards);
         resumeWithChildren.setActivities(activities);
         resumeWithChildren.setExperiences(experiences);
+        resumeWithChildren.setSkill(skills);
         return convertToDto(resumeWithChildren);
     }
 
@@ -155,10 +162,13 @@ public class ResumeService {
             List awards = awardJpaRepository.findByResumeId(resume.getId());
             List activities = activityJpaRepository.findByResumeId(resume.getId());
             List experiences = experienceJpaRepository.findByResumeId(resume.getId());
+            List skills = skillJpaRepository.findByResumeId(resume.getId());
+
             resume.setEducations(educations);
             resume.setAwards(awards);
             resume.setActivities(activities);
             resume.setExperiences(experiences);
+            resume.setSkill(skills);
         }
         return convertToDto(resume);
     }

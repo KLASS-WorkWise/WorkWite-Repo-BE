@@ -22,9 +22,9 @@ public class ResumeController {
         this.resumeService = resumeService;
     }
 
-    @PostMapping
-    public ResponseEntity<ResumeResponseDto> createResume(@RequestBody CreatResumeRequestDto requestDto) {
-        ResumeResponseDto created = resumeService.creatResume(requestDto);
+    @PostMapping("/candidate/{candidateId}")
+    public ResponseEntity<ResumeResponseDto> createResume(@PathVariable Long candidateId, @RequestBody CreatResumeRequestDto requestDto) {
+        ResumeResponseDto created = resumeService.creatResume(candidateId, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
