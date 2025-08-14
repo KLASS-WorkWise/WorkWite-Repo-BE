@@ -27,6 +27,7 @@ public class JobPostingController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYER')")
     public ResponseEntity<JobPostingResponseDTO> getJobPosting(@PathVariable Long id) {
         JobPostingResponseDTO responseDTO = jobPostingService.getJobPosting(id);
         return ResponseEntity.ok(responseDTO);

@@ -55,4 +55,4 @@ public class JobPosting {
 
     @Column(name = "status")
     private String status;
-}
+} 

@@ -25,4 +25,4 @@ public interface JobPostingService {
         Integer page,
         Integer size
     );
-}
+} 

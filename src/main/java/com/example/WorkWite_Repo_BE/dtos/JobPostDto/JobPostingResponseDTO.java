@@ -21,4 +21,4 @@ public class JobPostingResponseDTO {
     private LocalDateTime endAt;
     private String status;
     private LocalDateTime createdAt;
-}
+} 

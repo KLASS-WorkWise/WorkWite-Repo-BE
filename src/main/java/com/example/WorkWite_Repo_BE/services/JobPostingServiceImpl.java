@@ -209,4 +209,4 @@ public class JobPostingServiceImpl implements JobPostingService {
         paginatedDTO.setTotalPages(jobPostingsPage.getTotalPages());
         return paginatedDTO;
     }
-}
+} 

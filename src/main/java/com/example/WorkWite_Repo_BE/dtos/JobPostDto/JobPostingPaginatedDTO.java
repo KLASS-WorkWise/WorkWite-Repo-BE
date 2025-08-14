@@ -10,4 +10,4 @@ public class JobPostingPaginatedDTO {
     private int size;
     private long totalElements;
     private int totalPages;
-}
+} 

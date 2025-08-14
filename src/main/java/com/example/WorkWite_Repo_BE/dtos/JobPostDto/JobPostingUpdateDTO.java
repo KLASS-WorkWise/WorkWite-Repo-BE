@@ -33,4 +33,4 @@ public class JobPostingUpdateDTO {
     private java.time.LocalDateTime endAt;
 
     private String status;
-}
+} 

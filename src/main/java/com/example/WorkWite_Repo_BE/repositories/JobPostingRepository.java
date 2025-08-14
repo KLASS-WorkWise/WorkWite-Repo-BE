@@ -20,4 +20,4 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 	Page<JobPosting> findByMinExperienceGreaterThanEqual(Integer minExperience, Pageable pageable);
 
 	// Có thể bổ sung thêm các phương thức filter khác nếu cần
-}
+} 
