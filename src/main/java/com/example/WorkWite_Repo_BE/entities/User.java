@@ -10,8 +10,6 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "Users")
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "user_type")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

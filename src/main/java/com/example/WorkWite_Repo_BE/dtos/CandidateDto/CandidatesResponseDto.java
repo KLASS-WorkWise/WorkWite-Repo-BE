@@ -15,15 +15,20 @@ import java.util.List;
 public class CandidatesResponseDto {
     private Long id;
     private User user;
+    private String phoneNumber;
+    private String avatar;
     private List<SaveJobResponseDto> savedJobs;
     private List<ResumeResponseDto> resumes;
-    //còn aplly chua update đc
 
-    public CandidatesResponseDto(Long id, User user, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
+
+    public CandidatesResponseDto(Long id, User user,String phoneNumber,String avatar, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
         this.id = id;
         this.user = user;
+        this.phoneNumber = phoneNumber;
+        this.avatar = avatar;
         this.savedJobs = savedJobs;
         this.resumes = resumes;
+
     }
 
 }

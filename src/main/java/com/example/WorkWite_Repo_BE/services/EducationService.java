@@ -9,6 +9,7 @@ import com.example.WorkWite_Repo_BE.repositories.ResumeJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 
 @Service
@@ -48,6 +49,26 @@ public class EducationService {
         Education educationNew = educationJpaRepository.save(education1);
 
         return convertToDto(educationNew);
+    }
+
+    // Lấy tất cả education theo resumeId
+    public List<EducationResponseDto> getAllEducationsByResumeId(Long resumeId) {
+        List<Education> educations = educationJpaRepository.findByResumeId(resumeId);
+        return educations.stream().map(this::convertToDto).toList();
+    }
+
+    // Lấy education theo id
+    public EducationResponseDto getEducationById(Long id) {
+        Education education = educationJpaRepository.findById(Math.toIntExact(id)).orElse(null);
+        if (education == null) return null;
+        return convertToDto(education);
+    }
+
+    // Xóa education theo id
+    public boolean deleteEducation(Long id) {
+        if (!educationJpaRepository.existsById(Math.toIntExact(id))) return false;
+        educationJpaRepository.deleteById(Math.toIntExact(id));
+        return true;
     }
 
 }
