@@ -57,10 +57,12 @@ public class CandidatesServices {
                             resume.getSummary());
                 })
                 .collect(Collectors.toList());
-
+        // con code cua aplication
         return new CandidatesResponseDto(
                 candidate.getId(),
                 candidate.getUser(),
+                candidate.getPhoneNumber(),
+                candidate.getAvatar(),
                 savedJobs,
                 resumes);
     }
@@ -78,19 +80,23 @@ public class CandidatesServices {
         candidateJpaRepository.save(candidate);
     }
 
-    // lay tat ca candidates
+    // Lấy tất cả candidate có role Users
     public List<CandidatesResponseDto> getAllCandidates() {
-        List<Candidate> candidates = this.candidateJpaRepository.findAll();
+        List<Candidate> candidates = this.candidateJpaRepository.findAllCandidatesWithUserRole();
         return candidates.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-    // lay candidate theo id
-     public CandidatesResponseDto getCandidateById(Long id) {
-        Candidate candidate = this.candidateJpaRepository.findById(id).orElse(null);
-        return convertToDto(candidate);
-     }
 
+    // Lấy candidate theo id, chỉ trả về nếu có role Users
+    public CandidatesResponseDto getCandidateById(Long id) {
+        Candidate candidate = this.candidateJpaRepository.findById(id).orElse(null);
+        if (candidate == null) return null;
+        boolean isUserRole = candidate.getUser().getRoles().stream()
+                .anyMatch(role -> "Users".equals(role.getName()));
+        if (!isUserRole) return null;
+        return convertToDto(candidate);
+    }
 
     //cap nhat candidate
     public CandidatesResponseDto updateCandidateById(Long id, UpdateCandidateRequestDto updateCandidateRequest) {
@@ -98,23 +104,22 @@ public class CandidatesServices {
         if(candidate != null) {
             candidate.getUser().setEmail(updateCandidateRequest.getEmail());
             candidate.getUser().setFullName(updateCandidateRequest.getFullName());
+            candidate.setPhoneNumber(updateCandidateRequest.getPhoneNumber());
+            candidate.setAvatar(updateCandidateRequest.getAvatar());
             Candidate updatedCandidate = this.candidateJpaRepository.save(candidate);
             return convertToDto(updatedCandidate);
         }
         return null;
     }
 
-    // phan trang
-    // Phân trang candidate
+    // Phân trang candidate có role Users
     public PaginatedCandidateResponseDto getCandidatesPaginated(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Candidate> candidatePage = this.candidateJpaRepository.findAll(pageable);
-
+        Page<Candidate> candidatePage = this.candidateJpaRepository.findAllCandidatesWithUserRole(pageable);
         List<CandidatesResponseDto> dtos = candidatePage.getContent()
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-
         return PaginatedCandidateResponseDto.builder()
                 .data(dtos)
                 .pageNumber(candidatePage.getNumber())
