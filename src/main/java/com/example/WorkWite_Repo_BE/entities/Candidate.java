@@ -34,4 +34,5 @@ public class Candidate{
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
     private List<Resume> resumes;
+
 }

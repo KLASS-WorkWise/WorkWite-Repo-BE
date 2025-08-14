@@ -5,8 +5,10 @@ import com.example.WorkWite_Repo_BE.dtos.UserDto.*;
 import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.exceptions.HttpException;
+import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.RoleJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class UserService {
     private final JwtService jwtService;
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
+    private final CandidateJpaRepository candidateJpaRepository;
     private final CandidatesServices candidatesServices;
 
     // Chuẩn hóa hàm convertToDto cho User entity
@@ -86,11 +89,15 @@ public class UserService {
         userJpaRepository.save(user);
         return convertToDto(user);
     }
-
+    @Transactional
     public void deleteUser(Long id) {
         if (!userJpaRepository.existsById(id)) {
             throw new HttpException("User not found", HttpStatus.NOT_FOUND);
         }
+
+        // Xoá tất cả các liên kết với Candidate
+        candidateJpaRepository.deleteById(id);
+        // Xoá user
         userJpaRepository.deleteById(id);
     }
 

@@ -50,11 +50,13 @@ public class CandidatesServices {
                             resume.getPhone(),
                             createdAtStr,
                             resume.getJobTitle(),
-                            resume.getActivities(),
-                            resume.getEducations(),
-                            resume.getAwards(),
-                            resume.getApplications(),
-                            resume.getSummary());
+                            resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
+                            resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
+                            resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
+                            resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
+                            resume.getSkill() == null ? java.util.Collections.emptyList() : resume.getSkill(),
+                            resume.getSummary()
+                    );
                 })
                 .collect(Collectors.toList());
         // con code cua aplication

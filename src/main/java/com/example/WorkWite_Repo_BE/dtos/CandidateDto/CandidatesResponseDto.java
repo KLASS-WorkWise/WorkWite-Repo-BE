@@ -19,7 +19,7 @@ public class CandidatesResponseDto {
     private String avatar;
     private List<SaveJobResponseDto> savedJobs;
     private List<ResumeResponseDto> resumes;
-    //còn aplly chua update đc
+
 
     public CandidatesResponseDto(Long id, User user,String phoneNumber,String avatar, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
         this.id = id;
@@ -28,6 +28,7 @@ public class CandidatesResponseDto {
         this.avatar = avatar;
         this.savedJobs = savedJobs;
         this.resumes = resumes;
+
     }
 
 }
