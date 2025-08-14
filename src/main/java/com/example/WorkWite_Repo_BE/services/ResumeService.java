@@ -11,6 +11,7 @@ import com.example.WorkWite_Repo_BE.repositories.EducationJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.AwardJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.ActivityJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.ExperienceJpaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -130,6 +131,9 @@ public class ResumeService {
     // Lấy Resume theo ID
     public ResumeResponseDto getResumeById(Long id) {
         Resume resume = resumeRepository.findById(id).orElse(null);
+        if (resume == null) {
+            return null;
+        }
         return convertToDto(resume);
     }
 
@@ -144,17 +148,30 @@ public class ResumeService {
             resume.setProfilePicture(resumeUpdateDto.getProfilePicture());
             resume.setSummary(resumeUpdateDto.getSummary());
             resume.setJobTitle(resumeUpdateDto.getJobTitle());
-
-            // Cập nhật các liên kết với Education, Award, Activity
-            // (Giả sử các ID liên kết này được truyền từ DTO)
-
-
             resumeRepository.save(resume);
+
+            // Truy vấn lại các list liên quan sau khi cập nhật
+            List educations = educationJpaRepository.findByResumeId(resume.getId());
+            List awards = awardJpaRepository.findByResumeId(resume.getId());
+            List activities = activityJpaRepository.findByResumeId(resume.getId());
+            List experiences = experienceJpaRepository.findByResumeId(resume.getId());
+            resume.setEducations(educations);
+            resume.setAwards(awards);
+            resume.setActivities(activities);
+            resume.setExperiences(experiences);
         }
         return convertToDto(resume);
     }
 
+    @Transactional
     public void deleteResumeById(Long id) {
+        //fix lỗi xóa k đc resume
+        // phải xóa các bản ghi con trước khi xóa resume
+        // Xóa các bản ghi con trước khi xóa resume
+        awardJpaRepository.deleteByResumeId(id);
+        educationJpaRepository.deleteByResumeId(id);
+        activityJpaRepository.deleteByResumeId(id);
+        experienceJpaRepository.deleteByResumeId(id);
         resumeRepository.deleteById(id);
     }
 }
