@@ -67,7 +67,7 @@ public class UserService {
                 .build();
     }
 
-    // Lấy user theo id, trả về DTO
+    // Lấy user theo id, trả về DTOre
     public UserResponseDto getUserById(Long id) {
         User user = userJpaRepository.findById(id)
                 .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
@@ -95,20 +95,16 @@ public class UserService {
     }
 
     public LoginResponseDto login(LoginRequestDto request) throws Exception {
-        // Find the user by email (username)
         User user = this.userJpaRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED));
 
-        // Verify password
         if (!request.getPassword().equals(user.getPassword())) {
             throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
         }
 
-        // Generate a new access token (with full data + roles)
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = "dummy_refresh_token"; // TODO: sinh refresh token thực tế nếu có
+        String accessToken = jwtService.generateAccessToken(user); // 1 hour
+        String refreshToken = jwtService.generateRefreshToken(user); // 7 days
 
-        // Map roles: chỉ lấy tên role
         List<String> roles = user.getRoles() != null ? user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList()) : null;
