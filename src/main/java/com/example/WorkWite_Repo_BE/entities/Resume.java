@@ -44,6 +44,7 @@ public class Resume {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    // update fetch , fetch = FetchType.EAGER
     @OneToMany(mappedBy = "resume")
     private List<Education> educations;
 

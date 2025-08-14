@@ -19,7 +19,10 @@ public class Candidate{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    private String phoneNumber;
+    private String avatar;
+
+    @OneToOne(optional = false,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "user_id")
     private User user;
 
