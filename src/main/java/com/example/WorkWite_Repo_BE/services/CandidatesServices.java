@@ -54,7 +54,7 @@ public class CandidatesServices {
                             resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                             resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
                             resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
-                            resume.getSkill() == null ? java.util.Collections.emptyList() : resume.getSkill(),
+                            resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
                             resume.getSummary()
                     );
                 })
