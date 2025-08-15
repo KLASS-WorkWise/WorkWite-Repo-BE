@@ -5,8 +5,8 @@ import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.UpdataResumeRequestDto;
 import com.example.WorkWite_Repo_BE.entities.Resume;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
-import com.example.WorkWite_Repo_BE.repositories.ResumeJpaRepository;
-import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.*;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,45 +22,31 @@ public class ResumeService {
     private final ExperienceService experienceService;
     private final ActivityService activityService;
     private final AwardService awardService;
+    private final EducationJpaRepository educationJpaRepository;
+    private final AwardJpaRepository awardJpaRepository;
+    private final ActivityJpaRepository activityJpaRepository;
+    private final ExperienceJpaRepository experienceJpaRepository;
 
 
-    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService) {
+
+    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository) {
         this.resumeRepository = resumeRepository;
         this.candidateJpaRepository = candidateJpaRepository;
         this.educationService = educationService;
         this.experienceService = experienceService;
         this.activityService = activityService;
         this.awardService = awardService;
-    }
+        this.educationJpaRepository = educationJpaRepository;
+        this.awardJpaRepository = awardJpaRepository;
+        this.activityJpaRepository = activityJpaRepository;
+        this.experienceJpaRepository = experienceJpaRepository;
 
-    private ResumeResponseDto convertToDto(Resume resume) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String createdAtStr = "";
-        if (resume.getCreatedAt() != null) {
-            createdAtStr = resume.getCreatedAt().format(formatter);
-        } else {
-            createdAtStr = null;
-        }
-        return new ResumeResponseDto(
-                resume.getId(),
-                resume.getProfilePicture(),
-                resume.getFullName(),
-                resume.getEmail(),
-                resume.getPhone(),
-                createdAtStr,
-                resume.getJobTitle(),
-                resume.getActivities(),
-                resume.getEducations(),
-                resume.getAwards(),
-                resume.getApplications(),
-                resume.getSummary()
-        );
     }
 
     // Tạo mới Resume , activity, award, education,exp
-    public ResumeResponseDto creatResume(CreatResumeRequestDto creatResumeRequestDto) {
+    public ResumeResponseDto creatResume(Long candidateId, CreatResumeRequestDto creatResumeRequestDto) {
         Resume resume1 = new Resume();
-        Candidate candidate = candidateJpaRepository.findById(creatResumeRequestDto.getCandidateId()).orElse(null);
+        Candidate candidate = candidateJpaRepository.findById(candidateId).orElse(null);
         resume1.setCandidate(candidate);
         resume1.setFullName(creatResumeRequestDto.getFullName());
         resume1.setEmail(creatResumeRequestDto.getEmail());
@@ -92,7 +78,25 @@ public class ResumeService {
             });
         }
 
+        // Xử lý skillsResumes (ElementCollection)
+        if (creatResumeRequestDto.getSkillsResumes() != null) {
+            resume1.setSkillsResumes(creatResumeRequestDto.getSkillsResumes());
+            resumeRepository.save(resume1);
+        }
+
         Resume resumeWithChildren = resumeRepository.findById(resume1.getId()).orElse(null);
+        // Truy vấn từng list liên quan
+        List educations = educationJpaRepository.findByResumeId(resume1.getId());
+        List awards = awardJpaRepository.findByResumeId(resume1.getId());
+        List activities = activityJpaRepository.findByResumeId(resume1.getId());
+        List experiences = experienceJpaRepository.findByResumeId(resume1.getId());
+        List<String> skillsResumes = resumeWithChildren.getSkillsResumes();
+        // Gán vào resumeWithChildren
+        resumeWithChildren.setEducations(educations);
+        resumeWithChildren.setAwards(awards);
+        resumeWithChildren.setActivities(activities);
+        resumeWithChildren.setExperiences(experiences);
+        resumeWithChildren.setSkillsResumes(skillsResumes);
         return convertToDto(resumeWithChildren);
     }
 
@@ -107,6 +111,9 @@ public class ResumeService {
     // Lấy Resume theo ID
     public ResumeResponseDto getResumeById(Long id) {
         Resume resume = resumeRepository.findById(id).orElse(null);
+        if (resume == null) {
+            return null;
+        }
         return convertToDto(resume);
     }
 
@@ -121,17 +128,112 @@ public class ResumeService {
             resume.setProfilePicture(resumeUpdateDto.getProfilePicture());
             resume.setSummary(resumeUpdateDto.getSummary());
             resume.setJobTitle(resumeUpdateDto.getJobTitle());
+            // Cập nhật skillsResumes nếu có truyền lên
+            if (resumeUpdateDto.getSkillsResumes() != null) {
+                resume.setSkillsResumes(resumeUpdateDto.getSkillsResumes());
+            }
+            // Cập nhật education nếu có truyền lên
+            if (resumeUpdateDto.getEducations() != null) {
+                // Xóa hết education cũ
+                educationJpaRepository.deleteByResumeId(resume.getId());
+                // Thêm mới lại danh sách education
+                resumeUpdateDto.getEducations().forEach(eduDto -> {
+                    com.example.WorkWite_Repo_BE.dtos.Education.CreatEducationRequestDto newEdu = new com.example.WorkWite_Repo_BE.dtos.Education.CreatEducationRequestDto();
+                    newEdu.setResumeId(resume.getId());
+                    newEdu.setSchoolName(eduDto.getSchoolName());
+                    newEdu.setDegree(eduDto.getDegree());
+                    newEdu.setMajor(eduDto.getMajor());
+                    newEdu.setStartYear(eduDto.getStartYear());
+                    newEdu.setEndYear(eduDto.getEndYear());
+                    educationService.createEducation(newEdu, resume.getId());
+                });
+            }
+            // Cập nhật activities nếu có truyền lên
+            if (resumeUpdateDto.getActivities() != null) {
+                activityJpaRepository.deleteByResumeId(resume.getId());
+                resumeUpdateDto.getActivities().forEach(actDto -> {
+                    com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto newAct = new com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto();
+                    newAct.setActivityName(actDto.getActivityName());
+                    newAct.setRole(actDto.getRole());
+                    newAct.setStartYear(actDto.getStartYear());
+                    newAct.setEndYear(actDto.getEndYear());
+                    activityService.createActivity(newAct, resume.getId());
+                });
+            }
+            // Cập nhật awards nếu có truyền lên
+            if (resumeUpdateDto.getAwards() != null) {
+                awardJpaRepository.deleteByResumeId(resume.getId());
+                resumeUpdateDto.getAwards().forEach(awardDto -> {
+                    com.example.WorkWite_Repo_BE.dtos.AwardDto.CreatAwardRequestDto newAward = new com.example.WorkWite_Repo_BE.dtos.AwardDto.CreatAwardRequestDto();
+                    newAward.setAwardName(awardDto.getAwardName());
+                    newAward.setAwardYear(awardDto.getAwardYear());
+                    awardService.createAward(newAward, resume.getId());
+                });
+            }
 
-            // Cập nhật các liên kết với Education, Award, Activity
-            // (Giả sử các ID liên kết này được truyền từ DTO)
-
+            // Cập nhật experiences nếu có truyền lên
+            if (resumeUpdateDto.getExperiences() != null) {
+                experienceJpaRepository.deleteByResumeId(resume.getId());
+                resumeUpdateDto.getExperiences().forEach(expDto -> {
+                    com.example.WorkWite_Repo_BE.dtos.ExperienceDto.CreatExperienceRequestDto newExp = new com.example.WorkWite_Repo_BE.dtos.ExperienceDto.CreatExperienceRequestDto();
+                    newExp.setCompanyName(expDto.getCompanyName());
+                    newExp.setPosition(expDto.getPosition());
+                    newExp.setStartYear(expDto.getStartYear());
+                    newExp.setEndYear(expDto.getEndYear());
+                    newExp.setDescription(expDto.getDescription());
+                    experienceService.createExperience(newExp, resume.getId());
+                });
+            }
 
             resumeRepository.save(resume);
+            // Truy vấn lại các list liên quan sau khi cập nhật
+            List educations = educationJpaRepository.findByResumeId(resume.getId());
+            List awards = awardJpaRepository.findByResumeId(resume.getId());
+            List activities = activityJpaRepository.findByResumeId(resume.getId());
+            List experiences = experienceJpaRepository.findByResumeId(resume.getId());
+            resume.setEducations(educations);
+            resume.setAwards(awards);
+            resume.setActivities(activities);
+            resume.setExperiences(experiences);
         }
         return convertToDto(resume);
     }
 
+    @Transactional
     public void deleteResumeById(Long id) {
+        //fix lỗi xóa k đc resume
+        // phải xóa các bản ghi con trước khi xóa resume
+        // Xóa các bản ghi con trước khi xóa resume
+        awardJpaRepository.deleteByResumeId(id);
+        educationJpaRepository.deleteByResumeId(id);
+        activityJpaRepository.deleteByResumeId(id);
+        experienceJpaRepository.deleteByResumeId(id);
         resumeRepository.deleteById(id);
+    }
+
+    private ResumeResponseDto convertToDto(Resume resume) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String createdAtStr = "";
+        if (resume.getCreatedAt() != null) {
+            createdAtStr = resume.getCreatedAt().format(formatter);
+        } else {
+            createdAtStr = null;
+        }
+        // Fix: tra ve list rỗng nếu không có dữ liệu
+        return new ResumeResponseDto(
+                resume.getId(),
+                resume.getProfilePicture(),
+                resume.getFullName(),
+                resume.getEmail(),
+                resume.getPhone(),
+                createdAtStr,
+                resume.getJobTitle(),
+                resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
+                resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
+                resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
+                resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
+                resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
+                resume.getSummary()
+        );
     }
 }

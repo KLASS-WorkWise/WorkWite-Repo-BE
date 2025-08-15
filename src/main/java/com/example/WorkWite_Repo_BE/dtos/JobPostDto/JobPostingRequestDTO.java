@@ -1,9 +1,10 @@
-package com.example.WorkWite_Repo_BE.dtos;
+package com.example.WorkWite_Repo_BE.dtos.JobPostDto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class JobPostingRequestDTO {
@@ -28,7 +29,7 @@ public class JobPostingRequestDTO {
     @Size(max = 100, message = "Category must not exceed 100 characters")
     private String category;
 
-    private String requiredSkills;
+    private List<String> requiredSkills;
 
     private Integer minExperience;
 
@@ -39,4 +40,4 @@ public class JobPostingRequestDTO {
     private java.time.LocalDateTime endAt;
 
     private String status;
-}
+} 

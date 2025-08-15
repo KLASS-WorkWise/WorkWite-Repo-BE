@@ -16,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreatResumeRequestDto {
-    private Long candidateId; // ID của Candidate
     private String fullName;
     private String email;
     private String phone;
@@ -28,4 +27,5 @@ public class CreatResumeRequestDto {
     private List<CreatAwardRequestDto> awards; // Dữ liệu tạo mới Award
     private List<CreatAvtivityRequestDto> activities;
     private List<CreatExperienceRequestDto> experiences;
+    private List<String> skillsResumes; // Danh sách kỹ năng
 }

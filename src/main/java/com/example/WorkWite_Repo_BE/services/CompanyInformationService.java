@@ -27,6 +27,7 @@ public class CompanyInformationService {
         this.companyInformationJpaRepository = companyInformationJpaRepository;
         this.employersRepository = employersRepository;
     }
+
     private CompanyInformationReponseDto convertToDto(CompanyInformation companyInformationReponseDto) {
         return new CompanyInformationReponseDto(
                 companyInformationReponseDto.getId(),
@@ -104,9 +105,11 @@ public class CompanyInformationService {
         // Trả về DTO
         return convertToDto(companyInfo);
     }
+
     public void deleteCompany(Long id) {
         this.companyInformationJpaRepository.deleteById(id);
     }
+
     public CompanyInformationReponseDto getCompanyInformation(Long id) {
 
         CompanyInformation companyInformation = this.companyInformationJpaRepository.findById(id).orElse(null);

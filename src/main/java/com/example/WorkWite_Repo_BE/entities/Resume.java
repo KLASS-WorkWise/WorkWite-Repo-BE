@@ -44,6 +44,7 @@ public class Resume {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    // update fetch , fetch = FetchType.EAGER
     @OneToMany(mappedBy = "resume")
     private List<Education> educations;
 
@@ -58,4 +59,11 @@ public class Resume {
 
     @OneToMany(mappedBy = "resume")
     private List<Application> applications;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "resumes_skills",
+            joinColumns = @JoinColumn(name = "resumes_id")
+    )
+    private List<String> skillsResumes;
 }

@@ -60,7 +60,6 @@ public class RoleService {
         return dto;
     }
 
-
     private final RoleJpaRepository roleJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final EmployersJpaRepository employerRepository;
@@ -73,6 +72,7 @@ public class RoleService {
         roleJpaRepository.save(role);
         return convertToDto(role);
     }
+
     public void deleteRole(Long id) {
         if (!roleJpaRepository.existsById(id)) {
             throw new HttpException("Role not found", HttpStatus.NOT_FOUND);
