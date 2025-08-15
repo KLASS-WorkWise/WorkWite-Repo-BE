@@ -20,7 +20,7 @@ public class JobPostingController {
     private JobPostingService jobPostingService;
 
     @PostMapping
-    @PreAuthorize("hasRole('EMPLOYER')")
+//    @PreAuthorize("hasRole('EMPLOYER')")
     public ResponseEntity<JobPostingResponseDTO> createJobPosting(@Valid @RequestBody JobPostingRequestDTO requestDTO) {
         JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(requestDTO);
         return ResponseEntity.ok(responseDTO);
