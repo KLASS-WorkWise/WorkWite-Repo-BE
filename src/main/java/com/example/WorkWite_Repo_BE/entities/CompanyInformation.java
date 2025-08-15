@@ -25,6 +25,8 @@ public class CompanyInformation {
     private String bannerUrl;
     private String email;
     private String phone;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
     private LocalDateTime lastPosted;
     private String address;
