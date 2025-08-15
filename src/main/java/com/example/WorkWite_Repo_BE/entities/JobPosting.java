@@ -55,4 +55,7 @@ public class JobPosting {
 
     @Column(name = "status")
     private String status;
+    @OneToMany(mappedBy = "jobPosting", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Applicant> applicants;
+
 } 

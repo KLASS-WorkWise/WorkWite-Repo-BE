@@ -1,31 +1,29 @@
 package com.example.WorkWite_Repo_BE.dtos.applicant;
 
-import com.example.WorkWite_Repo_BE.entities.Candidate;
-import com.example.WorkWite_Repo_BE.entities.JobPosting;
-
-import jakarta.validation.constraints.NotNull;
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateApplicationRequestDto {
+@Builder
+public class ApplicantResponseDto {
+    private Long id;
+    private Long jobId;
+    private Long candidateId;
+    private Long resumesId;
 
-    @NotNull(message = "JobPosting is required")
-    private JobPosting jobPosting;
-
-    @NotNull(message = "Candidate is required")
-    private Candidate candidate;
-
-    @NotNull(message = "coverLetter is required")
+    private String resumeLink;
     private String coverLetter;
-    private String status;
     private LocalDateTime appliedAt;
+    private ApplicationStatus applicationStatus;
+    private List<String> missingSkills; // danh sách skill thiếu
+    private String experienceWarning; // cảnh báo kinh nghiệm nếu chưa đủ
 
 }

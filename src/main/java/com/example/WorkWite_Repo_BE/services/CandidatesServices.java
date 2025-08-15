@@ -53,7 +53,7 @@ public class CandidatesServices {
                             resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                             resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                             resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
-                            resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
+                            resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
                             resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
                             resume.getSummary()
                     );
@@ -75,7 +75,7 @@ public class CandidatesServices {
         Candidate candidate = new Candidate();
         candidate.setUser(user);  // Liên kết Candidate với User
         candidate.setResumes(new ArrayList<>());
-        candidate.setApplications(new ArrayList<>());
+        candidate.setApplicants(new ArrayList<>());
         candidate.setSavedJobs(new ArrayList<>());
 
         // Lưu Candidate vào cơ sở dữ liệu

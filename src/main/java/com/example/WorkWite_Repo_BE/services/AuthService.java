@@ -1,9 +1,10 @@
-package com.example.movie.services;
+package com.example.WorkWite_Repo_BE.services;
 
-import com.example.movie.entities.Candidate;
-import com.example.movie.entities.User;
-import com.example.movie.repositories.CandidateJpaRepository;
-import com.example.movie.repositories.UserJpaRepository;
+
+import com.example.WorkWite_Repo_BE.entities.Candidate;
+import com.example.WorkWite_Repo_BE.entities.User;
+import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;

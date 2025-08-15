@@ -1,4 +1,4 @@
-package com.example.movie.enums;
+package com.example.WorkWite_Repo_BE.enums;
 
 public enum ApplicationStatus {
     PENDING,       // Chờ duyệt

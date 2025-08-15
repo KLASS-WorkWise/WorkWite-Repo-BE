@@ -6,6 +6,9 @@ import com.example.WorkWite_Repo_BE.entities.JobPosting;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+
 @Repository
 public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 	Page<JobPosting> findByCategoryContainingAndLocationContainingAndSalaryRangeContainingAndJobTypeContainingAndRequiredDegreeContaining(
@@ -20,4 +23,5 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 	Page<JobPosting> findByMinExperienceGreaterThanEqual(Integer minExperience, Pageable pageable);
 
 	// Có thể bổ sung thêm các phương thức filter khác nếu cần
+	Optional<JobPosting> findById(Long id);
 } 
