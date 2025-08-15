@@ -32,7 +32,7 @@ public class Application {
     @Column(name = "cover_letter")
     private String coverLetter;
 
-    private String status;
+    private String status;  
 
     @Column(name = "applied_at")
     private LocalDateTime appliedAt;

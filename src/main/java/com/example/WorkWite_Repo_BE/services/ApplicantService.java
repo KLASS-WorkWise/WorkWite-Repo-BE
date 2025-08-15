@@ -1,10 +1,9 @@
 package com.example.WorkWite_Repo_BE.services;
 
-import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.AppResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.CreateApplicationRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.PaginatedAppResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.UpdateAppRequestDto;
-import com.example.WorkWite_Repo_BE.entities.Application;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
+import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.repositories.AppJpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +22,8 @@ public class AppService {
         this.appJpaRepository = appJpaRepository;
     }
 
-    private AppResponseDto convertToDto(Application app) {
-        return new AppResponseDto(
+    private ApplicantRequestDto convertToDto(Applicant app) {
+        return new ApplicantRequestDto(
                 app.getId(),
                 app.getJobPosting() != null
                         ? (app.getJobPosting().getId() != null ? app.getJobPosting().getId().intValue() : null)
@@ -35,8 +34,8 @@ public class AppService {
                 app.getAppliedAt());
     }
 
-    public List<AppResponseDto> getAllApps() {
-        List<Application> apps = this.appJpaRepository.findAll();
+    public List<ApplicantRequestDto> getAllApps() {
+        List<Applicant> apps = this.appJpaRepository.findAll();
         return apps.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -44,8 +43,8 @@ public class AppService {
 
     public PaginatedAppResponseDto getAllAppsByPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Application> appPage = this.appJpaRepository.findAll(pageable);
-        List<AppResponseDto> appDtos = appPage.getContent().stream()
+        Page<Applicant> appPage = this.appJpaRepository.findAll(pageable);
+        List<ApplicantRequestDto> appDtos = appPage.getContent().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
@@ -61,33 +60,33 @@ public class AppService {
 
     }
 
-    public AppResponseDto getAppById(Integer id) {
-        Application app = this.appJpaRepository.findById(id).orElseThrow();
+    public ApplicantRequestDto getAppById(Integer id) {
+        Applicant app = this.appJpaRepository.findById(id).orElseThrow();
         return convertToDto(app);
     }
 
-    public AppResponseDto createApplication(CreateApplicationRequestDto createApplicationRequestDto) {
+    public ApplicantRequestDto createApplication(ApplicantResponseDto createApplicationRequestDto) {
 
-        Application app = new Application();
+        Applicant app = new Applicant();
 
         app.setCandidate(createApplicationRequestDto.getCandidate());
         app.setCoverLetter(createApplicationRequestDto.getCoverLetter());
         app.setStatus(createApplicationRequestDto.getStatus());
         app.setAppliedAt(createApplicationRequestDto.getAppliedAt());
 
-        Application createApplication = this.appJpaRepository.save(app);
-        return convertToDto(createApplication);
+        Applicant createApplicant = this.appJpaRepository.save(app);
+        return convertToDto(createApplicant);
     }
 
-    public AppResponseDto updateApplication(Integer id, UpdateAppRequestDto application) {
-        Application existingApp = this.appJpaRepository.findById(id).orElseThrow();
+    public ApplicantRequestDto updateApplication(Integer id, UpdateAppRequestDto application) {
+        Applicant existingApp = this.appJpaRepository.findById(id).orElseThrow();
 
         existingApp.setCandidate(application.getCandidate());
         existingApp.setCoverLetter(application.getCoverLetter());
         existingApp.setStatus(application.getStatus());
         existingApp.setAppliedAt(application.getAppliedAt());
-        Application updateApplication = this.appJpaRepository.save(existingApp);
-        return convertToDto(updateApplication);
+        Applicant updateApplicant = this.appJpaRepository.save(existingApp);
+        return convertToDto(updateApplicant);
     }
 
     public void deleteApplication(Integer id) {

@@ -1,4 +1,4 @@
-package com.example.WorkWite_Repo_BE.dtos.ApplicationsDto;
+package com.example.WorkWite_Repo_BE.dtos.applicant;
 
 
 import lombok.Builder;

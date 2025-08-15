@@ -1,4 +1,4 @@
-package com.example.WorkWite_Repo_BE.dtos.ApplicationsDto;
+package com.example.WorkWite_Repo_BE.dtos.applicant;
 
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
