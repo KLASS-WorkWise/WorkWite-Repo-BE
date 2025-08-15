@@ -60,6 +60,10 @@ public class Resume {
     @OneToMany(mappedBy = "resume")
     private List<Application> applications;
 
-    @OneToMany(mappedBy = "resume")
-    private List<Skill> skill;
+    @ElementCollection
+    @CollectionTable(
+            name = "resumes_skills",
+            joinColumns = @JoinColumn(name = "resumes_id")
+    )
+    private List<String> skillsResumes;
 }
