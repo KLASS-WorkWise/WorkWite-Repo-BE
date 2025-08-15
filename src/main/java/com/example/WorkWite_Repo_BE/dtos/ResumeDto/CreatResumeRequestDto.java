@@ -4,7 +4,6 @@ import com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.AwardDto.CreatAwardRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.Education.CreatEducationRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.ExperienceDto.CreatExperienceRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.SkillDto.CreateSkillRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,5 +27,5 @@ public class CreatResumeRequestDto {
     private List<CreatAwardRequestDto> awards; // Dữ liệu tạo mới Award
     private List<CreatAvtivityRequestDto> activities;
     private List<CreatExperienceRequestDto> experiences;
-    private List<CreateSkillRequest> skills;
+    private List<String> skillsResumes; // Danh sách kỹ năng
 }

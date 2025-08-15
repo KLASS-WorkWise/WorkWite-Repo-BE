@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public interface AwardJpaRepository extends JpaRepository<Award, Long> {
     List<Award> findByResumeId(Long resumeId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM Award a WHERE a.resume.id = :resumeId")
     void deleteByResumeId(@Param("resumeId") Long resumeId);
 }

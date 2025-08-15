@@ -20,7 +20,7 @@ public class    ResumeResponseDto {
     private List<Award> awards;
     private List<Activity> activities;
     private List<Application> applications;
-    private List<Skill> skills;
+    private List<String> skillsResumes;
 
     // Constructor với tất cả các trường
 
@@ -28,7 +28,7 @@ public class    ResumeResponseDto {
     public ResumeResponseDto(Long id, String profilePicture, String fullName, String email, String phone,
                              String createdAt, String jobTitle, List<Activity> activities,
                              List<Education> educations, List<Award> awards, List<Application> applications,
-                             List<Skill> skills,String summary) {
+                             List<String> skillsResumes, String summary) {
         this.id = id;
         this.profilePicture = profilePicture;
         this.fullName = fullName;
@@ -40,7 +40,7 @@ public class    ResumeResponseDto {
         this.educations = educations;
         this.awards = awards;
         this.applications = applications;
-        this.skills = skills;
+        this.skillsResumes = skillsResumes;
         this.summary = summary;
     }
 }

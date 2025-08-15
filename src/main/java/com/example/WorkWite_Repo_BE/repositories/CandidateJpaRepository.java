@@ -11,6 +11,8 @@ import java.util.List;
 
 @Repository
 public interface CandidateJpaRepository extends JpaRepository<Candidate, Long> {
+    Candidate findByUserId(Long userId);
+
     @Query("SELECT c FROM Candidate c JOIN c.user u JOIN u.roles r WHERE r.name = 'Users'")
     List<Candidate> findAllCandidatesWithUserRole();
 

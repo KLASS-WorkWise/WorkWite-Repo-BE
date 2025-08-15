@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class CreatAwardRequestDto {
     private String awardName;
     private Integer awardYear;
