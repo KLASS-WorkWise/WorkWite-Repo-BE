@@ -20,14 +20,14 @@ public class JobPostingController {
     private JobPostingService jobPostingService;
 
     @PostMapping
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> createJobPosting(@Valid @RequestBody JobPostingRequestDTO requestDTO) {
         JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(requestDTO);
         return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> getJobPosting(@PathVariable Long id) {
         JobPostingResponseDTO responseDTO = jobPostingService.getJobPosting(id);
         return ResponseEntity.ok(responseDTO);
@@ -60,14 +60,14 @@ public class JobPostingController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> updateJobPosting(@PathVariable Long id, @Valid @RequestBody JobPostingUpdateDTO updateDTO) {
         JobPostingResponseDTO responseDTO = jobPostingService.updateJobPosting(id, updateDTO);
         return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<Void> deleteJobPosting(@PathVariable Long id) {
         jobPostingService.deleteJobPosting(id);
         return ResponseEntity.noContent().build();
