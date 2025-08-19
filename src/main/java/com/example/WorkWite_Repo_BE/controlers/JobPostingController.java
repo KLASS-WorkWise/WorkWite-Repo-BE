@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/job-postings")
@@ -18,6 +20,12 @@ public class JobPostingController {
 
     @Autowired
     private JobPostingService jobPostingService;
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
+    public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostings() {
+        List<JobPostingResponseDTO> jobs = jobPostingService.getAllJobPostings();
+        return ResponseEntity.ok(jobs);
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
