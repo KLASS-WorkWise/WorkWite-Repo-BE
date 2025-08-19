@@ -1,24 +1,38 @@
 
 package com.example.WorkWite_Repo_BE.controlers;
 
+import java.util.Map;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.example.WorkWite_Repo_BE.entities.User;
+import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
 // import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.exceptions.HttpException;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.io.IOException;
+
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController()
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserJpaRepository userJpaRepository;
 
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
@@ -97,4 +111,37 @@ public class UserController {
     // {
     // return this.userService.searchByEmailContainingIgnoreCase(email);
     // }
+
+    @PatchMapping("/update-profile")
+    public ResponseEntity<?> updateProfile(
+            @RequestParam("email") String email,
+            @RequestParam("fullname") String fullname,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            User user = userJpaRepository.findByEmail(email)
+                    .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+
+            user.setFullName(fullname);
+
+            // Nếu có file ảnh thì lưu file và cập nhật avatarUrl
+            if (file != null && !file.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                Path uploadPath = Paths.get("uploads");
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(file.getInputStream(), filePath);
+                String avatarUrl = "/uploads/" + fileName;
+                user.setAvatarUrl(avatarUrl);
+            }
+
+            userJpaRepository.save(user);
+
+            return ResponseEntity.ok(java.util.Map.of("message", "Profile updated successfully"));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "File upload failed: " + e.getMessage()));
+        }
+    }
 }

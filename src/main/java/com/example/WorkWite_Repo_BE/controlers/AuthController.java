@@ -36,9 +36,23 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponseDto> register(@RequestBody RegisterRequestDto request) {
-        RegisterResponseDto response = this.userService.register(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> register(@RequestBody RegisterRequestDto request) {
+        if (userJpaRepository.existsByEmail(request.getEmail())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Email đã tồn tại!"));
+        }
+
+//        lưu user vừa đăng kí
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername());
+        user.setFullName(request.getFullName());
+        user.setPassword(request.getPassword()); // Consider encoding the password!
+        // Set other fields as needed
+
+        userJpaRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Đăng ký thành công!"));
     }
 
     @PostMapping("/refresh")
@@ -103,7 +117,7 @@ public class AuthController {
         }
 
         // Đổi mật khẩu
-        user.setPassword(newPassword); // Nên mã hóa mật khẩu ở đây
+        user.setPassword(newPassword);
         user.setResetCode(null);
         user.setResetCodeExpiry(null);
         userJpaRepository.save(user);
