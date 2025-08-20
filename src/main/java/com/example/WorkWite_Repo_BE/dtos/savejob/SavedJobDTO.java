@@ -1,6 +1,9 @@
-package com.example.movie.dtos.savejob;
+package com.example.WorkWite_Repo_BE.dtos.savejob;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor

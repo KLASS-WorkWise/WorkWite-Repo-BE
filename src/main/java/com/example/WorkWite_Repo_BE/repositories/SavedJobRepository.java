@@ -1,6 +1,7 @@
-package com.example.movie.repositories;
+package com.example.WorkWite_Repo_BE.repositories;
 
-import com.example.movie.entities.SavedJob;
+
+import com.example.WorkWite_Repo_BE.entities.SavedJob;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

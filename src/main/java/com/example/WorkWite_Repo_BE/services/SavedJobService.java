@@ -1,12 +1,13 @@
-package com.example.movie.services;
+package com.example.WorkWite_Repo_BE.services;
 
-import com.example.movie.dtos.savejob.SavedJobDTO;
-import com.example.movie.entities.Candidate;
-import com.example.movie.entities.JobPosting;
-import com.example.movie.entities.SavedJob;
-import com.example.movie.repositories.CandidateJpaRepository;
-import com.example.movie.repositories.JobPostingRepository;
-import com.example.movie.repositories.SavedJobRepository;
+
+import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
+import com.example.WorkWite_Repo_BE.entities.Candidate;
+import com.example.WorkWite_Repo_BE.entities.JobPosting;
+import com.example.WorkWite_Repo_BE.entities.SavedJob;
+import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.JobPostingRepository;
+import com.example.WorkWite_Repo_BE.repositories.SavedJobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class SavedJobService {
                 .jobId(savedJob.getJobPosting().getId())
 //                .companyName(savedJob.getJobPosting().getCompany().getName())
                 // Nếu JobPosting có field title + location thì mở comment ra
-                .jobTitle(savedJob.getJobPosting().getJobTitle())
+                .jobTitle(savedJob.getJobPosting().getTitle())
                 //.location(savedJob.getJobPosting().getLocation())
                 .build();
     }

@@ -1,8 +1,8 @@
-package com.example.movie.controllers;
+package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.movie.dtos.savejob.SavedJobDTO;
-import com.example.movie.entities.SavedJob;
-import com.example.movie.services.SavedJobService;
+
+import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
+import com.example.WorkWite_Repo_BE.services.SavedJobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

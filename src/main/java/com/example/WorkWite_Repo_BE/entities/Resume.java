@@ -66,4 +66,6 @@ public class Resume {
             joinColumns = @JoinColumn(name = "resumes_id")
     )
     private List<String> skillsResumes;
+    @Column(name = "resume_link")
+    private String resumeLink;
 }

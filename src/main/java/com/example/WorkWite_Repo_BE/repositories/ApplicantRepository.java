@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
-    boolean existsByJobPosting_IdAndCandidate_Id(Long jobId, Long candidateId);
+    boolean existsByJobPostingIdAndCandidateId(Long jobPostingId, Long candidateId);
 
     Page<Applicant> findByCandidateId(Long candidateId , Pageable pageable);
 

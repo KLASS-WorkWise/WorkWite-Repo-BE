@@ -24,6 +24,6 @@ public class ApplicantResponseDto {
     private LocalDateTime appliedAt;
     private ApplicationStatus applicationStatus;
     private List<String> missingSkills; // danh sách skill thiếu
-    private String experienceWarning; // cảnh báo kinh nghiệm nếu chưa đủ
+    private String minExperience; // cảnh báo kinh nghiệm nếu chưa đủ
 
 }
