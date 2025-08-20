@@ -30,7 +30,7 @@ public class Candidate{
     private List<SavedJob> savedJobs;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
-    private List<Application> applications;
+    private List<Applicant> applicants;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
     private List<Resume> resumes;

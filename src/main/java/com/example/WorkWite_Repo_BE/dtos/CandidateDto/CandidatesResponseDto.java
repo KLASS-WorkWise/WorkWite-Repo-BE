@@ -1,6 +1,6 @@
 package com.example.WorkWite_Repo_BE.dtos.CandidateDto;
 
-import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.AppResponseDto;
+
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
 import com.example.WorkWite_Repo_BE.entities.User;
