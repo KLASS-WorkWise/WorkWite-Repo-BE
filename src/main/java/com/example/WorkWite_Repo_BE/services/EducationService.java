@@ -32,7 +32,8 @@ public class EducationService {
                 education.getDegree(),
                 education.getMajor(),
                 education.getStartYear(),
-                education.getEndYear());
+                education.getEndYear(),
+                education.getGPA());
     }
 
     // Phương thức tạo Education mới
@@ -44,6 +45,7 @@ public class EducationService {
         education1.setMajor(creatEducationRequestDto.getMajor());
         education1.setStartYear(creatEducationRequestDto.getStartYear());
         education1.setEndYear(creatEducationRequestDto.getEndYear());
+        education1.setGPA(creatEducationRequestDto.getGPA());
 
         education1.setResume(resume);
         Education educationNew = educationJpaRepository.save(education1);

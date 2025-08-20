@@ -145,6 +145,7 @@ public class ResumeService {
                     newEdu.setMajor(eduDto.getMajor());
                     newEdu.setStartYear(eduDto.getStartYear());
                     newEdu.setEndYear(eduDto.getEndYear());
+                    newEdu.setGPA(eduDto.getGPA());
                     educationService.createEducation(newEdu, resume.getId());
                 });
             }
@@ -154,9 +155,11 @@ public class ResumeService {
                 resumeUpdateDto.getActivities().forEach(actDto -> {
                     com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto newAct = new com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto();
                     newAct.setActivityName(actDto.getActivityName());
-                    newAct.setRole(actDto.getRole());
+                    newAct.setOrganization(actDto.getOrganization());
+                    newAct.setDescription(actDto.getDescription());
                     newAct.setStartYear(actDto.getStartYear());
                     newAct.setEndYear(actDto.getEndYear());
+
                     activityService.createActivity(newAct, resume.getId());
                 });
             }
@@ -167,6 +170,8 @@ public class ResumeService {
                     com.example.WorkWite_Repo_BE.dtos.AwardDto.CreatAwardRequestDto newAward = new com.example.WorkWite_Repo_BE.dtos.AwardDto.CreatAwardRequestDto();
                     newAward.setAwardName(awardDto.getAwardName());
                     newAward.setAwardYear(awardDto.getAwardYear());
+                    newAward.setDonViTrao(awardDto.getDonViTrao());
+                    newAward.setDescription(awardDto.getDescription());
                     awardService.createAward(newAward, resume.getId());
                 });
             }
@@ -232,6 +237,7 @@ public class ResumeService {
                 resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                 resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
                 resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
+                resume.getExperiences() == null ? java.util.Collections.emptyList() : resume.getExperiences(),
                 resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
                 resume.getSummary()
         );

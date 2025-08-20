@@ -12,4 +12,7 @@ import lombok.NoArgsConstructor;
 public class UpdateAwardRequestDto {
     private String awardName;
     private Integer awardYear;
+    private String donViTrao;
+    private String description;
+
 }

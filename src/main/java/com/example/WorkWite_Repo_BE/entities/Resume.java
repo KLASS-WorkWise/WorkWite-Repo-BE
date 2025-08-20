@@ -32,7 +32,7 @@ public class Resume {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "profile_picture")
+    @Column(name = "profile_picture", length = 1000)
     private String profilePicture;
 
     @Column(columnDefinition = "TEXT")
