@@ -58,7 +58,7 @@ public class Resume {
     private List<Experience> experiences;
 
     @OneToMany(mappedBy = "resume")
-    private List<Application> applications;
+    private List<Applicant> applicants;
 
     @ElementCollection
     @CollectionTable(
@@ -66,4 +66,6 @@ public class Resume {
             joinColumns = @JoinColumn(name = "resumes_id")
     )
     private List<String> skillsResumes;
+    @Column(name = "resume_link")
+    private String resumeLink;
 }

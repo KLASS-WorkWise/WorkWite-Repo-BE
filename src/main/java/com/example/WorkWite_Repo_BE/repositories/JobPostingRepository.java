@@ -4,6 +4,8 @@
 	import org.springframework.stereotype.Repository;
 	import com.example.WorkWite_Repo_BE.entities.JobPosting;
 
+	import java.util.Optional;
+
 	@Repository
 	public interface JobPostingRepository extends JpaRepository<JobPosting, Long>, JpaSpecificationExecutor<JobPosting> {
 		// Hỗ trợ filter động bằng Specification
@@ -15,4 +17,5 @@
 			String requiredDegree,
 			org.springframework.data.domain.Pageable pageable
 		);
+
 	}
