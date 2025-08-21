@@ -231,7 +231,7 @@ public class ResumeService {
                 resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                 resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                 resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
-                resume.getApplications() == null ? java.util.Collections.emptyList() : resume.getApplications(),
+                resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
                 resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
                 resume.getSummary()
         );

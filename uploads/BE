@@ -1,0 +1,458 @@
+{
+	"info": {
+		"_postman_id": "e761c0a8-e070-4772-89b4-d49581088467",
+		"name": "BE_Workwire",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38334021"
+	},
+	"item": [
+		{
+			"name": "Candidate",
+			"item": [
+				{
+					"name": "update candidate",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"thanhphat131@gmail.com\",\r\n  \"fullName\" : \"User1\",\r\n  \"phoneNumber\" : \"0393719562\"\r\n\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/72",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidates",
+								"72"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get candidate",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get candidate by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidates",
+								"7"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Resume",
+			"item": [
+				{
+					"name": "Get resume by id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes/10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes/10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creat resume",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"candidateId\": 7,\r\n  \"fullName\": \"Nguyễn Văn C\",\r\n  \"email\": \"nguyenvana@gmail.com\",\r\n  \"phone\": \"0123456789\",\r\n  \"profilePicture\": \"https://example.com/avatar.jpg\",\r\n  \"summary\": \"Lập trình viên Java có 3 năm kinh nghiệm.\",\r\n  \"jobTitle\": \"Java Developer\",\r\n  \"educations\": [\r\n    {\r\n      \"schoolName\": \"Đại học Bách Khoa\",\r\n      \"degree\": \"Cử nhân\",\r\n      \"major\": \"Công nghệ thông tin\",\r\n      \"startYear\": 2017,\r\n      \"endYear\": 2021\r\n    },{\r\n      \"schoolName\": \"Đại học Bách Khoa\",\r\n      \"degree\": \"Cử nhân\",\r\n      \"major\": \"Công nghệ thông tin\",\r\n      \"startYear\": 2017,\r\n      \"endYear\": 2021\r\n    }\r\n  ],\r\n  \"awards\": [\r\n    {\r\n      \"awardName\": \"Giải nhất Olympic Tin học\",\r\n      \"awardYear\": 2020\r\n    }\r\n  ],\r\n  \"activities\": [\r\n    {\r\n      \"activityName\": \"CLB Lập trình\",\r\n      \"role\": \"Thành viên\",\r\n      \"startYear\": 2018,\r\n      \"endYear\": 2020\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update resume",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n{\r\n  \"fullName\": \"UPDATE1\",\r\n  \"email\": \"nguyenvana@gmail.com\",\r\n  \"phone\": \"0123456789\"\r\n  \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes/10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes",
+								"10"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"fullName\" : \"helo \",\r\n    \"email\" : \"helo@gmail.com\",\r\n    \"username\": \"heloo\",\r\n  \"password\": \"123456@\",\r\n  \"repassword\": \"123456@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Company",
+			"item": [
+				{
+					"name": "Create Infor Company",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update Infor Company",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All  Company",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Company By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employers",
+			"item": [
+				{
+					"name": "Get All Employers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/employers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employers By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/employers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Employer",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"companyName\": \"Phathaoda Ltd235.\",\r\n  \"website\": \"https://www.technova.com\",\r\n  \"logo_url\": \"https://cdn.technova.com/images/logo.png\",\r\n  \"address\": \"123 Innovation Street, District 1, Ho Chi Minh City, Vietnam\",\r\n  \"email\": \"contact@technova.com\",\r\n  \"industry\": \"Information Technology\",\r\n  \"culture\": \"Innovative, Inclusive, Collaborative\",\r\n  \"benefits\": \"Health insurance, Flexible working hours, Free lunch\",\r\n  \"media_url\": \"https://www.youtube.com/watch?v=tech-company-intro\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/employers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "UpdateRole",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/roles/change/7/3",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"roles",
+								"change",
+								"7",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
