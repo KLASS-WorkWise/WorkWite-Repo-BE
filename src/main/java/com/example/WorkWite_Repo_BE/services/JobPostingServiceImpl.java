@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,26 +31,50 @@ public class JobPostingServiceImpl implements JobPostingService {
 
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
-        Employers employer = employerRepository.findById(requestDTO.getEmployerId())
-                .orElseThrow(() -> new RuntimeException("Employer not found with id: " + requestDTO.getEmployerId()));
+        // Lấy username từ token đăng nhập
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        final String username;
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } else if (authentication != null) {
+            username = authentication.getName();
+        } else {
+            throw new RuntimeException("Unauthorized: Cannot get username from token");
+        }
+        // Tìm employer theo user đăng nhập
+        Employers employer = employerRepository.findByUserId(
+            getUserIdByUsername(username)
+        ).orElseThrow(() -> new RuntimeException("Employer not found for user: " + username));
 
         JobPosting jobPosting = new JobPosting();
         jobPosting.setEmployer(employer);
-    jobPosting.setTitle(requestDTO.getTitle());
-    jobPosting.setDescription(requestDTO.getDescription());
-    jobPosting.setLocation(requestDTO.getLocation());
-    jobPosting.setSalaryRange(requestDTO.getSalaryRange());
-    jobPosting.setJobType(requestDTO.getJobType());
-    jobPosting.setCategory(requestDTO.getCategory());
-    jobPosting.setRequiredSkills(requestDTO.getRequiredSkills());
-    jobPosting.setMinExperience(requestDTO.getMinExperience());
-    jobPosting.setRequiredDegree(requestDTO.getRequiredDegree());
-    jobPosting.setEndAt(requestDTO.getEndAt());
-    jobPosting.setStatus(requestDTO.getStatus());
-    jobPosting.setCreatedAt(requestDTO.getCreatedAt() != null ? requestDTO.getCreatedAt() : LocalDateTime.now());
+        jobPosting.setTitle(requestDTO.getTitle());
+        jobPosting.setDescription(requestDTO.getDescription());
+        jobPosting.setLocation(requestDTO.getLocation());
+        jobPosting.setSalaryRange(requestDTO.getSalaryRange());
+        jobPosting.setJobType(requestDTO.getJobType());
+        jobPosting.setCategory(requestDTO.getCategory());
+        jobPosting.setRequiredSkills(requestDTO.getRequiredSkills());
+        jobPosting.setMinExperience(requestDTO.getMinExperience());
+        jobPosting.setRequiredDegree(requestDTO.getRequiredDegree());
+        jobPosting.setEndAt(requestDTO.getEndAt());
+        jobPosting.setStatus(requestDTO.getStatus());
+        jobPosting.setCreatedAt(requestDTO.getCreatedAt() != null ? requestDTO.getCreatedAt() : LocalDateTime.now());
 
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
         return mapToResponseDTO(savedJobPosting);
+    }
+
+    // Helper: lấy userId từ username
+    private Long getUserIdByUsername(String username) {
+        // Nếu có UserRepository thì dùng, nếu không thì lấy từ employerRepository
+        Optional<Employers> employerOpt = employerRepository.findAll().stream()
+            .filter(e -> e.getUser() != null && username.equals(e.getUser().getUsername()))
+            .findFirst();
+        if (employerOpt.isPresent()) {
+            return employerOpt.get().getUser().getId();
+        }
+        throw new RuntimeException("User not found for username: " + username);
     }
 
     @Override
@@ -82,13 +107,8 @@ public class JobPostingServiceImpl implements JobPostingService {
         if (username == null) {
             throw new RuntimeException("Unauthorized: Cannot get username from token");
         }
-        // Lấy employerId của user hiện tại
-        Employers currentEmployer = employerRepository.findByUserId(
-            employerRepository.findByUserId(jobPosting.getEmployer().getUser().getId())
-                .map(e -> e.getUser().getId())
-                .orElse(null)
-        ).orElse(null);
-        if (currentEmployer == null || !jobPosting.getEmployer().getUser().getUsername().equals(username)) {
+        // Chỉ kiểm tra username của user tạo job với user đăng nhập
+        if (!jobPosting.getEmployer().getUser().getUsername().equals(username)) {
             throw new RuntimeException("Forbidden: Only the owner employer can update this job posting");
         }
 
@@ -129,13 +149,8 @@ public class JobPostingServiceImpl implements JobPostingService {
         if (username == null) {
             throw new RuntimeException("Unauthorized: Cannot get username from token");
         }
-        // Lấy employerId của user hiện tại
-        Employers currentEmployer = employerRepository.findByUserId(
-            employerRepository.findByUserId(jobPosting.getEmployer().getUser().getId())
-                .map(e -> e.getUser().getId())
-                .orElse(null)
-        ).orElse(null);
-        if (currentEmployer == null || !jobPosting.getEmployer().getUser().getUsername().equals(username)) {
+        // Chỉ kiểm tra username của user tạo job với user đăng nhập
+        if (!jobPosting.getEmployer().getUser().getUsername().equals(username)) {
             throw new RuntimeException("Forbidden: Only the owner employer can delete this job posting");
         }
 
@@ -209,4 +224,4 @@ public class JobPostingServiceImpl implements JobPostingService {
         paginatedDTO.setTotalPages(jobPostingsPage.getTotalPages());
         return paginatedDTO;
     }
-} 
+}
