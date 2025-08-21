@@ -86,6 +86,8 @@ public class UserService {
             user.setEmail(request.getEmail());
         if (request.getPassword() != null)
             user.setPassword(request.getPassword());
+        if (request.getFullName() != null)
+            user.setFullName(request.getFullName());
         userJpaRepository.save(user);
         return convertToDto(user);
     }

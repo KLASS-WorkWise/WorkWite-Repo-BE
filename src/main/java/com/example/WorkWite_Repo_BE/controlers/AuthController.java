@@ -41,17 +41,7 @@ public class AuthController {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Email đã tồn tại!"));
         }
-
-//        lưu user vừa đăng kí
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setUsername(request.getUsername());
-        user.setFullName(request.getFullName());
-        user.setPassword(request.getPassword()); // Consider encoding the password!
-        // Set other fields as needed
-
-        userJpaRepository.save(user);
-
+        RegisterResponseDto response = userService.register(request); // gọi hàm bên service để lưu vào database
         return ResponseEntity.ok(Map.of("message", "Đăng ký thành công!"));
     }
 
