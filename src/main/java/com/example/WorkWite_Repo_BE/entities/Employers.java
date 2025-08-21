@@ -19,6 +19,7 @@ public class Employers {
     @MapsId // Lấy id từ User
     @JoinColumn(name = "id") // cột id vừa là PK vừa là FK
     private User user;
+    private String status;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "company_information_id", referencedColumnName = "id")

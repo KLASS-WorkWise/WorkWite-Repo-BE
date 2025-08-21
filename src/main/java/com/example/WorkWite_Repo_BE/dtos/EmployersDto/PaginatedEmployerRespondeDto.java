@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaginatedEmployerRespondeDto {
-    private List<EmployerResponseDto> data;
+    private List<?> data;
     private int pageNumber;
     private int pageSize;
     private Long totalRecords;
