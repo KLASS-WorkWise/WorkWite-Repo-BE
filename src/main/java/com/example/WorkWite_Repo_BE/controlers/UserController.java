@@ -26,13 +26,12 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.io.IOException;
 
-@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController()
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-    private final EmployersService  employersService;
+    private final EmployersService employersService;
 
     public UserController(UserService userService, EmployersService employersService) {
         this.userService = userService;
@@ -119,14 +118,14 @@ public class UserController {
 
     // admin duyệt
     @PatchMapping("/approve-employer/{userId}")
-    public ResponseEntity<?> approve(@PathVariable Long userId){
+    public ResponseEntity<?> approve(@PathVariable Long userId) {
         employersService.approveUpgrade(userId);
         return ResponseEntity.ok("Approved");
     }
 
     // admin từ chối
     @PatchMapping("/reject-employer/{userId}")
-    public ResponseEntity<?> reject(@PathVariable Long userId){
+    public ResponseEntity<?> reject(@PathVariable Long userId) {
         employersService.rejectUpgrade(userId);
         return ResponseEntity.ok("Rejected");
     }
