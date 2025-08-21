@@ -1,0 +1,636 @@
+{
+	"info": {
+		"_postman_id": "e761c0a8-e070-4772-89b4-d49581088467",
+		"name": "BE_Workwire",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38334021"
+	},
+	"item": [
+		{
+			"name": "Candidate",
+			"item": [
+				{
+					"name": "update candidate",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"thanhphat131@gmail.com\",\r\n  \"fullName\" : \"User1\",\r\n  \"phoneNumber\" : \"0393719562\"\r\n\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/72",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidates",
+								"72"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get candidate",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get candidate by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/8",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidates",
+								"8"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Resume",
+			"item": [
+				{
+					"name": "Get resume",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwidHlwZSI6ImFjY2Vzc190b2tlbiIsInN1YiI6IlVzZXIiLCJpYXQiOjE3NTUxOTYwMDAsImV4cCI6MTc1NTI4MjQwMH0.5o5tExUfr_D-QuQfNySH6TCJCYmBa9N_PsB7FDSCxVM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/resumes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"resumes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete resume",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creat resume",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwidHlwZSI6ImFjY2Vzc190b2tlbiIsInN1YiI6IlVzZXIiLCJpYXQiOjE3NTUxOTYwMDAsImV4cCI6MTc1NTI4MjQwMH0.5o5tExUfr_D-QuQfNySH6TCJCYmBa9N_PsB7FDSCxVM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"fullName\": \"Nguyen Thanh Phat\",\r\n  \"email\": \"thanhphat13\",\r\n  \"phone\": \"1234567890\",\r\n  \"profilePicture\": \"profile.jpg\",\r\n  \"summary\": \"Experienced software developer\",\r\n  \"jobTitle\": \"Senior Developer\",\r\n  \"educations\": [\r\n    {\r\n      \"schoolName\": \"University of Example\",\r\n      \"degree\": \"Bachelors in Computer Science\",\r\n      \"major\": \"giao vien\",\r\n      \"startYear\": \"2021\",\r\n      \"endYear\": \"2025\"\r\n    }\r\n  ],\r\n  \"awards\": [\r\n    {\r\n      \"awardName\": \"2015\",\r\n      \"awardYear\": \"2022\"\r\n    }\r\n    \r\n  ],\r\n  \"activities\": [\r\n    {\r\n      \"activityName\": \"Hackathon\",\r\n      \"role\": \"Participant\",\r\n      \"startYear\": \"2022\",\r\n      \"endYear\": \"2024\"\r\n    }\r\n  ],\r\n  \"skillsResumes\": [\r\n        \"Java\",\r\n        \"Spring Boot\",\r\n        \"ReactJS\",\r\n        \"SQL\",\r\n        \"Docker\"\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update resume",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwidHlwZSI6ImFjY2Vzc190b2tlbiIsInN1YiI6IlVzZXIiLCJpYXQiOjE3NTUxOTYwMDAsImV4cCI6MTc1NTI4MjQwMH0.5o5tExUfr_D-QuQfNySH6TCJCYmBa9N_PsB7FDSCxVM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n{\r\n  \"fullName\": \"Update\",\r\n  \"email\": \"nguyenvana@gmail.com\",\r\n  \"phone\": \"0123456789\",\r\n  \"educations\": [\r\n  {\r\n    \"schoolName\": \"Viet Han University\",\r\n    \"degree\": \"Bachelors in Computer Science\",\r\n    \"major\": \"giao vien\",\r\n    \"startYear\": 2021,\r\n    \"endYear\": 2025\r\n  }\r\n] \r\n  \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resumes/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resumes",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get resume by id",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"fullName\" : \"thanhphat \",\r\n    \"email\" : \"thanhphat@gmail.com\",\r\n    \"username\": \"admintrator13\",\r\n  \"password\": \"123456@\",\r\n  \"repassword\": \"123456@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admintrator3\",\r\n    \"password\": \"123456@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Company",
+			"item": [
+				{
+					"name": "Create Infor Company",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update Infor Company",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All  Company",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Company By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employers",
+			"item": [
+				{
+					"name": "Get All Employers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/employers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employers By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/employers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Employer",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"companyName\": \"Phathaoda Ltd235.\",\r\n  \"website\": \"https://www.technova.com\",\r\n  \"logo_url\": \"https://cdn.technova.com/images/logo.png\",\r\n  \"address\": \"123 Innovation Street, District 1, Ho Chi Minh City, Vietnam\",\r\n  \"email\": \"contact@technova.com\",\r\n  \"industry\": \"Information Technology\",\r\n  \"culture\": \"Innovative, Inclusive, Collaborative\",\r\n  \"benefits\": \"Health insurance, Flexible working hours, Free lunch\",\r\n  \"media_url\": \"https://www.youtube.com/watch?v=tech-company-intro\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/employers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "UpdateRole",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/roles/change/4/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"roles",
+								"change",
+								"4",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Delete user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwidHlwZSI6ImFjY2Vzc190b2tlbiIsInN1YiI6ImFkbWludHJhdG9yMyIsImlhdCI6MTc1NTE1NTUxOSwiZXhwIjoxNzU1MjQxOTE5fQ.7rwr8lg7nLqijbzjEGJW4fzaTr4mbXqa7qe6xMAY4iw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"fullName\": \"John Doe\",\r\n  \"email\": \"john.doe@example.com\",\r\n  \"phone\": \"1234567890\",\r\n  \"profilePicture\": \"profile.jpg\",\r\n  \"summary\": \"Experienced software developer\",\r\n  \"jobTitle\": \"Senior Developer\",\r\n  \"educations\": [\r\n    {\r\n      \"schoolName\": \"University of Example\",\r\n      \"degree\": \"Bachelors in Computer Science\",\r\n      \"major\": \"giao vien\",\r\n      \"startYear\": \"2021\",\r\n      \"endYear\": \"2025\"\r\n    }\r\n  ],\r\n  \"awards\": [\r\n    {\r\n      \"awardName\": \"2015\",\r\n      \"awardYear\": \"2022\"\r\n    }\r\n    \r\n  ],\r\n  \"activities\": [\r\n    {\r\n      \"activityName\": \"Hackathon\",\r\n      \"role\": \"Participant\",\r\n      \"startYear\": \"2022\",\r\n      \"endYear\": \"2024\"\r\n    }\r\n  ],\r\n  \"skills\": [\r\n    {\r\n      \"skillName\": null\r\n    },\r\n    {\r\n      \"skillName\": \"Java\"\r\n    },\r\n    {\r\n      \"skillName\": \"Spring Boot\"\r\n    }\r\n  ]\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Skill",
+			"item": [
+				{
+					"name": "Get skill by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080//api/skills/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"",
+								"api",
+								"skills",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creat skill",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"skillName\" : \"test skill\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/skills/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"skills",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete skill",
+					"request": {
+						"method": "DELETE",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Update skill",
+					"request": {
+						"method": "PATCH",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Activity",
+			"item": []
+		},
+		{
+			"name": "Award",
+			"item": []
+		},
+		{
+			"name": "Education",
+			"item": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
