@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 public class CreatAvtivityRequestDto {
 
     private String activityName;
-    private String role;
+    private String organization;
     private Integer startYear;
     private Integer endYear;
+    private String description;
 }

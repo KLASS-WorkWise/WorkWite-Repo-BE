@@ -33,4 +33,6 @@ public class Education {
 
     @Column(name = "end_year")
     private Integer endYear;
+
+    private String GPA;
 }

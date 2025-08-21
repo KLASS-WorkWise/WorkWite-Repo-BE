@@ -5,17 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ApplicantRequestDto {
-    private Long resumesId;
 
-    private String resumeLink;
-    private String coverLetter;
-    private ApplicationStatus applicationStatus;
+    private Long resumesId;              // optional
+    private MultipartFile resumeFile;    // optional
+    private String resumeLink;           // optional
+    private String coverLetter;          // optional
+
 
 
 }

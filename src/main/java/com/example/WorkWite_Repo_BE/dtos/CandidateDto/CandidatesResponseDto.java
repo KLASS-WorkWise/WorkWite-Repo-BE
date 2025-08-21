@@ -17,13 +17,15 @@ public class CandidatesResponseDto {
     private List<ResumeResponseDto> resumes;
 
 
-    public CandidatesResponseDto(Long id, User user,String phoneNumber,String avatar, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
+
+    public CandidatesResponseDto(Long id, User user,String phoneNumber,String avatar, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes ) {
         this.id = id;
         this.user = user;
         this.phoneNumber = phoneNumber;
         this.avatar = avatar;
         this.savedJobs = savedJobs;
         this.resumes = resumes;
+
 
     }
 

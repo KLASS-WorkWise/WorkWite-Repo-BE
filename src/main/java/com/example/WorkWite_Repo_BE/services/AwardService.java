@@ -28,7 +28,9 @@ public class AwardService {
         return new AwardResponseDto(
                 award.getId(),
                 award.getAwardName(),
-                award.getAwardYear());
+                award.getAwardYear(),
+                award.getDonViTrao(),
+                award.getDescription());
     }
 
     public AwardResponseDto createAward(CreatAwardRequestDto createAwardDto, Long resumeId) {
@@ -36,6 +38,7 @@ public class AwardService {
         Resume resume = resumeJpaRepository.findById(resumeId).orElse(null);
         award.setAwardName(createAwardDto.getAwardName());
         award.setAwardYear(createAwardDto.getAwardYear());
+
         award.setResume(resume);
         Award awardNew = awardJpaRepository.save(award);
         return convertToDto(awardNew);
