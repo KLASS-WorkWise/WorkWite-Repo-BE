@@ -54,6 +54,7 @@ public class CandidatesServices {
                             resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                             resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
                             resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
+                            resume.getExperiences() == null ? java.util.Collections.emptyList() : resume.getExperiences(),
                             resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
                             resume.getSummary()
                     );
@@ -66,7 +67,8 @@ public class CandidatesServices {
                 candidate.getPhoneNumber(),
                 candidate.getAvatar(),
                 savedJobs,
-                resumes);
+                resumes
+               );
     }
 
     // Phương thức tạo Candidate khi người dùng đăng ký
@@ -108,6 +110,7 @@ public class CandidatesServices {
             candidate.getUser().setFullName(updateCandidateRequest.getFullName());
             candidate.setPhoneNumber(updateCandidateRequest.getPhoneNumber());
             candidate.setAvatar(updateCandidateRequest.getAvatar());
+
             Candidate updatedCandidate = this.candidateJpaRepository.save(candidate);
             return convertToDto(updatedCandidate);
         }

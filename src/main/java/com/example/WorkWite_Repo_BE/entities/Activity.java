@@ -24,11 +24,13 @@ public class Activity {
     @Column(name = "activity_name")
     private String activityName;
 
-    private String role;
+    private String organization;
 
     @Column(name = "start_year")
     private Integer startYear;
 
     @Column(name = "end_year")
     private Integer endYear;
+
+    private String description;
 }

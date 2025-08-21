@@ -15,4 +15,5 @@ public class UpdateEducationRequestDto {
     private String major;
     private Integer startYear;
     private Integer endYear;
+    private String GPA;
 }

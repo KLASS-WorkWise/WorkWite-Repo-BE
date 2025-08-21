@@ -1,9 +1,13 @@
 package com.example.WorkWite_Repo_BE.dtos.CandidateDto;
 
+
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
 import com.example.WorkWite_Repo_BE.entities.User;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 

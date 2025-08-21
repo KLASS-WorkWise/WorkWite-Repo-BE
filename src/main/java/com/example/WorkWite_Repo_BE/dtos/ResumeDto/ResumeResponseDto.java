@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 
-public class    ResumeResponseDto {
+public class ResumeResponseDto {
     private Long id;
     private String fullName;
     private String email;
@@ -19,6 +19,7 @@ public class    ResumeResponseDto {
     private List<Education> educations;
     private List<Award> awards;
     private List<Activity> activities;
+    private List<Experience> experiences;
     private List<Applicant> applicants;
     private List<String> skillsResumes;
 
@@ -27,7 +28,7 @@ public class    ResumeResponseDto {
 
     public ResumeResponseDto(Long id, String profilePicture, String fullName, String email, String phone,
                              String createdAt, String jobTitle, List<Activity> activities,
-                             List<Education> educations, List<Award> awards, List<Applicant> applicants,
+                             List<Education> educations, List<Award> awards, List<Applicant> applicants, List<Experience> experiences,
                              List<String> skillsResumes, String summary) {
         this.id = id;
         this.profilePicture = profilePicture;
@@ -40,6 +41,7 @@ public class    ResumeResponseDto {
         this.educations = educations;
         this.awards = awards;
         this.applicants = applicants;
+        this.experiences = experiences;
         this.skillsResumes = skillsResumes;
         this.summary = summary;
     }

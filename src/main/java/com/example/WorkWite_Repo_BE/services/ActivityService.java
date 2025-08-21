@@ -24,9 +24,10 @@ public class ActivityService {
     public ActivityResponseDto convertDto (Activity activity){
         return new ActivityResponseDto(
                 activity.getActivityName(),
-                activity.getRole(),
+                activity.getOrganization(),
                 activity.getStartYear(),
-                activity.getEndYear()
+                activity.getEndYear(),
+                activity.getDescription()
         );
     }
 
@@ -35,9 +36,10 @@ public class ActivityService {
         Resume resume = resumeJpaRepository.findById(resumeId).orElse(null);
         Activity activity = new Activity();
         activity.setActivityName(createAwardDto.getActivityName());
-        activity.setRole(createAwardDto.getRole());
+        activity.setOrganization(createAwardDto.getOrganization());
         activity.setStartYear(createAwardDto.getStartYear());
         activity.setEndYear(createAwardDto.getEndYear());
+        activity.setDescription(createAwardDto.getDescription());
         activity.setResume(resume);
 
         Activity activityAdd = activityJpaRepository.save(activity);

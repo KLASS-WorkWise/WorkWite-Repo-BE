@@ -13,4 +13,7 @@ import lombok.NoArgsConstructor;
 public class CreatAwardRequestDto {
     private String awardName;
     private Integer awardYear;
+    private String donViTrao;
+    private String description;
+
 }
