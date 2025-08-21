@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -13,18 +14,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateCompanyInformationRequesDto {
-    @Min(value = 1, message = "Số lượng nhân viên phải lớn hơn 0")
-    private Integer employee;
+    @Min(value = 1, message = "Số lượng nhân viên min phải lớn hơn 0")
+    private Integer minEmployee;
+
+    private Integer maxEmployee;
 
     @NotBlank(message = "Tên công ty không được để trống")
     @Size(max = 255, message = "Tên công ty không được vượt quá 255 ký tự")
     private String companyName;
 
     @Size(max = 500, message = "Logo URL không được vượt quá 500 ký tự")
-    private String logoUrl;
+    private MultipartFile logo;
 
     @Size(max = 500, message = "Banner URL không được vượt quá 500 ký tự")
-    private String bannerUrl;
+    private MultipartFile banner;
 
     @Email(message = "Email không hợp lệ")
     @Size(max = 255, message = "Email không được vượt quá 255 ký tự")
@@ -35,8 +38,6 @@ public class CreateCompanyInformationRequesDto {
 
     @Size(max = 2000, message = "Mô tả không được vượt quá 2000 ký tự")
     private String description;
-
-    private LocalDateTime lastPosted;
 
     @Size(max = 500, message = "Địa chỉ không được vượt quá 500 ký tự")
     private String address;
@@ -49,4 +50,6 @@ public class CreateCompanyInformationRequesDto {
 
     @Size(max = 255, message = "Ngành nghề không được vượt quá 255 ký tự")
     private String industry;
+
+    private  String status;
 }

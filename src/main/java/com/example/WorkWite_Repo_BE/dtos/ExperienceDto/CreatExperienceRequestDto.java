@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreatExperienceRequestDto {
+
     private String companyName;
     private String position;
     private int startYear;

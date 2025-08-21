@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.dtos.applicant;
 
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

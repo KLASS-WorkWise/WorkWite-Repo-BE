@@ -21,9 +21,15 @@ public class Award {
     @JsonIgnore
     private Resume resume;
 
+
     @Column(name = "award_name")
     private String awardName;
 
+    @Column(name = "don_vi_trao")
+    private String donViTrao;
+
     @Column(name = "award_year")
     private Integer awardYear;
+
+    private String description;
 }

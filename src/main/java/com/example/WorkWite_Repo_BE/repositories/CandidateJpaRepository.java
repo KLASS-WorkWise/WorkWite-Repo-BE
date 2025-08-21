@@ -20,5 +20,6 @@ public interface CandidateJpaRepository extends JpaRepository<Candidate, Long> {
 
     @Query("SELECT c FROM Candidate c JOIN c.user u JOIN u.roles r WHERE r.name = 'Users'")
     Page<Candidate> findAllCandidatesWithUserRole(Pageable pageable);
+
     Optional<Candidate> findByUser(User user);
 }

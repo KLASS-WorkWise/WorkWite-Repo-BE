@@ -86,6 +86,8 @@ public class UserService {
             user.setEmail(request.getEmail());
         if (request.getPassword() != null)
             user.setPassword(request.getPassword());
+        if (request.getFullName() != null)
+            user.setFullName(request.getFullName());
         userJpaRepository.save(user);
         return convertToDto(user);
     }
@@ -118,9 +120,10 @@ public class UserService {
 
         LoginResponseDto.LoggedInUserDto loggedInUser = LoginResponseDto.LoggedInUserDto.builder()
                 .id(user.getId())
-                .fullName(user.getFullName())
+                .fullname(user.getFullName())
                 .username(user.getUsername())
                 .status("active")
+                .email(user.getEmail())
                 .roles(roles)
                 .build();
 
@@ -132,9 +135,6 @@ public class UserService {
     }
 
     public RegisterResponseDto register(RegisterRequestDto request) {
-        if (!request.getPassword().equals(request.getRepassword())) {
-            throw new RuntimeException("Mật khẩu nhập lại không khớp!");
-        }
         if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }

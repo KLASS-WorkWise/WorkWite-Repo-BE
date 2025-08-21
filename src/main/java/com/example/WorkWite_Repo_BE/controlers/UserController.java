@@ -3,6 +3,7 @@ package com.example.WorkWite_Repo_BE.controlers;
 
 // import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.services.EmployersService;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
 
@@ -15,9 +16,11 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final EmployersService  employersService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EmployersService employersService) {
         this.userService = userService;
+        this.employersService = employersService;
     }
 
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
@@ -97,4 +100,18 @@ public class UserController {
     // {
     // return this.userService.searchByEmailContainingIgnoreCase(email);
     // }
+
+    // admin duyệt
+    @PatchMapping("/approve-employer/{userId}")
+    public ResponseEntity<?> approve(@PathVariable Long userId){
+        employersService.approveUpgrade(userId);
+        return ResponseEntity.ok("Approved");
+    }
+
+    // admin từ chối
+    @PatchMapping("/reject-employer/{userId}")
+    public ResponseEntity<?> reject(@PathVariable Long userId){
+        employersService.rejectUpgrade(userId);
+        return ResponseEntity.ok("Rejected");
+    }
 }

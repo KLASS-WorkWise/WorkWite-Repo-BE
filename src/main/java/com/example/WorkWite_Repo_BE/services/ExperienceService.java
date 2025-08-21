@@ -24,6 +24,7 @@ public class ExperienceService {
     // convert entity thanh responedto
     public ExperienceResponseDto convertToDto(Experience experience) {
         return new ExperienceResponseDto(
+                experience.getId(),
                 experience.getCompanyName(),
                 experience.getPosition(),
                 experience.getStartYear(),

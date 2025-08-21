@@ -1,0 +1,8 @@
+sql injection : luôn luôn có ( gọi là free parameter chứ ko bh dc cộng chuỗi ) dc gọi là nguyên tắc vàng, tuyệt đối ko dc dùng dynamic query phải dùng cách truyền tham số parameter ) 
+
+khi lưu vào csdl thường thì họ sẽ có một cái để kiểm tra trc khi lưu vào csdl 
+
+xem lại và dùng react query 
+
+
+nếu làm dc thì làm chat realtime luôn chat dc với nhà tuyển dụng 

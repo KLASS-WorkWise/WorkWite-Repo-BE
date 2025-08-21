@@ -16,4 +16,5 @@ public class CreatEducationRequestDto {
     private String major;
     private Integer startYear;
     private Integer endYear;
+    private String GPA;
 }

@@ -32,5 +32,6 @@ public class UpdateCandidateRequestDto {
     @Pattern(regexp = "^(https?|ftp)://.*$", message = "Avatar phải là URL hợp lệ")
     private String avatar;
 
+
 }
 
