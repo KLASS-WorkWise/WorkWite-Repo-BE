@@ -21,6 +21,12 @@ public class User {
     private String fullName; // Thêm trường fullName
     private String status; // Thêm trường status
 
+    // reset password, Để lưu mã 6 số và thời gian hết hạn.
+    private String resetCode;
+    private Long resetCodeExpiry;
+
+    private String avatarUrl; // Đường dẫn hoặc URL ảnh đại diện
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles;

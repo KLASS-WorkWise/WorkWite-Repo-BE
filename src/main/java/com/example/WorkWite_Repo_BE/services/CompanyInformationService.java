@@ -27,22 +27,24 @@ public class CompanyInformationService {
         this.companyInformationJpaRepository = companyInformationJpaRepository;
         this.employersRepository = employersRepository;
     }
-    private CompanyInformationReponseDto convertToDto(CompanyInformation companyInformationReponseDto) {
-        return new CompanyInformationReponseDto(
-                companyInformationReponseDto.getId(),
-                companyInformationReponseDto.getEmployee(),
-                companyInformationReponseDto.getCompanyName(),
-                companyInformationReponseDto.getLogoUrl(),
-                companyInformationReponseDto.getBannerUrl(),
-                companyInformationReponseDto.getEmail(),
-                companyInformationReponseDto.getPhone(),
-                companyInformationReponseDto.getDescription(),
-                companyInformationReponseDto.getLastPosted(),
-                companyInformationReponseDto.getAddress(),
-                companyInformationReponseDto.getLocation(),
-                companyInformationReponseDto.getWebsite(),
-                companyInformationReponseDto.getIndustry()
 
+    private CompanyInformationReponseDto convertToDto(CompanyInformation companyInformation) {
+        return new CompanyInformationReponseDto(
+                companyInformation.getId(),
+                companyInformation.getCompanyName(),
+                companyInformation.getLogoUrl(),
+                companyInformation.getBannerUrl(),
+                companyInformation.getEmail(),
+                companyInformation.getPhone(),
+                companyInformation.getDescription(),
+                companyInformation.getMinEmployees(),
+                companyInformation.getMaxEmployees(),
+                companyInformation.getAddress(),
+                companyInformation.getLocation(),
+                companyInformation.getWebsite(),
+                companyInformation.getIndustry(),
+                companyInformation.getStatus(),
+                companyInformation.getEmployer()
         );
     }
 
@@ -80,22 +82,23 @@ public class CompanyInformationService {
                 .orElseThrow(() -> new RuntimeException("Employer not found with id: " + employerId));
 
         CompanyInformation companyInfo = CompanyInformation.builder()
-                .employee(dto.getEmployee())
+                .minEmployees(dto.getMinEmployee())
+                .maxEmployees(dto.getMaxEmployee())
                 .companyName(dto.getCompanyName())
-                .logoUrl(dto.getLogoUrl())
-                .bannerUrl(dto.getBannerUrl())
+                .logoUrl(String.valueOf(dto.getLogo()))
+                .bannerUrl(String.valueOf(dto.getBanner()))
                 .email(dto.getEmail())
                 .phone(dto.getPhone())
                 .description(dto.getDescription())
-                .lastPosted(dto.getLastPosted() != null ? dto.getLastPosted() : LocalDateTime.now())
                 .address(dto.getAddress())
                 .location(dto.getLocation())
                 .website(dto.getWebsite())
                 .industry(dto.getIndustry())
+                .status("PENDING")
                 .build();
 
         // Gắn quan hệ
-        companyInfo.setEmployer(employer);
+//        companyInfo.setEmployer(employer);
         employer.setCompanyInformation(companyInfo);
 
         // Lưu employer (sẽ cascade lưu luôn companyInfo)
@@ -104,9 +107,11 @@ public class CompanyInformationService {
         // Trả về DTO
         return convertToDto(companyInfo);
     }
+
     public void deleteCompany(Long id) {
         this.companyInformationJpaRepository.deleteById(id);
     }
+
     public CompanyInformationReponseDto getCompanyInformation(Long id) {
 
         CompanyInformation companyInformation = this.companyInformationJpaRepository.findById(id).orElse(null);
@@ -124,14 +129,12 @@ public class CompanyInformationService {
             throw new RuntimeException("Company information not found for employer with id: " + employerId);
         }
 
-        if (dto.getEmployee() != null) companyInfo.setEmployee(dto.getEmployee());
         if (dto.getCompanyName() != null) companyInfo.setCompanyName(dto.getCompanyName());
         if (dto.getLogoUrl() != null) companyInfo.setLogoUrl(dto.getLogoUrl());
         if (dto.getBannerUrl() != null) companyInfo.setBannerUrl(dto.getBannerUrl());
         if (dto.getEmail() != null) companyInfo.setEmail(dto.getEmail());
         if (dto.getPhone() != null) companyInfo.setPhone(dto.getPhone());
         if (dto.getDescription() != null) companyInfo.setDescription(dto.getDescription());
-        if (dto.getLastPosted() != null) companyInfo.setLastPosted(dto.getLastPosted());
         if (dto.getAddress() != null) companyInfo.setAddress(dto.getAddress());
         if (dto.getLocation() != null) companyInfo.setLocation(dto.getLocation());
         if (dto.getWebsite() != null) companyInfo.setWebsite(dto.getWebsite());

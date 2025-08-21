@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/job-postings")
@@ -18,16 +20,22 @@ public class JobPostingController {
 
     @Autowired
     private JobPostingService jobPostingService;
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
+    public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostings() {
+        List<JobPostingResponseDTO> jobs = jobPostingService.getAllJobPostings();
+        return ResponseEntity.ok(jobs);
+    }
 
     @PostMapping
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> createJobPosting(@Valid @RequestBody JobPostingRequestDTO requestDTO) {
         JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(requestDTO);
         return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> getJobPosting(@PathVariable Long id) {
         JobPostingResponseDTO responseDTO = jobPostingService.getJobPosting(id);
         return ResponseEntity.ok(responseDTO);
@@ -60,14 +68,14 @@ public class JobPostingController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> updateJobPosting(@PathVariable Long id, @Valid @RequestBody JobPostingUpdateDTO updateDTO) {
         JobPostingResponseDTO responseDTO = jobPostingService.updateJobPosting(id, updateDTO);
         return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYER')")
+    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<Void> deleteJobPosting(@PathVariable Long id) {
         jobPostingService.deleteJobPosting(id);
         return ResponseEntity.noContent().build();

@@ -7,11 +7,14 @@
 
 # 2. User
 
-| Method | Endpoint             | Name           | Status    | Body mẫu |
-| ------ | -------------------- | -------------- | --------- | -------- |
-| GET    | `/api/users`         | Get all users  | ✅ Done   |     ` + accestoken `     |
-| PATCH  | `/api/users/{id}`    | Update user    | ✅ Done   | `{ "fullName": "New Name", ... }` |
-| DELETE | `/api/users/{id}`    | Xóa user    | ✅ Done   |          |
+| Method | Endpoint             | Name           | Status | Body mẫu |
+| ------ | -------------------- | -------------- |--------| -------- |
+| GET    | `/api/users`         | Get all users  | ✅ Done |     ` + accestoken `     |
+| PATCH  | `/api/users/{id}`    | Update user    | Done   | `{ "fullName": "New Name", ... }` |
+| DELETE | `/api/users/{id}`    | Xóa user    | None   |          |
+- delete user bị lỗi này "Error": [
+        "could not execute statement [Cannot delete or update a parent row: a foreign key constraint fails (`crud_springboot`.`employers`, CONSTRAINT `FKnnl4ba0tc831e25ufip4ek2yq` FOREIGN KEY (`id`) REFERENCES `users` (`id`))] [delete from users where id=?]; SQL [delete from users where id=?]; constraint [null]"
+    ]
 
 # 3. Roles
 

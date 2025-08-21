@@ -37,6 +37,7 @@ public class JwtService {
                 .compact();
     }
 
+    // end token trong 1h
     public String generateAccessToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", user.getId());
@@ -66,7 +67,16 @@ public class JwtService {
 
         // claims.put("roles", roles);
 
-        long jwtExpiration = 86400000;
+        long jwtExpiration = 60 * 60 * 1000; // 1 hour
+        return createToken(claims, user.getUsername(), jwtExpiration);
+    }
+
+    // end refresh token trong 7day
+    public String generateRefreshToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", user.getId());
+        claims.put("type", "refresh_token");
+        long jwtExpiration = 7 * 24 * 60 * 60 * 1000; // 7 days
         return createToken(claims, user.getUsername(), jwtExpiration);
     }
 
@@ -77,7 +87,6 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -106,5 +115,13 @@ public class JwtService {
                 && !isTokenExpired(token)
                 && "access_token".equals(tokenType); // Only access tokens for authentication
     }
-}
 
+    // Kiểm tra refresh token hợp lệ
+    public Boolean isRefreshTokenValid(String token, String username) {
+        final String tokenUsername = extractUsername(token);
+        final String tokenType = extractTokenType(token);
+        return (tokenUsername.equals(username))
+                && !isTokenExpired(token)
+                && "refresh_token".equals(tokenType);
+    }
+}

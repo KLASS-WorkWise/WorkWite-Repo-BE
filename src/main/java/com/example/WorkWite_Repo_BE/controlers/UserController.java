@@ -3,6 +3,7 @@ package com.example.WorkWite_Repo_BE.controlers;
 
 // import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.services.EmployersService;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
 
@@ -15,16 +16,21 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final EmployersService  employersService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EmployersService employersService) {
         this.userService = userService;
+        this.employersService = employersService;
     }
 
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
+    // API lấy danh sách user theo phân trang, trả về luôn ở endpoint /api/users
     @GetMapping()
-    public List<UserResponseDto> getAllUsers() {
-        return this.userService.getAllUsers();
+    public ResponseEntity<?> getAllUsers(@RequestParam(defaultValue = "1") int page) {
+        int size = 10; // luôn lấy 10 user/trang
+        var result = this.userService.getAllUsersPaginated(page, size);
+        return ResponseEntity.ok(result);
     }
 
     // Lấy user theo id
@@ -48,7 +54,6 @@ public class UserController {
     // }
 
     ;
-
 
     @PatchMapping("/{id}")
     public UserResponseDto updateUser(@PathVariable("id") Long id,
@@ -95,4 +100,18 @@ public class UserController {
     // {
     // return this.userService.searchByEmailContainingIgnoreCase(email);
     // }
+
+    // admin duyệt
+    @PatchMapping("/approve-employer/{userId}")
+    public ResponseEntity<?> approve(@PathVariable Long userId){
+        employersService.approveUpgrade(userId);
+        return ResponseEntity.ok("Approved");
+    }
+
+    // admin từ chối
+    @PatchMapping("/reject-employer/{userId}")
+    public ResponseEntity<?> reject(@PathVariable Long userId){
+        employersService.rejectUpgrade(userId);
+        return ResponseEntity.ok("Rejected");
+    }
 }

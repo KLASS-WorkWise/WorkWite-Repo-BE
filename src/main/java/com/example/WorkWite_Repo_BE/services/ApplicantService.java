@@ -147,7 +147,7 @@ public class ApplicantService {
                 .resumeLink(resumeLink)
                 .coverLetter(applicantRequestDto.getCoverLetter())
                 .applicationStatus(ApplicationStatus.PENDING)
-                .appliedAt(java.time.LocalDateTime.now())
+                .appliedAt(LocalDateTime.now())
                 .jobPosting(jobPosting)
                 .candidate(candidate)
                 .build();
