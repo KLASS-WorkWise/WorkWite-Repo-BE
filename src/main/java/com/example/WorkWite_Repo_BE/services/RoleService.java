@@ -37,19 +37,19 @@ public class RoleService {
 
         String roleName = newRole.getName();
 
-        if ("Employers".equalsIgnoreCase(roleName)) {
-            // Thêm mới employer nếu chưa có
-            boolean hasEmployer = employerRepository.existsByUserId(userId);
-            if (!hasEmployer) {
-                Employers employer = new Employers();
-                employer.setUser(user); // set quan hệ tới User, tùy entity bạn chỉnh sửa
-                // Có thể set các trường khác nếu cần
-                employerRepository.save(employer);
-            }
-        } else if ("Users".equalsIgnoreCase(roleName)) {
-            // Nếu chuyển sang role Users, xóa employer nếu có
-            employerRepository.findByUserId(userId).ifPresent(employerRepository::delete);
-        }
+//        if ("Employers".equalsIgnoreCase(roleName)) {
+//            // Thêm mới employer nếu chưa có
+//            boolean hasEmployer = employerRepository.existsByUserId(userId);
+//            if (!hasEmployer) {
+//                Employers employer = new Employers();
+//                employer.setUser(user); // set quan hệ tới User, tùy entity bạn chỉnh sửa
+//                // Có thể set các trường khác nếu cần
+//                employerRepository.save(employer);
+//            }
+//        } else if ("Users".equalsIgnoreCase(roleName)) {
+//            // Nếu chuyển sang role Users, xóa employer nếu có
+//            employerRepository.findByUserId(userId).ifPresent(employerRepository::delete);
+//        }
     }
 
     // Chuẩn hóa hàm convertToDto cho Role entity

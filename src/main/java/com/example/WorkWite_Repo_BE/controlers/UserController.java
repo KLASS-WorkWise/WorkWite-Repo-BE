@@ -10,7 +10,7 @@ import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
 // import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
-import com.example.WorkWite_Repo_BE.exceptions.HttpException;
+import com.example.WorkWite_Repo_BE.services.EmployersService;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import jakarta.validation.Valid;
 
@@ -32,7 +32,12 @@ import java.io.IOException;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-    private final UserJpaRepository userJpaRepository;
+    private final EmployersService  employersService;
+
+    public UserController(UserService userService, EmployersService employersService) {
+        this.userService = userService;
+        this.employersService = employersService;
+    }
 
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
     // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
@@ -112,36 +117,17 @@ public class UserController {
     // return this.userService.searchByEmailContainingIgnoreCase(email);
     // }
 
-    @PatchMapping("/update-profile")
-    public ResponseEntity<?> updateProfile(
-            @RequestParam("email") String email,
-            @RequestParam("fullname") String fullname,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
-        try {
-            User user = userJpaRepository.findByEmail(email)
-                    .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
+    // admin duyệt
+    @PatchMapping("/approve-employer/{userId}")
+    public ResponseEntity<?> approve(@PathVariable Long userId){
+        employersService.approveUpgrade(userId);
+        return ResponseEntity.ok("Approved");
+    }
 
-            user.setFullName(fullname);
-
-            // Nếu có file ảnh thì lưu file và cập nhật avatarUrl
-            if (file != null && !file.isEmpty()) {
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                Path uploadPath = Paths.get("uploads");
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(file.getInputStream(), filePath);
-                String avatarUrl = "/uploads/" + fileName;
-                user.setAvatarUrl(avatarUrl);
-            }
-
-            userJpaRepository.save(user);
-
-            return ResponseEntity.ok(java.util.Map.of("message", "Profile updated successfully"));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Map.of("error", "File upload failed: " + e.getMessage()));
-        }
+    // admin từ chối
+    @PatchMapping("/reject-employer/{userId}")
+    public ResponseEntity<?> reject(@PathVariable Long userId){
+        employersService.rejectUpgrade(userId);
+        return ResponseEntity.ok("Rejected");
     }
 }

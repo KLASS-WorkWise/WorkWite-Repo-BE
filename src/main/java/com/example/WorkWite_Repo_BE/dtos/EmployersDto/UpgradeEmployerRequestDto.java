@@ -1,4 +1,4 @@
-package com.example.WorkWite_Repo_BE.dtos.CompanyInformation;
+package com.example.WorkWite_Repo_BE.dtos.EmployersDto;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -7,13 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCompanyInformationRequesDto {
+public class UpgradeEmployerRequestDto {
     @Min(value = 1, message = "Số lượng nhân viên min phải lớn hơn 0")
     private Integer minEmployee;
 
@@ -24,10 +22,10 @@ public class CreateCompanyInformationRequesDto {
     private String companyName;
 
     @Size(max = 500, message = "Logo URL không được vượt quá 500 ký tự")
-    private MultipartFile logo;
+    private String logo;
 
     @Size(max = 500, message = "Banner URL không được vượt quá 500 ký tự")
-    private MultipartFile banner;
+    private String banner;
 
     @Email(message = "Email không hợp lệ")
     @Size(max = 255, message = "Email không được vượt quá 255 ký tự")
