@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -29,7 +31,7 @@ public class Award {
     private String donViTrao;
 
     @Column(name = "award_year")
-    private Integer awardYear;
+    private LocalDate awardYear;
 
     private String description;
 }

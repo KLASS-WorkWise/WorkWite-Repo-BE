@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,7 +15,7 @@ public class UpdateEducationRequestDto {
     private String schoolName;
     private String degree;
     private String major;
-    private Integer startYear;
-    private Integer endYear;
+    private LocalDate startYear;
+    private LocalDate endYear;
     private String GPA;
 }
