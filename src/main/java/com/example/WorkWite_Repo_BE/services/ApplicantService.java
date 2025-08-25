@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -103,8 +104,9 @@ public class ApplicantService {
             long totalExpYears = resume.getExperiences() != null
                     ? resume.getExperiences().stream()
                     .mapToLong(exp -> (exp.getStartYear() != null && exp.getEndYear() != null)
-                            ? exp.getEndYear() - exp.getStartYear()
-                            : 0).sum()
+                            ? ChronoUnit.YEARS.between(exp.getStartYear(), exp.getEndYear())
+                            : 0)
+                    .sum()
                     : 0;
 
             if (totalExpYears == 0) experienceWarning = "Bạn chưa nhập kinh nghiệm hoặc chưa có kinh nghiệm";
