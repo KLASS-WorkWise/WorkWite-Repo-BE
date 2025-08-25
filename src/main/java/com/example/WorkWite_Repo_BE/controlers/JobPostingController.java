@@ -21,21 +21,21 @@ public class JobPostingController {
     @Autowired
     private JobPostingService jobPostingService;
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
+//    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostings() {
         List<JobPostingResponseDTO> jobs = jobPostingService.getAllJobPostings();
         return ResponseEntity.ok(jobs);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
+//    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> createJobPosting(@Valid @RequestBody JobPostingRequestDTO requestDTO) {
         JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(requestDTO);
         return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
+//    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<JobPostingResponseDTO> getJobPosting(@PathVariable Long id) {
         JobPostingResponseDTO responseDTO = jobPostingService.getJobPosting(id);
         return ResponseEntity.ok(responseDTO);

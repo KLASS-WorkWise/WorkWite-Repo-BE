@@ -32,22 +32,22 @@ public class JobPostingServiceImpl implements JobPostingService {
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         // Lấy username từ token đăng nhập
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        final String username;
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            username = ((UserDetails) authentication.getPrincipal()).getUsername();
-        } else if (authentication != null) {
-            username = authentication.getName();
-        } else {
-            throw new RuntimeException("Unauthorized: Cannot get username from token");
-        }
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        final String username;
+//        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+//            username = ((UserDetails) authentication.getPrincipal()).getUsername();
+//        } else if (authentication != null) {
+//            username = authentication.getName();
+//        } else {
+//            throw new RuntimeException("Unauthorized: Cannot get username from token");
+//        }
         // Tìm employer theo user đăng nhập
-        Employers employer = employerRepository.findByUserId(
-            getUserIdByUsername(username)
-        ).orElseThrow(() -> new RuntimeException("Employer not found for user: " + username));
+//        Employers employer = employerRepository.findByUserId(
+//            getUserIdByUsername(username)
+//        ).orElseThrow(() -> new RuntimeException("Employer not found for user: " + username));
 
         JobPosting jobPosting = new JobPosting();
-        jobPosting.setEmployer(employer);
+//        jobPosting.setEmployer(employer);
         jobPosting.setTitle(requestDTO.getTitle());
         jobPosting.setDescription(requestDTO.getDescription());
         jobPosting.setLocation(requestDTO.getLocation());

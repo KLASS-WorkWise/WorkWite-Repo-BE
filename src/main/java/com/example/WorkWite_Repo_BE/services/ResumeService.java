@@ -3,6 +3,7 @@ package com.example.WorkWite_Repo_BE.services;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.CreatResumeRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.UpdataResumeRequestDto;
+import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.Resume;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.repositories.*;
@@ -219,6 +220,12 @@ public class ResumeService {
         } else {
             createdAtStr = null;
         }
+        // ✅ Convert applicant list sang list id, và trả về list rỗng nếu null
+        List<Long> applicantIds = (resume.getApplicants() == null)
+                ? java.util.Collections.emptyList()
+                : resume.getApplicants().stream()
+                .map(Applicant::getId)
+                .toList();
         // Fix: tra ve list rỗng nếu không có dữ liệu
         return new ResumeResponseDto(
                 resume.getId(),
@@ -231,9 +238,10 @@ public class ResumeService {
                 resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                 resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                 resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
-                resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
+                applicantIds, // ✅ truyền list id,
                 resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
-                resume.getSummary()
+                resume.getSummary(),
+                resume.getCandidate().getId()
         );
     }
 }
