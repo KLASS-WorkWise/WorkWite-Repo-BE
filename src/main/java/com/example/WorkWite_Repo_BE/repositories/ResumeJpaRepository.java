@@ -18,4 +18,6 @@ public interface ResumeJpaRepository extends JpaRepository<Resume, Long> {
     // tách query ra từng cái riêng trong repository khác nhau
     // rooif qua service lâ
 
+    List<Resume> findByCandidateId(Long candidateId);
+
 }
