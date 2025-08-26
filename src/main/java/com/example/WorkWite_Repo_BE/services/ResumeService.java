@@ -155,7 +155,7 @@ public class ResumeService {
                 resumeUpdateDto.getActivities().forEach(actDto -> {
                     com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto newAct = new com.example.WorkWite_Repo_BE.dtos.Activity.CreatAvtivityRequestDto();
                     newAct.setActivityName(actDto.getActivityName());
-                    newAct.setRole(actDto.getRole());
+//                    newAct.setRole(actDto.getRole());
                     newAct.setStartYear(actDto.getStartYear());
                     newAct.setEndYear(actDto.getEndYear());
                     activityService.createActivity(newAct, resume.getId());

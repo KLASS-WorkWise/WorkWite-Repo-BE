@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/applicant")
+@RequestMapping("/api/applicant")
 @Validated
 @RequiredArgsConstructor
 public class ApplicantController {
