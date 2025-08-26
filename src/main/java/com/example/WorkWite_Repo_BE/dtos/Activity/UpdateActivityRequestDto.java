@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class UpdateActivityRequestDto {
     private String activityName;
     private String organization;
-    private Integer startYear;
-    private Integer endYear;
+    private LocalDate startYear;
+    private LocalDate endYear;
     private String description;
     }

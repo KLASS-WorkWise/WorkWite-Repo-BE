@@ -31,7 +31,7 @@ public class JobPostingServiceImpl implements JobPostingService {
 
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
-        // Lấy username từ token đăng nhập
+//         Lấy username từ token đăng nhập
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final String username;
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
@@ -41,7 +41,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         } else {
             throw new RuntimeException("Unauthorized: Cannot get username from token");
         }
-        // Tìm employer theo user đăng nhập
+//         Tìm employer theo user đăng nhập
         Employers employer = employerRepository.findByUserId(
             getUserIdByUsername(username)
         ).orElseThrow(() -> new RuntimeException("Employer not found for user: " + username));

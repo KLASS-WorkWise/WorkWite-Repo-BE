@@ -5,6 +5,7 @@ import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponse
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
+import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
@@ -53,10 +54,11 @@ public class CandidatesServices {
                             resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                             resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                             resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
-                            resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
-                            resume.getExperiences() == null ? java.util.Collections.emptyList() : resume.getExperiences(),
+                            resume.getApplicants() == null ? java.util.Collections.emptyList() :
+                                    resume.getApplicants().stream().map(Applicant::getId).collect(Collectors.toList()),
                             resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
-                            resume.getSummary()
+                            resume.getSummary(),
+                            resume.getCandidate().getId()
                     );
                 })
                 .collect(Collectors.toList());
@@ -67,8 +69,7 @@ public class CandidatesServices {
                 candidate.getPhoneNumber(),
                 candidate.getAvatar(),
                 savedJobs,
-                resumes
-               );
+                resumes);
     }
 
     // Phương thức tạo Candidate khi người dùng đăng ký
@@ -110,7 +111,6 @@ public class CandidatesServices {
             candidate.getUser().setFullName(updateCandidateRequest.getFullName());
             candidate.setPhoneNumber(updateCandidateRequest.getPhoneNumber());
             candidate.setAvatar(updateCandidateRequest.getAvatar());
-
             Candidate updatedCandidate = this.candidateJpaRepository.save(candidate);
             return convertToDto(updatedCandidate);
         }

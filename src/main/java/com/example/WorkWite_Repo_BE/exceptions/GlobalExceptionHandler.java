@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.ArrayList;
@@ -43,6 +44,12 @@ public class GlobalExceptionHandler {
         res.setError(idInvalidException.getMessage());
         res.setMessage("Id invalid");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handle(ResponseStatusException ex) {
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .body(Map.of("message", ex.getReason()));
     }
 
 
