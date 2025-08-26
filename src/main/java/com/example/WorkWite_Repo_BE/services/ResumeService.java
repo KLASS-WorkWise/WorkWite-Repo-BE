@@ -109,6 +109,14 @@ public class ResumeService {
                 .collect(Collectors.toList());
     }
 
+    // Lấy tất cả Resume theo candidateId
+    public List<ResumeResponseDto> getResumesByCandidateId(Long candidateId) {
+        List<Resume> resumes = resumeRepository.findByCandidateId(candidateId);
+        return resumes.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     // Lấy Resume theo ID
     public ResumeResponseDto getResumeById(Long id) {
         Resume resume = resumeRepository.findById(id).orElse(null);
