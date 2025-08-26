@@ -21,7 +21,6 @@ public class JobPostingController {
     @Autowired
     private JobPostingService jobPostingService;
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('Employers', 'Administrators', 'Managers')")
     public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostings() {
         List<JobPostingResponseDTO> jobs = jobPostingService.getAllJobPostings();
         return ResponseEntity.ok(jobs);
