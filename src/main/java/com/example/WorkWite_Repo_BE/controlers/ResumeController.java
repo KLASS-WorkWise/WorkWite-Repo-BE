@@ -52,10 +52,39 @@ public class ResumeController {
         ResumeResponseDto created = resumeService.creatResume(candidate.getId(), requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+    @PatchMapping("/me/{id}")
+    public ResponseEntity<ResumeResponseDto> updateResumeForCurrentUser(@PathVariable Long id, @RequestBody UpdataResumeRequestDto updateDto) throws IdInvalidException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        com.example.WorkWite_Repo_BE.entities.User user = userJpaRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Candidate candidate = candidateJpaRepository.findByUserId(user.getId());
+        ResumeResponseDto resume = resumeService.getResumeById(id);
+        if (resume == null || !resume.getId().equals(id)) {
+            throw new IdInvalidException("Resume not found with ID:" + id);
+        }
+        ResumeResponseDto updated = resumeService.updateResume(id, updateDto);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
+    }
+
+//    @GetMapping
+//    public ResponseEntity<List<ResumeResponseDto>> getAllResumes() {
+//        List<ResumeResponseDto> resumes = resumeService.getAllResumes();
+//        return ResponseEntity.ok(resumes);
+//    }
 
     @GetMapping
-    public ResponseEntity<List<ResumeResponseDto>> getAllResumes() {
-        List<ResumeResponseDto> resumes = resumeService.getAllResumes();
+    public ResponseEntity<List<ResumeResponseDto>> getMyResumes() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        com.example.WorkWite_Repo_BE.entities.User user = userJpaRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Candidate candidate = candidateJpaRepository.findByUserId(user.getId());
+        List<ResumeResponseDto> resumes = resumeService.getResumesByCandidateId(candidate.getId());
         return ResponseEntity.ok(resumes);
     }
 
@@ -77,22 +106,7 @@ public class ResumeController {
 //        return ResponseEntity.status(HttpStatus.OK).body(updated);
 //    }
 
-    @PatchMapping("/me/{id}")
-    public ResponseEntity<ResumeResponseDto> updateResumeForCurrentUser(@PathVariable Long id, @RequestBody UpdataResumeRequestDto updateDto) throws IdInvalidException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        com.example.WorkWite_Repo_BE.entities.User user = userJpaRepository.findByUsername(username).orElse(null);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Candidate candidate = candidateJpaRepository.findByUserId(user.getId());
-        ResumeResponseDto resume = resumeService.getResumeById(id);
-        if (resume == null || !resume.getId().equals(id)) {
-            throw new IdInvalidException("Resume not found with ID:" + id);
-        }
-        ResumeResponseDto updated = resumeService.updateResume(id, updateDto);
-        return ResponseEntity.status(HttpStatus.OK).body(updated);
-    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResume(@PathVariable Long id) {
