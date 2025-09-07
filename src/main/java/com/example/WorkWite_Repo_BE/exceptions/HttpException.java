@@ -11,4 +11,5 @@ public class HttpException extends RuntimeException {
         super(message);
         this.status = status;
     }
+
 }
