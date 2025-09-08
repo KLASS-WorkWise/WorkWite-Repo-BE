@@ -1,6 +1,5 @@
 package com.example.WorkWite_Repo_BE.services;
-
-
+import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
@@ -13,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,13 +27,22 @@ public class SavedJobService {
 
     // Map Entity -> DTO
     public SavedJobDTO mapToDTO(SavedJob savedJob) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        // Map JobPosting -> JobPostingResponseDTO
+        JobPostingResponseDTO jobPostingDto = JobPostingResponseDTO.builder()
+                .id(savedJob.getJobPosting().getId())
+                .title(savedJob.getJobPosting().getTitle())
+                .description(savedJob.getJobPosting().getDescription())
+                .location(savedJob.getJobPosting().getLocation())
+                // thêm các field khác nếu có
+                .build();
+
         return SavedJobDTO.builder()
                 .savedJobId(savedJob.getId())
-                .jobId(savedJob.getJobPosting().getId())
-//                .companyName(savedJob.getJobPosting().getCompany().getName())
-                // Nếu JobPosting có field title + location thì mở comment ra
-                .jobTitle(savedJob.getJobPosting().getTitle())
-                //.location(savedJob.getJobPosting().getLocation())
+                .JobPostingResponseDTO(jobPostingDto)
+                .savedAt(savedJob.getSavedAt().format(formatter))
                 .build();
     }
 
@@ -70,11 +79,12 @@ public class SavedJobService {
     }
 
     // Xóa job đã lưu
-    public void removeSavedJob(Long jobPostingId) {
+    public void removeSavedJob(Long id) {
         Long candidateId = authService.getCurrentUserCandidateId();
-        SavedJob savedJob = savedJobRepository.findByCandidateIdAndJobPostingId(candidateId, jobPostingId)
+        SavedJob savedJob = savedJobRepository.findByCandidateIdAndId(candidateId, id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy job đã lưu"));
 
         savedJobRepository.delete(savedJob);
     }
 }
+

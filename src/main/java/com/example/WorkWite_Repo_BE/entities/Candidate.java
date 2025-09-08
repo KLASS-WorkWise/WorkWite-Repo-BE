@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +30,7 @@ public class Candidate{
     private User user;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<SavedJob> savedJobs;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)

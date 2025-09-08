@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin
 @RestController
 @RequestMapping("/saved-jobs")
 @RequiredArgsConstructor
@@ -26,9 +26,9 @@ public class SavedJobController {
         return ResponseEntity.ok(savedJobService.getMySavedJobs());
     }
 
-    @DeleteMapping("/{jobPostingId}")
-    public ResponseEntity<Void> removeSavedJob(@PathVariable Long jobPostingId) {
-        savedJobService.removeSavedJob(jobPostingId);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> removeSavedJob(@PathVariable Long id) {
+        savedJobService.removeSavedJob(id);
         return ResponseEntity.noContent().build();
     }
 }
