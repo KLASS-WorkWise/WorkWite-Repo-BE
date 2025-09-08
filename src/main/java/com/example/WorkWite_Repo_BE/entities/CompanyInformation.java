@@ -22,10 +22,10 @@ public class CompanyInformation {
 
     private String companyName;
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String logoUrl;
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String bannerUrl;
     @Column(unique = true)
     private String email;
