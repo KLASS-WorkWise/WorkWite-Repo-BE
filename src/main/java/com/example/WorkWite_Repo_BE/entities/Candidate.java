@@ -19,13 +19,13 @@ import java.util.List;
 @ToString(exclude = {"resumes", "savedJobs", "applicants"})
 public class Candidate{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String phoneNumber;
     private String avatar;
 
     @OneToOne(optional = false,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @MapsId
     @JoinColumn(name = "user_id")
     private User user;
 

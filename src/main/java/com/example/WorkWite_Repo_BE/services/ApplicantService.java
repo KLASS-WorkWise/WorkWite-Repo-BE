@@ -29,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -151,8 +152,9 @@ public class ApplicantService {
 
         return resume.getExperiences().stream()
                 .mapToLong(exp -> {
-                    if (exp.getStartYear() != null && exp.getEndYear() != null && exp.getEndYear() >= exp.getStartYear()) {
-                        return exp.getEndYear() - exp.getStartYear();
+                    if (exp.getStartYear() != null && exp.getEndYear() != null
+                            && !exp.getEndYear().isBefore(exp.getStartYear())) {
+                        return ChronoUnit.YEARS.between(exp.getStartYear(), exp.getEndYear());
                     }
                     return 0;
                 })
