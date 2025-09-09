@@ -26,7 +26,7 @@ public class CompanyInformationController {
     @GetMapping
     public PaginatedCompanyInformationRespondeDto getAllCompanyInformation(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size
+            @RequestParam(defaultValue = "6") int size
     ){
         return this.companyInformationService.getAllCompanies(page, size);
     }

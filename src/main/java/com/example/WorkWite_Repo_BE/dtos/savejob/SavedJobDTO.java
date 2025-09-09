@@ -1,9 +1,12 @@
 package com.example.WorkWite_Repo_BE.dtos.savejob;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
+import com.example.WorkWite_Repo_BE.entities.JobPosting;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -11,8 +14,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SavedJobDTO {
     private Long savedJobId;
-    private Long jobId;
-    private String jobTitle;
-    private String companyName;
-    private String location;
+    private JobPostingResponseDTO JobPostingResponseDTO;
+
+    private String  savedAt;
+
 }
+

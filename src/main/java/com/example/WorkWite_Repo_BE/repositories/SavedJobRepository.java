@@ -11,7 +11,8 @@ public interface SavedJobRepository extends JpaRepository<SavedJob, Long> {
 
     List<SavedJob> findByCandidateId(Long candidateId);
 
-    Optional<SavedJob> findByCandidateIdAndJobPostingId(Long candidateId, Long jobPostingId);
+
+    Optional<SavedJob> findByCandidateIdAndId(Long candidateId, Long id);
 
     boolean existsByCandidateIdAndJobPostingId(Long candidateId, Long jobPostingId);
 }

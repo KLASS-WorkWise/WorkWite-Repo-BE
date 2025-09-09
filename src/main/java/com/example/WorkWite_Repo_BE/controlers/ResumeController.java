@@ -20,7 +20,7 @@ import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/resumes")
+    @RequestMapping("/api/resumes")
 public class ResumeController {
     private final ResumeService resumeService;
     private final CandidateJpaRepository candidateJpaRepository;

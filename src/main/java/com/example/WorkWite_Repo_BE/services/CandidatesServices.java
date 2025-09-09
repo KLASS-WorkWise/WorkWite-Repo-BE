@@ -3,8 +3,9 @@ package com.example.WorkWite_Repo_BE.services;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CandidatesResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.User;
@@ -30,13 +31,22 @@ public class CandidatesServices {
     private CandidatesResponseDto convertToDto(Candidate candidate) {
         // Chuyển đổi LocalDateTime thành String với định dạng mong muốn
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        List<SaveJobResponseDto> savedJobs = candidate.getSavedJobs().stream()
-                .map(savedJob -> new SaveJobResponseDto(
-                        savedJob.getId(),
-                        savedJob.getJobPosting().getId(),
-                        savedJob.getSavedAt().format(formatter)))
-                .collect(Collectors.toList());
+        List<SavedJobDTO> savedJobs = candidate.getSavedJobs().stream()
+                .map(savedJob -> {
+                    JobPostingResponseDTO jobPostingDto = JobPostingResponseDTO.builder()
+                            .id(savedJob.getJobPosting().getId())
+                            .title(savedJob.getJobPosting().getTitle())
+                            .description(savedJob.getJobPosting().getDescription())
+                            .location(savedJob.getJobPosting().getLocation())
+                            .build();
 
+                    return new SavedJobDTO(
+                            savedJob.getId(),
+                            jobPostingDto,
+                            savedJob.getSavedAt().format(formatter)
+                    );
+                })
+                .collect(Collectors.toList());
         List<ResumeResponseDto> resumes = candidate.getResumes().stream()
                 .map(resume -> {
                     String createdAtStr = null;

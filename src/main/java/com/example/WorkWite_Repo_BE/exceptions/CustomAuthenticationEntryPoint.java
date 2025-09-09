@@ -1,5 +1,7 @@
+// ================== CustomAuthenticationEntryPoint.java ==================
 package com.example.WorkWite_Repo_BE.exceptions;
 
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
