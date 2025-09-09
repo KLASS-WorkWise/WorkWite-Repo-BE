@@ -3,8 +3,10 @@ package com.example.WorkWite_Repo_BE.services;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CandidatesResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
+import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
@@ -29,13 +31,22 @@ public class CandidatesServices {
     private CandidatesResponseDto convertToDto(Candidate candidate) {
         // Chuyển đổi LocalDateTime thành String với định dạng mong muốn
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        List<SaveJobResponseDto> savedJobs = candidate.getSavedJobs().stream()
-                .map(savedJob -> new SaveJobResponseDto(
-                        savedJob.getId(),
-                        savedJob.getJobPosting().getId(),
-                        savedJob.getSavedAt().format(formatter)))
-                .collect(Collectors.toList());
+        List<SavedJobDTO> savedJobs = candidate.getSavedJobs().stream()
+                .map(savedJob -> {
+                    JobPostingResponseDTO jobPostingDto = JobPostingResponseDTO.builder()
+                            .id(savedJob.getJobPosting().getId())
+                            .title(savedJob.getJobPosting().getTitle())
+                            .description(savedJob.getJobPosting().getDescription())
+                            .location(savedJob.getJobPosting().getLocation())
+                            .build();
 
+                    return new SavedJobDTO(
+                            savedJob.getId(),
+                            jobPostingDto,
+                            savedJob.getSavedAt().format(formatter)
+                    );
+                })
+                .collect(Collectors.toList());
         List<ResumeResponseDto> resumes = candidate.getResumes().stream()
                 .map(resume -> {
                     String createdAtStr = null;
@@ -54,10 +65,11 @@ public class CandidatesServices {
                             resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                             resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                             resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
-                            resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants(),
-                            resume.getExperiences() == null ? java.util.Collections.emptyList() : resume.getExperiences(),
+                            resume.getApplicants() == null ? java.util.Collections.emptyList() :
+                                    resume.getApplicants().stream().map(Applicant::getId).collect(Collectors.toList()),
                             resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
-                            resume.getSummary()
+                            resume.getSummary(),
+                            resume.getCandidate().getId()
                     );
                 })
                 .collect(Collectors.toList());
@@ -68,8 +80,7 @@ public class CandidatesServices {
                 candidate.getPhoneNumber(),
                 candidate.getAvatar(),
                 savedJobs,
-                resumes
-               );
+                resumes);
     }
 
     // Phương thức tạo Candidate khi người dùng đăng ký
@@ -111,7 +122,6 @@ public class CandidatesServices {
             candidate.getUser().setFullName(updateCandidateRequest.getFullName());
             candidate.setPhoneNumber(updateCandidateRequest.getPhoneNumber());
             candidate.setAvatar(updateCandidateRequest.getAvatar());
-
             Candidate updatedCandidate = this.candidateJpaRepository.save(candidate);
             return convertToDto(updatedCandidate);
         }

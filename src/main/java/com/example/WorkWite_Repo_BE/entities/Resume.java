@@ -63,6 +63,7 @@ public class Resume {
     private List<Experience> experiences;
 
     @OneToMany(mappedBy = "resume")
+    @JsonIgnore
     private List<Applicant> applicants;
 
     @ElementCollection

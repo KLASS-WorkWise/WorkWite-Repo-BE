@@ -62,7 +62,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
-        User user = userJpaRepository.findByEmail(email)
+        User user = userJpaRepository.findByUserEmail(email)
                 .orElseThrow(() -> new HttpException("Email not found", HttpStatus.NOT_FOUND));
 
         // Sinh mã 6 số ngẫu nhiên
@@ -96,7 +96,7 @@ public class AuthController {
         String code = body.get("code");
         String newPassword = body.get("newPassword");
 
-        User user = userJpaRepository.findByEmail(email)
+        User user = userJpaRepository.findByUserEmail(email)
                 .orElseThrow(() -> new HttpException("Email not found", HttpStatus.NOT_FOUND));
 
         // Kiểm tra mã và hạn sử dụng

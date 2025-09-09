@@ -22,4 +22,5 @@ public interface CandidateJpaRepository extends JpaRepository<Candidate, Long> {
     Page<Candidate> findAllCandidatesWithUserRole(Pageable pageable);
 
     Optional<Candidate> findByUser(User user);
+    Optional<Candidate> findByUserUsername(String username);
 }

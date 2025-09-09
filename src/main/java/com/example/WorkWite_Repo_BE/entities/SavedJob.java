@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "saved_jobs")
+@Table(name ="saved_jobs")
 public class SavedJob {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id")
     private Candidate candidate;
 
@@ -34,6 +34,7 @@ public class SavedJob {
     public void onCreate() {
         this.savedAt = LocalDateTime.now();
     }
+
 
 
 }

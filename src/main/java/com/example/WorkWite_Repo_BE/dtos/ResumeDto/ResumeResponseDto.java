@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 
-public class ResumeResponseDto {
+public class    ResumeResponseDto {
     private Long id;
     private String fullName;
     private String email;
@@ -20,9 +20,9 @@ public class ResumeResponseDto {
     private List<Education> educations;
     private List<Award> awards;
     private List<Activity> activities;
-    private List<Experience> experiences;
-    private List<Applicant> applicants;
+    private List<Long> applicantIds;
     private List<String> skillsResumes;
+    private Long candidateId;
 
     // Constructor với tất cả các trường
 
@@ -42,9 +42,9 @@ public class ResumeResponseDto {
         this.activities = activities;
         this.educations = educations;
         this.awards = awards;
-        this.applicants = applicants;
-        this.experiences = experiences;
+        this.applicantIds = applicantIds;
         this.skillsResumes = skillsResumes;
         this.summary = summary;
+        this.candidateId=candidateId;
     }
 }
