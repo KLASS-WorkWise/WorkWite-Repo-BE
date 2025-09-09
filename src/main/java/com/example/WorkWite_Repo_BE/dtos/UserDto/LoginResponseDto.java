@@ -27,11 +27,6 @@ public class LoginResponseDto {
         private List<String> roles;
     }
 
-    @Data
-    public static class RoleDto {
-        // Đã bỏ, không dùng nữa
-    }
-
     private String access_token;
     private String refresh_token;
 }
