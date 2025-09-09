@@ -14,4 +14,6 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
     Page<Applicant> findByCandidateId(Long candidateId , Pageable pageable);
 
 //    List<Applicant> findByCandidateId(Long candidateId);
+List<Applicant> findByExperienceYearsGreaterThanEqual(int years);
+
 }

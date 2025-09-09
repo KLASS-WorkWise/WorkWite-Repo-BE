@@ -57,5 +57,7 @@ public class JobPosting {
     private String status;
     @OneToMany(mappedBy = "jobPosting", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Applicant> applicants;
+    @Column(name = "min_skill_match_percent")
+    private Double minSkillMatchPercent = 30.0; // mặc định 50%
 
 } 

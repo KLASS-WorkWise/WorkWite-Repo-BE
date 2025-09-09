@@ -25,5 +25,11 @@ public class ApplicantResponseDto {
     private ApplicationStatus applicationStatus;
     private List<String> missingSkills; // danh sách skill thiếu
     private String minExperience; // cảnh báo kinh nghiệm nếu chưa đủ
+    private Integer experienceYears; // ✅ thêm số năm
+    private Double skillMatchPercent;      // ✅ thêm
+    private Boolean isSkillQualified;      // ✅ thêm
+    private Boolean isExperienceQualified; // ✅ thêm
+    // Thêm history
+    private List<ApplicantHistoryDto> history;
 
 }

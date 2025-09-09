@@ -3,6 +3,8 @@ package com.example.WorkWite_Repo_BE.controlers;
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
+import com.example.WorkWite_Repo_BE.entities.ApplicantHistory;
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.services.ApplicantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -54,6 +57,18 @@ public class ApplicantController {
         System.out.println("size: " + size);
         return this.applicantService.getAllAppsByPage(page, size,sortBy, sortDir);
     }
+//    @GetMapping("/{applicantId}")
+//    public ResponseEntity<ApplicantResponseDto> getDetail(@PathVariable Long applicantId) {
+//        return ResponseEntity.ok(applicantService.getApplicantDetail(applicantId));
+//    }
+
+    @PatchMapping("/{applicantId}/history")
+    public ResponseEntity<ApplicantResponseDto> updateStep(
+            @PathVariable Long applicantId,
+            @RequestParam String step,
+            @RequestParam String status) {
+        return ResponseEntity.ok(applicantService.updateApplicantStep(applicantId, step, status));
+    }
 
     @GetMapping("/detail/{applicantId}")
     public ResponseEntity<ApplicantResponseDto> getApplicantDetail(@PathVariable Long applicantId) {
@@ -67,53 +82,20 @@ public class ApplicantController {
     }
     @GetMapping("/resume-link/{filename}")
     public ResponseEntity<Resource> getResumeLink(@PathVariable String filename) {
-        try {
-            Path filePath = Paths.get(ApplicantService.RESUME_UPLOAD_DIR).resolve(filename).normalize();
-            Resource resource = new org.springframework.core.io.UrlResource(filePath.toUri());
+        Resource resource = applicantService.getResumeResource(filename);
+        String contentType = applicantService.getContentType(filename);
+        boolean preview = applicantService.isPreviewable(filename);
 
-            if(!resource.exists()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File không tồn tại");
-            }
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType));
 
-            // Lấy file extension
-            String ext = "";
-            int i = filename.lastIndexOf('.');
-            if (i > 0) ext = filename.substring(i+1).toLowerCase();
-
-            // Xác định content type
-            String contentType;
-            boolean preview = false;
-            switch(ext){
-                case "pdf":
-                    contentType = "application/pdf";
-                    preview = true; // PDF có thể preview
-                    break;
-                case "doc":
-                    contentType = "application/msword";
-                    break;
-                case "docx":
-                    contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                    break;
-                default:
-                    contentType = "application/octet-stream";
-            }
-
-            ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
-                    .contentType(org.springframework.http.MediaType.parseMediaType(contentType));
-
-            if(preview){
-                // Cho phép preview trên trình duyệt: inline
-                responseBuilder.header("Content-Disposition", "inline; filename=\"" + resource.getFilename() + "\"");
-            } else {
-                // Buộc download
-                responseBuilder.header("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-            }
-
-            return responseBuilder.body(resource);
-
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể tải file");
+        if (preview) {
+            responseBuilder.header("Content-Disposition", "inline; filename=\"" + resource.getFilename() + "\"");
+        } else {
+            responseBuilder.header("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         }
+
+        return responseBuilder.body(resource);
     }
 
 
