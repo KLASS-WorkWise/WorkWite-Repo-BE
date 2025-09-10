@@ -55,6 +55,7 @@ public class ResumeService {
         resume1.setProfilePicture(creatResumeRequestDto.getProfilePicture());
         resume1.setSummary(creatResumeRequestDto.getSummary());
         resume1.setJobTitle(creatResumeRequestDto.getJobTitle());
+        resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setCreatedAt(LocalDateTime.now());
         resumeRepository.save(resume1);
 
@@ -133,6 +134,7 @@ public class ResumeService {
             // Cập nhật các trường của Resume
             resume.setFullName(resumeUpdateDto.getFullName());
             resume.setEmail(resumeUpdateDto.getEmail());
+            resume.setTemplate(resumeUpdateDto.getTemplate());
             resume.setPhone(resumeUpdateDto.getPhone());
             resume.setProfilePicture(resumeUpdateDto.getProfilePicture());
             resume.setSummary(resumeUpdateDto.getSummary());
@@ -243,6 +245,7 @@ public class ResumeService {
                 resume.getPhone(),
                 createdAtStr,
                 resume.getJobTitle(),
+                resume.getTemplate(),
                 resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                 resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                 resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),

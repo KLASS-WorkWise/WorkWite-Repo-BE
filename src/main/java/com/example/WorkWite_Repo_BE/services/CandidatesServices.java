@@ -61,6 +61,7 @@ public class CandidatesServices {
                             resume.getPhone(),
                             createdAtStr,
                             resume.getJobTitle(),
+                            resume.getTemplate(),
                             resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
                             resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
                             resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),

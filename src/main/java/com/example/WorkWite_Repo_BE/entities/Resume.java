@@ -37,6 +37,9 @@ public class Resume {
     @Column(name = "profile_picture",columnDefinition = "LONGTEXT")
     private String profilePicture;
 
+    @Column(name = "template")
+    private String template;
+
     @Column(columnDefinition = "TEXT")
     private String summary;
 

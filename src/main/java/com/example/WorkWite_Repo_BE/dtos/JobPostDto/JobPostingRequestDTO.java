@@ -45,5 +45,5 @@ public class JobPostingRequestDTO {
 
     private java.time.LocalDateTime endAt;
 
-    private String status;
+    private String status;  
 } 
