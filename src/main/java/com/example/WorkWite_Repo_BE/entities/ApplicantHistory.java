@@ -1,20 +1,20 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "applicant_history")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApplicantHistory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,12 +23,14 @@ public class ApplicantHistory {
     @JoinColumn(name = "applicant_id", nullable = false)
     private Applicant applicant;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String step; // "Applied", "HR Screening", "Interview" ...
+    private ApplicationStatus status;
 
-    @Column(nullable = false)
-    private String status; // "pending", "in-progress", "done"
+    @Column(length = 500)
+    private String note;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime changedAt;
+
+    private String changedBy; // HR/Admin/Candidate
 }

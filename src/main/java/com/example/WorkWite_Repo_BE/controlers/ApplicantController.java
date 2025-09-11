@@ -1,11 +1,11 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
-import com.example.WorkWite_Repo_BE.entities.ApplicantHistory;
-import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
+import com.example.WorkWite_Repo_BE.dtos.applicant.*;
+import com.example.WorkWite_Repo_BE.entities.Applicant;
+import com.example.WorkWite_Repo_BE.repositories.ApplicantRepository;
+import com.example.WorkWite_Repo_BE.services.ApplicantHistoryService;
 import com.example.WorkWite_Repo_BE.services.ApplicantService;
+import com.example.WorkWite_Repo_BE.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -15,9 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -28,7 +27,39 @@ import java.util.List;
 public class ApplicantController {
 
     private final ApplicantService applicantService;
+    private final AuthService authService;
+    private final ApplicantHistoryService applicantHistoryService;
+    private final ApplicantRepository applicantRepository;
 
+    @GetMapping("/{applicantId}/history")
+    public List<ApplicantHistoryDto> getApplicantHistory(@PathVariable Long applicantId) {
+        return applicantHistoryService.getHistory(applicantId);}
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateApplicantStatus(
+            @PathVariable Long id,
+            @RequestBody ApplicantStatusUpdateRequest request
+    ) {
+//        // 🚨 TODO: kiểm tra role HR/Admin (ví dụ thông qua AuthService)
+//        String changedBy = "Users"; // Lấy từ AuthService thực tế
+
+        Applicant updated = applicantService.updateApplicantStatus(id, request);
+
+        return ResponseEntity.ok("Cập nhật trạng thái thành công: " + updated.getApplicationStatus());
+    }
+
+    @GetMapping("/{id}/timeline")
+    public ResponseEntity<List<ApplicantTimelineDto>> getApplicantTimeline(@PathVariable Long id) {
+        Long currentCandidateId = authService.getCurrentUserCandidateId();
+
+        Applicant applicant = applicantRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Applicant không tồn tại"));
+
+        if (!applicant.getCandidate().getId().equals(currentCandidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
+        }
+
+        return ResponseEntity.ok(applicantHistoryService.getFullTimeline(applicant));
+    }
 
     @PostMapping(value = "/{jobId}/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApplicantResponseDto> applyJob(
@@ -62,13 +93,6 @@ public class ApplicantController {
 //        return ResponseEntity.ok(applicantService.getApplicantDetail(applicantId));
 //    }
 
-    @PatchMapping("/{applicantId}/history")
-    public ResponseEntity<ApplicantResponseDto> updateStep(
-            @PathVariable Long applicantId,
-            @RequestParam String step,
-            @RequestParam String status) {
-        return ResponseEntity.ok(applicantService.updateApplicantStep(applicantId, step, status));
-    }
 
     @GetMapping("/detail/{applicantId}")
     public ResponseEntity<ApplicantResponseDto> getApplicantDetail(@PathVariable Long applicantId) {
@@ -97,6 +121,8 @@ public class ApplicantController {
 
         return responseBuilder.body(resource);
     }
+
+
 
 
 }

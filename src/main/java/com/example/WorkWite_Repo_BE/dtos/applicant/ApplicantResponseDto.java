@@ -1,6 +1,8 @@
 package com.example.WorkWite_Repo_BE.dtos.applicant;
 
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +20,14 @@ public class ApplicantResponseDto {
     private Long jobId;
     private Long candidateId;
     private Long resumesId;
+    private String jobTitle;
 
+    private String fullName;
+    private String companyName;
+    private String logoUrl;
+    private String description_company;
+
+    private String description;
     private String resumeLink;
     private String coverLetter;
     private LocalDateTime appliedAt;
@@ -29,6 +38,8 @@ public class ApplicantResponseDto {
     private Double skillMatchPercent;      // ✅ thêm
     private Boolean isSkillQualified;      // ✅ thêm
     private Boolean isExperienceQualified; // ✅ thêm
+    private String skillMatchMessage;
+
     // Thêm history
     private List<ApplicantHistoryDto> history;
 

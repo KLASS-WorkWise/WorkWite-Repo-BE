@@ -1,9 +1,6 @@
 package com.example.WorkWite_Repo_BE.services;
 
-import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantHistoryDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.enums.ApplicantStep;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
@@ -15,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -42,81 +40,76 @@ public class ApplicantService {
     private final ResumeJpaRepository resumeJpaRepository;
     private final ApplicantRepository applicantRepository;
     private final AuthService authService;
+    private final ApplicantHistoryRepository applicantHistoryRepository;
 
 
-    private final ApplicantHistoryRepository historyRepository;
     @Transactional
-    public ApplicantResponseDto updateApplicantStep(Long applicantId, String step, String status) {
+    public Applicant updateApplicantStatus(Long applicantId, ApplicantStatusUpdateRequest request) {
         Applicant applicant = applicantRepository.findById(applicantId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new RuntimeException("Applicant không tồn tại"));
 
-//        Long currentEmployerId = authService.getCurrentUserEmployerId();
-//        if (!applicant.getJobPosting().getEmployer().getId().equals(currentEmployerId)) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật applicant này");
-//        }
-
-        ApplicantHistory history = historyRepository
-                .findByApplicantIdAndStep(applicantId, step)
-                .orElseGet(() -> {
-                    ApplicantHistory h = new ApplicantHistory();
-                    h.setApplicant(applicant);
-                    h.setStep(step);
-                    return h;
-                });
-
-        history.setStatus(status);
-        history.setUpdatedAt(LocalDateTime.now());
-        historyRepository.save(history);
-
-        // cập nhật trạng thái tổng thể
-        updateApplicantOverallStatus(applicant);
-
-        return getApplicantDetail(applicantId);
-    }
-
-    private void updateApplicantOverallStatus(Applicant applicant) {
-        List<ApplicantHistory> allHistory = historyRepository.findByApplicantIdOrderByUpdatedAt(applicant.getId());
-        Optional<ApplicantHistory> lastDone = allHistory.stream()
-                .filter(h -> "done".equalsIgnoreCase(h.getStatus()))
-                .reduce((first, second) -> second);
-
-        if (lastDone.isPresent()) {
-            applicant.setApplicationStatus(ApplicationStatus.fromStep(lastDone.get().getStep()));
-        } else {
-            applicant.setApplicationStatus(ApplicationStatus.PENDING);
-        }
-
+        // Cập nhật trạng thái
+        applicant.setApplicationStatus(request.getStatus());
         applicantRepository.save(applicant);
+
+        logHistory(applicant, request.getStatus(), request.getNote());
+
+        return applicant;
     }
+    private void logHistory(Applicant applicant, ApplicationStatus status, String note) {
+        ApplicantHistory history = ApplicantHistory.builder()
+                .applicant(applicant)
+                .status(status)
+                .note(note)
+                .changedAt(LocalDateTime.now())
+//                .changedBy(changedBy)
+                .build();
 
-
+        applicantHistoryRepository.save(history);
+    }
 
     public ApplicantResponseDto getApplicantDetail(Long applicantId) {
-        Applicant applicant = applicantRepository.findById(applicantId)
+        Long currentCandidateId = authService.getCurrentUserCandidateId();
+
+        Applicant app = applicantRepository.findById(applicantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        return convertToDto(applicant);
+        if (!app.getCandidate().getId().equals(currentCandidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
+        }
+        List<ApplicantHistory> historyList =
+                applicantHistoryRepository.findByApplicantIdOrderByChangedAtAsc(app.getId());
+
+        return ApplicantResponseDto.builder()
+                .id(app.getId())
+                .jobId(app.getJobPosting().getId())
+                .candidateId(app.getCandidate().getId())
+                .jobTitle(app.getJobPosting().getTitle())
+//                .description_company(app.getJobPosting().getEmployer().getCompanyInformation().getDescription())
+                .fullName(app.getResume() != null ? app.getResume().getFullName() : null)
+//                .companyName(app.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
+//                .logoUrl(app.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
+
+                .resumesId(app.getResume() != null ? app.getResume().getId() : null)
+                .resumeLink(app.getResumeLink())
+                .applicationStatus(app.getApplicationStatus())
+                .coverLetter(app.getCoverLetter())
+                .appliedAt(app.getAppliedAt())
+                .missingSkills(app.getMissingSkills() != null ? app.getMissingSkills() : List.of())
+                .minExperience(app.getMinExperience())
+                .experienceYears(app.getExperienceYears() != null ? app.getExperienceYears() : 0) // ✅ tránh null
+                .skillMatchPercent(app.getSkillMatchPercent())        // ✅ map field mới
+                .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
+                .isExperienceQualified(app.getIsExperienceQualified())
+                .history(historyList.stream().map(h -> ApplicantHistoryDto.builder()
+                        .status(h.getStatus())
+                        .note(h.getNote())
+                        .changedAt(h.getChangedAt())
+                        .changedBy(h.getChangedBy())
+                        .build()).toList())
+                .build();
+
     }
-
-
-
-    @Transactional
-    public void addInitialHistory(Applicant applicant) {
-        List<ApplicantHistory> histories = Arrays.stream(ApplicantStep.values())
-                .map(step -> {
-                    ApplicantHistory h = new ApplicantHistory();
-                    h.setApplicant(applicant);
-                    h.setStep(step.name().replace("_", " "));
-                    h.setStatus(step == ApplicantStep.APPLIED ? "done" : "pending");
-                    h.setUpdatedAt(LocalDateTime.now());
-                    return h;
-                }).toList();
-
-        historyRepository.saveAll(histories);
-    }
-
-
-
 
 
 
@@ -156,17 +149,16 @@ public class ApplicantService {
     }
 
     private ApplicantResponseDto convertToDto(Applicant app) {
-        List<ApplicantHistoryDto> historyDtos = historyRepository.findByApplicantIdOrderByUpdatedAt(app.getId()).stream()
-                .map(h -> ApplicantHistoryDto.builder()
-                        .step(h.getStep())
-                        .status(h.getStatus())
-                        .date(h.getUpdatedAt())
-                        .build())
-                .toList();
         return ApplicantResponseDto.builder()
                 .id(app.getId())
                 .jobId(app.getJobPosting().getId())
                 .candidateId(app.getCandidate().getId())
+                .jobTitle(app.getJobPosting().getTitle())
+//                .description_company(app.getJobPosting().getEmployer().getCompanyInformation().getDescription())
+                .fullName(app.getResume() != null ? app.getResume().getFullName() : null)
+//                .companyName(app.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
+//                .logoUrl(app.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
+
                 .resumesId(app.getResume() != null ? app.getResume().getId() : null)
                 .resumeLink(app.getResumeLink())
                 .applicationStatus(app.getApplicationStatus())
@@ -178,7 +170,6 @@ public class ApplicantService {
                 .skillMatchPercent(app.getSkillMatchPercent())        // ✅ map field mới
                 .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
                 .isExperienceQualified(app.getIsExperienceQualified())
-                .history(historyDtos)
                 .build();
     }
 
@@ -377,11 +368,12 @@ public class ApplicantService {
         if (applicantRequestDto.getResumesId() != null &&
                 applicantRequestDto.getResumeFile() != null &&
                 !applicantRequestDto.getResumeFile().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được chọn resume hoặc upload file, không được cùng lúc");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only select resume or upload file, not at the same time");
         }
+        //  Check nhanh trước (tránh user apply nhiều lần liên tiếp)
 
         if (applicantRepository.existsByJobPostingIdAndCandidateId(jobId, candidateId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã ứng tuyển công việc này rồi");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already applied for this job.");
         }
 
         Resume resume = null;
@@ -392,6 +384,8 @@ public class ApplicantService {
         double skillMatchPercent = 0.0;
         boolean skillQualified =true;
         boolean expQualified = true;
+        String skillMatchMessage = null;
+        double requiredSkillPercent;
 
 
         if (applicantRequestDto.getResumesId() != null) {
@@ -410,6 +404,16 @@ public class ApplicantService {
             skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), resume.getSkillsResumes());
             skillQualified = skillMatchPercent >=
                     Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
+            requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
+
+
+            if (!skillQualified) {
+                skillMatchMessage = String.format("Bạn chỉ đạt %.1f%% skill match, yêu cầu tối thiểu %.1f%%",
+                        skillMatchPercent, requiredSkillPercent);
+            } else {
+                skillMatchMessage = String.format("Bạn đạt %.1f%% skill match, yêu cầu tối thiểu %.1f%%",
+                        skillMatchPercent, requiredSkillPercent);
+            }
 
 
             // Tính kinh nghiệm
@@ -451,11 +455,17 @@ public class ApplicantService {
                 .skillMatchPercent(skillMatchPercent)    // ✅ lưu % skill match
                 .isSkillQualified(skillQualified)        // ✅ lưu trạng thái skill
                 .isExperienceQualified(expQualified)     // ✅ lưu trạng thái exp
+                .skillMatchMessage(skillMatchMessage)
                 .build();
 
-
-        applicantRepository.save(applicant);
-        addInitialHistory(applicant); // <--- Thêm dòng này
+        try {
+            applicantRepository.save(applicant);
+            logHistory(applicant, ApplicationStatus.PENDING, "Ứng viên vừa apply job");
+        } catch (DataIntegrityViolationException ex) {
+            // Race condition: DB unique constraint bắt duplicate
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already applied for this Job");
+        }
+//        applicantRepository.save(applicant);
 
         log.info("Ứng viên {} apply thành công vào job {} (match skill: {}%, exp {} năm)",
                 candidateId, jobId, skillMatchPercent, totalExpYears);

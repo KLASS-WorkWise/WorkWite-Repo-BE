@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "applicants",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "job_id"}))
+//@EntityListeners(ApplicantEntityListener.class)
+@Table( name = "applicants",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"job_posting_id", "candidate_id"})
+        })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -65,6 +68,10 @@ public class Applicant {
 
     @Column(name = "is_experience_qualified")
     private Boolean isExperienceQualified; // có đạt yêu cầu exp không
+
+    @Column(length = 500)
+    private String skillMatchMessage;
+
 
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ApplicantHistory> history;

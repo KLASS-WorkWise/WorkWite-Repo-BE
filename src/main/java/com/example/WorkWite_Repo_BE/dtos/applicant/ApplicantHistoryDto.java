@@ -1,18 +1,18 @@
 package com.example.WorkWite_Repo_BE.dtos.applicant;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApplicantHistoryDto {
-    private String step;
-    private String status;
-    private LocalDateTime date;
+    private Long id;
+    private ApplicationStatus status;
+    private String note;
+    private LocalDateTime changedAt;
+    private String changedBy;
 }
