@@ -25,6 +25,8 @@ public class User {
     private String resetCode;
     private Long resetCodeExpiry;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String avatarUrl; // Đường dẫn hoặc URL ảnh đại diện
 
     @ManyToMany(fetch = FetchType.EAGER)
