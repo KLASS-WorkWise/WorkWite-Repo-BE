@@ -2,11 +2,15 @@ package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ListApplicantResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.services.ApplicantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -83,5 +89,37 @@ public class ApplicantController {
         return responseBuilder.body(resource);
     }
 
+    /**
+     * Lấy danh sách ứng viên theo tuần hoặc tháng
+     * @param employerId id của employer
+     * @param period "week" hoặc "month"
+     */
+    @GetMapping("/{employerId}/filter")
+    public Page<ListApplicantResponseDTO> getApplicantsByPeriod(
+            @PathVariable Long employerId,
+            @RequestParam(required = false) Long jobPostingId,
+            @RequestParam(required = false) ApplicationStatus status,
+            @RequestParam(defaultValue = "week") String period,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return applicantService.getApplicantsByEmployerAndPeriod(
+                employerId,
+                jobPostingId,
+                status,
+                period,
+                startDate,
+                endDate,
+                page,
+                size
+        );
 
-}
+        }
+
+
+
+    }

@@ -2,6 +2,7 @@ package com.example.WorkWite_Repo_BE.services;
 
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ListApplicantResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -319,4 +321,45 @@ public class ApplicantService {
         applicantRepository.delete(applicant);
         log.info("Ứng viên {} đã xóa applicant {}", currentCandidateId, applicantId);
     }
+
+    // hiển thị ai đã apply vào công ty
+
+    public Page<ListApplicantResponseDTO> getApplicantsByEmployerAndPeriod(
+            Long employerId,
+            Long jobPostingId,
+            ApplicationStatus status,
+            String period,                  // "week", "month", hoặc null
+            LocalDateTime customStartDate,  // cho custom filter
+            LocalDateTime customEndDate,
+            int page,
+            int size
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+
+        if ("week".equalsIgnoreCase(period)) {
+            startDate = now.with(java.time.DayOfWeek.MONDAY)
+                    .withHour(0).withMinute(0).withSecond(0).withNano(0);
+            endDate = startDate.plusDays(6)
+                    .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        } else if ("month".equalsIgnoreCase(period)) {
+            startDate = now.with(TemporalAdjusters.firstDayOfMonth())
+                    .withHour(0).withMinute(0).withSecond(0).withNano(0);
+            endDate = now.with(TemporalAdjusters.lastDayOfMonth())
+                    .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        } else if ("custom".equalsIgnoreCase(period) && customStartDate != null && customEndDate != null) {
+            startDate = customStartDate;
+            endDate = customEndDate;
+        } else {
+            throw new IllegalArgumentException("Period must be 'week', 'month' or 'custom' with startDate & endDate");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return applicantRepository.findApplicantsByEmployerAndDateRange(
+                employerId, jobPostingId, status, startDate, endDate, pageable
+        );
+    }
+
 }
