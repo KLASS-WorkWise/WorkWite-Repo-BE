@@ -28,10 +28,15 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserJpaRepository userJpaRepository;
     private final MailService mailService;
+    private final com.example.WorkWite_Repo_BE.services.SystemLogService systemLogService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) throws Exception {
         LoginResponseDto result = this.userService.login(request);
+        // Ghi log đăng nhập thành công
+        String actor = request.getUsername();
+        String ipAddress = "unknown"; // Có thể lấy từ request nếu cần
+        systemLogService.saveLog(actor, "LOGIN", "User login", ipAddress, "INFO", null); // Không có user bị tác động
         return ResponseEntity.ok(result);
     }
 

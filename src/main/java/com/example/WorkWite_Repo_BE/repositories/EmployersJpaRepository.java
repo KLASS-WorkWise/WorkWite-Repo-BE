@@ -15,4 +15,6 @@ public interface EmployersJpaRepository extends JpaRepository<Employers, Long> {
     boolean existsByUserId(Long userId);
     Optional<Employers> findByUserId(Long userId);
     Page<Employers> findByStatus(String status, Pageable pageable);
+    
+    long countByStatus(String status);
 }

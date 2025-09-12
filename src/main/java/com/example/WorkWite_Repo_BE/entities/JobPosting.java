@@ -6,6 +6,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Entity
 @Table(name = "job_postings")
 @Data
@@ -59,5 +62,9 @@ public class JobPosting {
     private List<Applicant> applicants;
     @Column(name = "min_skill_match_percent")
     private Double minSkillMatchPercent ;
+
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
 } 
