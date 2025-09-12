@@ -35,8 +35,8 @@ public class JobPostingServiceImpl implements JobPostingService {
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         // Lấy email hoặc username từ SecurityContextHolder
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    final String[] actorHolder = {null};
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+          String actor = null;
         if (authentication != null && authentication.getPrincipal() != null) {
             Object principal = authentication.getPrincipal();
             // Nếu có CustomUserDetails thì lấy email
@@ -44,25 +44,25 @@ public class JobPostingServiceImpl implements JobPostingService {
                 java.lang.reflect.Method getEmailMethod = principal.getClass().getMethod("getEmail");
                 Object emailObj = getEmailMethod.invoke(principal);
                 if (emailObj != null) {
-                    actorHolder[0] = emailObj.toString();
+                    actor = emailObj.toString();
                 }
             } catch (Exception e) {
                 // Không có getEmail, fallback lấy username
                 if (principal instanceof UserDetails) {
-                    actorHolder[0] = ((UserDetails) principal).getUsername();
+                    actor = ((UserDetails) principal).getUsername();
                 } else {
-                    actorHolder[0] = authentication.getName();
+                    actor = authentication.getName();
                 }
             }
         }
-        if (actorHolder[0] == null) {
+        if (actor == null) {
             throw new RuntimeException("Unauthorized: Cannot get actor from token");
         }
         // Tìm employer theo user đăng nhập
-        final String actor = actorHolder[0];
+        String finalActor = actor;
         Employers employer = employerRepository.findByUserId(
                 getUserIdByUsername(actor))
-                .orElseThrow(() -> new RuntimeException("Employer not found for user: " + actor));
+                .orElseThrow(() -> new RuntimeException("Employer not found for user: " + finalActor));
 
         JobPosting jobPosting = new JobPosting();
         jobPosting.setEmployer(employer);

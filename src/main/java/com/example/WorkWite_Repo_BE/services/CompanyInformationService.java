@@ -164,6 +164,18 @@ public class CompanyInformationService {
                 .build();
     }
 
+    public CompanyInformationReponseDto getCompanyByEmployerId(Long employerId) {
+        Employers employer = employersRepository.findById(employerId)
+                .orElseThrow(() -> new RuntimeException("Employer not found with id: " + employerId));
+
+        CompanyInformation companyInfo = employer.getCompanyInformation();
+        if (companyInfo == null) {
+            throw new RuntimeException("No company information found for employer with id: " + employerId);
+        }
+
+        return convertToDto(companyInfo);
+    }
+
 
 
 

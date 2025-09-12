@@ -8,10 +8,8 @@ import com.example.WorkWite_Repo_BE.exceptions.HttpException;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.RoleJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -36,24 +34,35 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
         dto.setStatus(user.getStatus());
+        dto.setAvatarUrl(user.getAvatarUrl());
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toList()));
         }
         return dto;
     }
 
+    public List<UserResponseDto> getAllUsers() {
+        List<User> users = this.userJpaRepository.findAll();
+        return users.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     // Lấy danh sách user theo phân trang
     public PaginatedUserResponseDto getAllUsersPaginated(int page, int size) {
-        Pageable pageable = PageRequest.of(page , size);
+        // Page số bắt đầu từ 1, chuyển về 0-based cho Pageable
+        int pageNumber = Math.max(page - 1, 0);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNumber,
+                size);
+        org.springframework.data.domain.Page<User> userPage = userJpaRepository.findAll(pageable);
 
-        Page<User> userPage = userJpaRepository.findAll(pageable);
         List<UserResponseDto> userDtos = userPage.getContent().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
         return PaginatedUserResponseDto.builder()
                 .data(userDtos)
-                .pageNumber(userPage.getNumber() )
+                .pageNumber(userPage.getNumber() + 1) // trả về 1-based
                 .pageSize(userPage.getSize())
                 .totalRecords(userPage.getTotalElements())
                 .totalPages(userPage.getTotalPages())
@@ -69,26 +78,28 @@ public class UserService {
         return convertToDto(user);
     }
 
-    public UserResponseDto updateUser(Long id, UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto updateUser(Long id, UserUpdateRequestDto request) {
         User user = userJpaRepository.findById(id)
                 .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
-        if (userUpdateRequestDto.getUsername() != null)
-            user.setUsername(userUpdateRequestDto.getUsername());
-        if (userUpdateRequestDto.getEmail() != null)
-            user.setEmail(userUpdateRequestDto.getEmail());
-        if (userUpdateRequestDto.getPassword() != null)
-            user.setPassword(userUpdateRequestDto.getPassword());
-        if (userUpdateRequestDto.getFullName() != null)
-            user.setFullName(userUpdateRequestDto.getFullName());
+        if (request.getUsername() != null)
+            user.setUsername(request.getUsername());
+        if (request.getEmail() != null)
+            user.setEmail(request.getEmail());
+        if (request.getPassword() != null)
+            user.setPassword(request.getPassword());
+        if (request.getFullName() != null)
+            user.setFullName(request.getFullName());
+        if( request.getAvatarUrl() != null)
+            user.setAvatarUrl(request.getAvatarUrl());
         userJpaRepository.save(user);
         return convertToDto(user);
     }
-
-
+    @Transactional
     public void deleteUser(Long id) {
         if (!userJpaRepository.existsById(id)) {
-            throw new HttpException("User not found with id in", HttpStatus.NOT_FOUND);
+            throw new HttpException("User not found", HttpStatus.NOT_FOUND);
         }
+
         // Xoá tất cả các liên kết với Candidate
         candidateJpaRepository.deleteById(id);
         // Xoá user

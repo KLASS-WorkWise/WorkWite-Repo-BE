@@ -14,5 +14,6 @@ public class UserResponseDto {
     private String email;
     private String fullName;
     private String status;
+    private String avatarUrl;
     private java.util.List<String> roles;
 }
