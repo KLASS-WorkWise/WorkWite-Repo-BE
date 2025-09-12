@@ -20,6 +20,7 @@ public class Resume {
 
     @ManyToOne
     @JoinColumn(name = "candidate_id", nullable = false)
+
     @JsonIgnore
     private Candidate candidate;
 
@@ -32,8 +33,12 @@ public class Resume {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "profile_picture")
+    @Lob
+    @Column(name = "profile_picture",columnDefinition = "LONGTEXT")
     private String profilePicture;
+
+    @Column(name = "template")
+    private String template;
 
     @Column(columnDefinition = "TEXT")
     private String summary;
@@ -58,5 +63,15 @@ public class Resume {
     private List<Experience> experiences;
 
     @OneToMany(mappedBy = "resume")
-    private List<Application> applications;
+    @JsonIgnore
+    private List<Applicant> applicants;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "resumes_skills",
+            joinColumns = @JoinColumn(name = "resumes_id")
+    )
+    private List<String> skillsResumes;
+    @Column(name = "resume_link")
+    private String resumeLink;
 }

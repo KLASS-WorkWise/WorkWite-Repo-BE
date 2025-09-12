@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:3001")
 @RestController
 @RequestMapping("/api/company")
 public class CompanyInformationController {
@@ -25,7 +26,7 @@ public class CompanyInformationController {
     @GetMapping
     public PaginatedCompanyInformationRespondeDto getAllCompanyInformation(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size
+            @RequestParam(defaultValue = "6") int size
     ){
         return this.companyInformationService.getAllCompanies(page, size);
     }
@@ -67,6 +68,11 @@ public class CompanyInformationController {
             @RequestParam(defaultValue = "3") int size
     ) {
         return companyInformationService.searchCompaniesByName(name, page, size);
+    }
+    // Lấy thông tin công ty theo employerId
+    @GetMapping("/employer/{employerId}")
+    public CompanyInformationReponseDto getCompanyByEmployerId(@PathVariable Long employerId) {
+        return companyInformationService.getCompanyByEmployerId(employerId);
     }
 
 }

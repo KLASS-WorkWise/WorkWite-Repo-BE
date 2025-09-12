@@ -1,7 +1,10 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -17,6 +20,7 @@ public class Experience {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "resume_id", nullable = false)
+    @JsonIgnore
     private Resume resume;
 
     @Column(name = "company_name")
@@ -25,10 +29,10 @@ public class Experience {
     private String position;
 
     @Column(name = "start_year")
-    private Integer startYear;
+    private LocalDate startYear;
 
     @Column(name = "end_year")
-    private Integer endYear;
+    private LocalDate endYear;
 
     @Column(columnDefinition = "TEXT")
     private String description;

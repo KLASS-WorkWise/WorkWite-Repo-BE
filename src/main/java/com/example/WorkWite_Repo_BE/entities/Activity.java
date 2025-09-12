@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -24,11 +26,13 @@ public class Activity {
     @Column(name = "activity_name")
     private String activityName;
 
-    private String role;
+    private String organization;
 
     @Column(name = "start_year")
-    private Integer startYear;
+    private LocalDate startYear;
 
     @Column(name = "end_year")
-    private Integer endYear;
+    private LocalDate endYear;
+
+    private String description;
 }

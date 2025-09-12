@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ResumeJpaRepository extends JpaRepository<Resume, Long> {
     //3 cái test thử
@@ -15,4 +17,7 @@ public interface ResumeJpaRepository extends JpaRepository<Resume, Long> {
     //+ sửa list thành set
     // tách query ra từng cái riêng trong repository khác nhau
     // rooif qua service lâ
+
+    List<Resume> findByCandidateId(Long candidateId);
+
 }

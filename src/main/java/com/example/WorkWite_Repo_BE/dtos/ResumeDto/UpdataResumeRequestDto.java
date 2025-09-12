@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 public class UpdataResumeRequestDto {
     @NotBlank(message = "Họ tên không được để trống")
     private String fullName;
-
+    
+    private String template;
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;
@@ -33,4 +34,14 @@ public class UpdataResumeRequestDto {
 
     @NotBlank(message = "Vị trí công việc không được để trống")
     private String jobTitle;
+
+    private java.util.List<String> skillsResumes;
+
+    private java.util.List<com.example.WorkWite_Repo_BE.dtos.Education.UpdateEducationRequestDto> educations;
+
+    private java.util.List<com.example.WorkWite_Repo_BE.dtos.Activity.UpdateActivityRequestDto> activities;
+
+    private java.util.List<com.example.WorkWite_Repo_BE.dtos.AwardDto.UpdateAwardRequestDto> awards;
+
+    private java.util.List<com.example.WorkWite_Repo_BE.dtos.ExperienceDto.UpdateExperienceRequestDto> experiences;
 }

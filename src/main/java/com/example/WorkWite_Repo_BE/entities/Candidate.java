@@ -1,10 +1,12 @@
 package com.example.WorkWite_Repo_BE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -14,24 +16,28 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "candidates")
+@ToString(exclude = {"resumes", "savedJobs", "applicants"})
 public class Candidate{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String phoneNumber;
     private String avatar;
 
     @OneToOne(optional = false,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @MapsId
     @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<SavedJob> savedJobs;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
-    private List<Application> applications;
+    private List<Applicant> applicants;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
     private List<Resume> resumes;
+
+
 }

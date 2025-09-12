@@ -37,19 +37,19 @@ public class RoleService {
 
         String roleName = newRole.getName();
 
-        if ("Employers".equalsIgnoreCase(roleName)) {
-            // Thêm mới employer nếu chưa có
-            boolean hasEmployer = employerRepository.existsByUserId(userId);
-            if (!hasEmployer) {
-                Employers employer = new Employers();
-                employer.setUser(user); // set quan hệ tới User, tùy entity bạn chỉnh sửa
-                // Có thể set các trường khác nếu cần
-                employerRepository.save(employer);
-            }
-        } else if ("Users".equalsIgnoreCase(roleName)) {
-            // Nếu chuyển sang role Users, xóa employer nếu có
-            employerRepository.findByUserId(userId).ifPresent(employerRepository::delete);
-        }
+//        if ("Employers".equalsIgnoreCase(roleName)) {
+//            // Thêm mới employer nếu chưa có
+//            boolean hasEmployer = employerRepository.existsByUserId(userId);
+//            if (!hasEmployer) {
+//                Employers employer = new Employers();
+//                employer.setUser(user); // set quan hệ tới User, tùy entity bạn chỉnh sửa
+//                // Có thể set các trường khác nếu cần
+//                employerRepository.save(employer);
+//            }
+//        } else if ("Users".equalsIgnoreCase(roleName)) {
+//            // Nếu chuyển sang role Users, xóa employer nếu có
+//            employerRepository.findByUserId(userId).ifPresent(employerRepository::delete);
+//        }
     }
 
     // Chuẩn hóa hàm convertToDto cho Role entity
@@ -59,7 +59,6 @@ public class RoleService {
         dto.setName(role.getName());
         return dto;
     }
-
 
     private final RoleJpaRepository roleJpaRepository;
     private final UserJpaRepository userJpaRepository;
@@ -73,6 +72,7 @@ public class RoleService {
         roleJpaRepository.save(role);
         return convertToDto(role);
     }
+
     public void deleteRole(Long id) {
         if (!roleJpaRepository.existsById(id)) {
             throw new HttpException("Role not found", HttpStatus.NOT_FOUND);

@@ -1,18 +1,21 @@
 package com.example.WorkWite_Repo_BE.dtos.Activity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ActivityResponseDto {
     private String activityName;
-    private String role;
-    private Integer startYear;
-    private Integer endYear;
+    private String organization;
+    private LocalDate startYear;
+    private LocalDate endYear;
+    private String description;
 
-    public ActivityResponseDto(String activityName, String role, Integer startYear, Integer endYear) {
-        this.activityName = activityName;
-        this.role = role;
-        this.startYear = startYear;
-        this.endYear = endYear;
-    }
 }

@@ -1,14 +1,14 @@
 
-
 package com.example.WorkWite_Repo_BE.services;
-
 
 import com.example.WorkWite_Repo_BE.dtos.UserDto.*;
 import com.example.WorkWite_Repo_BE.entities.Role;
 import com.example.WorkWite_Repo_BE.entities.User;
 import com.example.WorkWite_Repo_BE.exceptions.HttpException;
+import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.RoleJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,8 +23,8 @@ public class UserService {
     private final JwtService jwtService;
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
+    private final CandidateJpaRepository candidateJpaRepository;
     private final CandidatesServices candidatesServices;
-
 
     // Chuẩn hóa hàm convertToDto cho User entity
     private UserResponseDto convertToDto(User user) {
@@ -34,6 +34,7 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
         dto.setStatus(user.getStatus());
+        dto.setAvatarUrl(user.getAvatarUrl());
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toList()));
         }
@@ -47,7 +48,30 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    // Lấy user theo id, trả về DTO
+    // Lấy danh sách user theo phân trang
+    public PaginatedUserResponseDto getAllUsersPaginated(int page, int size) {
+        // Page số bắt đầu từ 1, chuyển về 0-based cho Pageable
+        int pageNumber = Math.max(page - 1, 0);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNumber,
+                size);
+        org.springframework.data.domain.Page<User> userPage = userJpaRepository.findAll(pageable);
+
+        List<UserResponseDto> userDtos = userPage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return PaginatedUserResponseDto.builder()
+                .data(userDtos)
+                .pageNumber(userPage.getNumber() + 1) // trả về 1-based
+                .pageSize(userPage.getSize())
+                .totalRecords(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .hasNext(userPage.hasNext())
+                .hasPrevious(userPage.hasPrevious())
+                .build();
+    }
+
+    // Lấy user theo id, trả về DTOre
     public UserResponseDto getUserById(Long id) {
         User user = userJpaRepository.findById(id)
                 .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
@@ -63,41 +87,46 @@ public class UserService {
             user.setEmail(request.getEmail());
         if (request.getPassword() != null)
             user.setPassword(request.getPassword());
+        if (request.getFullName() != null)
+            user.setFullName(request.getFullName());
+        if( request.getAvatarUrl() != null)
+            user.setAvatarUrl(request.getAvatarUrl());
         userJpaRepository.save(user);
         return convertToDto(user);
     }
-
+    @Transactional
     public void deleteUser(Long id) {
         if (!userJpaRepository.existsById(id)) {
             throw new HttpException("User not found", HttpStatus.NOT_FOUND);
         }
+
+        // Xoá tất cả các liên kết với Candidate
+        candidateJpaRepository.deleteById(id);
+        // Xoá user
         userJpaRepository.deleteById(id);
     }
 
     public LoginResponseDto login(LoginRequestDto request) throws Exception {
-        // Find the user by email (username)
         User user = this.userJpaRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED));
 
-        // Verify password
         if (!request.getPassword().equals(user.getPassword())) {
             throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
         }
 
-        // Generate a new access token (with full data + roles)
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = "dummy_refresh_token"; // TODO: sinh refresh token thực tế nếu có
+        String accessToken = jwtService.generateAccessToken(user); // 1 hour
+        String refreshToken = jwtService.generateRefreshToken(user); // 7 days
 
-        // Map roles: chỉ lấy tên role
         List<String> roles = user.getRoles() != null ? user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList()) : null;
 
         LoginResponseDto.LoggedInUserDto loggedInUser = LoginResponseDto.LoggedInUserDto.builder()
                 .id(user.getId())
-                .fullName(user.getFullName())
+                .fullname(user.getFullName())
                 .username(user.getUsername())
                 .status("active")
+                .email(user.getEmail())
                 .roles(roles)
                 .build();
 
@@ -109,9 +138,6 @@ public class UserService {
     }
 
     public RegisterResponseDto register(RegisterRequestDto request) {
-        if (!request.getPassword().equals(request.getRepassword())) {
-            throw new RuntimeException("Mật khẩu nhập lại không khớp!");
-        }
         if (userJpaRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }

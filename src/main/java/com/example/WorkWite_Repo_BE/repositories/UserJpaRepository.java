@@ -14,4 +14,17 @@ import java.util.Optional;
 public interface UserJpaRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.username = :username")
     Optional<User> findByUsername(String username);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email")
+    Optional<User> findByUserEmail(String email);
+
+    boolean existsByEmail(String email);
+
+
+    @Query("SELECT MONTH(u.createdAt) as month, COUNT(u) as value FROM User u WHERE YEAR(u.createdAt) = :year GROUP BY MONTH(u.createdAt)")
+    List<Object[]> countUserByMonth(@Param("year") int year);
+
+
+
+
 }

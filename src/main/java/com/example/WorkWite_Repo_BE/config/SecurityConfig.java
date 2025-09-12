@@ -31,12 +31,30 @@ public class SecurityConfig {
                                 .exceptionHandling(exceptionHandlingCustomizer -> exceptionHandlingCustomizer
                                                 .authenticationEntryPoint(this.customAuthenticationEntryPoint)
                                                 .accessDeniedHandler(this.customAccessDeniedHandler))
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/api/auth/**").permitAll()
-                                                .requestMatchers("/api/public/**").permitAll()
-                                                .requestMatchers("/api/users/**")
-                                                .hasAnyRole("Administrators", "Managers")
-                                                .anyRequest().permitAll())
+//                                .authorizeHttpRequests(auth -> auth
+//                                                .requestMatchers("/api/auth/**").permitAll()
+//                                                .requestMatchers("/api/public/**").permitAll()
+//                                                .requestMatchers("/api/users/**")
+//                                                .hasAnyRole("Administrators", "Managers")
+//                                                .anyRequest().permitAll())
+
+                        .authorizeHttpRequests(auth -> auth
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/public/**").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers("/api/employers/**").permitAll()
+                                .requestMatchers("/api/candidates/**").permitAll()
+                                .requestMatchers("/api/company/**").permitAll()
+                                .requestMatchers("/api/roles/**").permitAll()
+                                .requestMatchers("/api/resumes/**").permitAll()
+                                .requestMatchers("/api/job-postings/**").permitAll()
+                                .requestMatchers("/api/applicant/**").permitAll()
+                                .requestMatchers("/api/upload/multiple**").permitAll()
+                                .requestMatchers("/api/statistics/**").permitAll()
+                                .requestMatchers("/api/admin/**").permitAll()
+                                .requestMatchers("/api/saved-jobs/**").permitAll()
+
+                        )
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

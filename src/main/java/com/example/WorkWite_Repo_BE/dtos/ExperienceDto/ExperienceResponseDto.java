@@ -1,20 +1,23 @@
 package com.example.WorkWite_Repo_BE.dtos.ExperienceDto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ExperienceResponseDto {
+    private Long id;
     private String companyName;
     private String position;
-    private int startYear;
-    private int endYear;
+    private LocalDate startYear;
+    private LocalDate endYear;
     private String description;
 
-    public ExperienceResponseDto(String companyName, String position, int startYear, int endYear, String description) {
-        this.companyName = companyName;
-        this.position = position;
-        this.startYear = startYear;
-        this.endYear = endYear;
-        this.description = description;
-    }
 }
+

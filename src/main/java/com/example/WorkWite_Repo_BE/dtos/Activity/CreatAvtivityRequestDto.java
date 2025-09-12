@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -12,7 +14,8 @@ import lombok.NoArgsConstructor;
 public class CreatAvtivityRequestDto {
 
     private String activityName;
-    private String role;
-    private Integer startYear;
-    private Integer endYear;
+    private String organization;
+    private LocalDate startYear;
+    private LocalDate endYear;
+    private String description;
 }

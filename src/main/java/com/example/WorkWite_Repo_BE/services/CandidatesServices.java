@@ -3,10 +3,10 @@ package com.example.WorkWite_Repo_BE.services;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CandidatesResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
-import com.example.WorkWite_Repo_BE.entities.Candidate;
-import com.example.WorkWite_Repo_BE.entities.User;
+import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
+import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,32 +29,53 @@ public class CandidatesServices {
     private CandidatesResponseDto convertToDto(Candidate candidate) {
         // Chuyển đổi LocalDateTime thành String với định dạng mong muốn
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        List<SaveJobResponseDto> savedJobs = candidate.getSavedJobs().stream()
-                .map(savedJob -> new SaveJobResponseDto(
-                        savedJob.getId(),
-                        savedJob.getJobPosting().getId(),
-                        savedJob.getSavedAt().format(formatter)))
-                .collect(Collectors.toList());
+        List<SavedJobDTO> savedJobs = candidate.getSavedJobs().stream()
+                .map(savedJob -> {
+                    JobPostingResponseDTO jobPostingDto = JobPostingResponseDTO.builder()
+                            .id(savedJob.getJobPosting().getId())
+                            .title(savedJob.getJobPosting().getTitle())
+                            .description(savedJob.getJobPosting().getDescription())
+                            .location(savedJob.getJobPosting().getLocation())
+                            .build();
 
+                    return new SavedJobDTO(
+                            savedJob.getId(),
+                            jobPostingDto,
+                            savedJob.getSavedAt().format(formatter)
+                    );
+                })
+                .collect(Collectors.toList());
         List<ResumeResponseDto> resumes = candidate.getResumes().stream()
                 .map(resume -> {
                     String createdAtStr = null;
                     if (resume.getCreatedAt() != null) {
                         createdAtStr = resume.getCreatedAt().format(formatter);
                     }
+                    List<Long> applicantIds = (resume.getApplicants() == null)
+                            ? java.util.Collections.emptyList()
+                            : resume.getApplicants().stream()
+                            .map(Applicant::getId)
+                            .toList();
                     return new ResumeResponseDto(
                             resume.getId(),
                             resume.getProfilePicture(),
                             resume.getFullName(),
                             resume.getEmail(),
                             resume.getPhone(),
-                            createdAtStr,
+                            createdAtStr,   
                             resume.getJobTitle(),
-                            resume.getActivities(),
-                            resume.getEducations(),
-                            resume.getAwards(),
-                            resume.getApplications(),
-                            resume.getSummary());
+                            resume.getTemplate(),
+//                            resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
+                            resume.getActivities() == null ? java.util.Collections.<Activity>emptyList() : resume.getActivities(),
+                            resume.getEducations() == null ? java.util.Collections.<Education>emptyList() : resume.getEducations(),
+                            resume.getAwards() == null ? java.util.Collections.<Award>emptyList() : resume.getAwards(),
+//                            resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants().stream().map(Applicant::getId).collect(Collectors.toList()),
+                            applicantIds,
+                            resume.getSkillsResumes() == null ? java.util.Collections.<String>emptyList() : resume.getSkillsResumes(),
+                            resume.getSummary(),
+                            resume.getCandidate().getId(),
+                            resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences()
+                    );
                 })
                 .collect(Collectors.toList());
         // con code cua aplication
@@ -73,7 +94,7 @@ public class CandidatesServices {
         Candidate candidate = new Candidate();
         candidate.setUser(user);  // Liên kết Candidate với User
         candidate.setResumes(new ArrayList<>());
-        candidate.setApplications(new ArrayList<>());
+        candidate.setApplicants(new ArrayList<>());
         candidate.setSavedJobs(new ArrayList<>());
 
         // Lưu Candidate vào cơ sở dữ liệu

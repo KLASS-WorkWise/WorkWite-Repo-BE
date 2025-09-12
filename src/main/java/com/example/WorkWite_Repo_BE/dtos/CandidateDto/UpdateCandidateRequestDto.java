@@ -1,8 +1,5 @@
 package com.example.WorkWite_Repo_BE.dtos.CandidateDto;
 
-import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
-import com.example.WorkWite_Repo_BE.entities.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -10,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -31,6 +26,7 @@ public class UpdateCandidateRequestDto {
 
     @Pattern(regexp = "^(https?|ftp)://.*$", message = "Avatar phải là URL hợp lệ")
     private String avatar;
+
 
 }
 

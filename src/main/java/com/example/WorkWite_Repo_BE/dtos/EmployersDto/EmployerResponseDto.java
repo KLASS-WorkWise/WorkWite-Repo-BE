@@ -23,8 +23,4 @@ public class EmployerResponseDto {
     private String phoneNumber;
     private String avatar;
 
-
-
-
 }
-

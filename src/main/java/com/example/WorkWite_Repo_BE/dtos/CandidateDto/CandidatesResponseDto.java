@@ -1,13 +1,10 @@
 package com.example.WorkWite_Repo_BE.dtos.CandidateDto;
 
-import com.example.WorkWite_Repo_BE.dtos.ApplicationsDto.AppResponseDto;
+
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.SavedJobDto.SaveJobResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
 import com.example.WorkWite_Repo_BE.entities.User;
-import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
@@ -17,17 +14,18 @@ public class CandidatesResponseDto {
     private User user;
     private String phoneNumber;
     private String avatar;
-    private List<SaveJobResponseDto> savedJobs;
+    private List<SavedJobDTO> savedJobs;
     private List<ResumeResponseDto> resumes;
-    //còn aplly chua update đc
 
-    public CandidatesResponseDto(Long id, User user,String phoneNumber,String avatar, List<SaveJobResponseDto> savedJobs, List<ResumeResponseDto> resumes) {
+
+    public CandidatesResponseDto(Long id, User user, String phoneNumber, String avatar, List<SavedJobDTO> savedJobs, List<ResumeResponseDto> resumes) {
         this.id = id;
         this.user = user;
         this.phoneNumber = phoneNumber;
         this.avatar = avatar;
         this.savedJobs = savedJobs;
         this.resumes = resumes;
+
     }
 
 }

@@ -20,15 +20,11 @@ public class LoginResponseDto {
     @Builder
     public static class LoggedInUserDto {
         private Long id;
-        private String fullName;
+        private String email;
+        private String fullname;
         private String username;
         private String status;
         private List<String> roles;
-    }
-
-    @Data
-    public static class RoleDto {
-        // Đã bỏ, không dùng nữa
     }
 
     private String access_token;

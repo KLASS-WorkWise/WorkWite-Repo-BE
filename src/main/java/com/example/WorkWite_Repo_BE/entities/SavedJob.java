@@ -13,22 +13,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "candidate")
+@Table(name ="saved_jobs")
 public class SavedJob {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id")
     private Candidate candidate;
 
-    @ManyToOne
-    @JoinColumn(name = "job_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_posting_id", nullable = false)
     private JobPosting jobPosting;
 
     @Column(name = "saved_at")
     private LocalDateTime savedAt;
+
+    @PrePersist
+    public void onCreate() {
+        this.savedAt = LocalDateTime.now();
+    }
+
 
 
 }
