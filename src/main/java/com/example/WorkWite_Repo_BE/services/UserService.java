@@ -49,7 +49,7 @@ public class UserService {
     }
 
     // Lấy danh sách user theo phân trang
-    public PaginatedStudentResponseDto getAllUsersPaginated(int page, int size) {
+    public PaginatedUserResponseDto getAllUsersPaginated(int page, int size) {
         // Page số bắt đầu từ 1, chuyển về 0-based cho Pageable
         int pageNumber = Math.max(page - 1, 0);
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNumber,
@@ -60,7 +60,7 @@ public class UserService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        return PaginatedStudentResponseDto.builder()
+        return PaginatedUserResponseDto.builder()
                 .data(userDtos)
                 .pageNumber(userPage.getNumber() + 1) // trả về 1-based
                 .pageSize(userPage.getSize())

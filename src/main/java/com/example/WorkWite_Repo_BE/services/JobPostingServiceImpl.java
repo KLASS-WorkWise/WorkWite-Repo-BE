@@ -36,7 +36,7 @@ public class JobPostingServiceImpl implements JobPostingService {
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         // Lấy email hoặc username từ SecurityContextHolder
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String actor = null;
+          String actor = null;
         if (authentication != null && authentication.getPrincipal() != null) {
             Object principal = authentication.getPrincipal();
             // Nếu có CustomUserDetails thì lấy email
@@ -59,9 +59,10 @@ public class JobPostingServiceImpl implements JobPostingService {
             throw new RuntimeException("Unauthorized: Cannot get actor from token");
         }
         // Tìm employer theo user đăng nhập
+        String finalActor = actor;
         Employers employer = employerRepository.findByUserId(
                 getUserIdByUsername(actor))
-                .orElseThrow(() -> new RuntimeException("Employer not found for user: " + actor));
+                .orElseThrow(() -> new RuntimeException("Employer not found for user: " + finalActor));
 
         JobPosting jobPosting = new JobPosting();
         jobPosting.setEmployer(employer);
