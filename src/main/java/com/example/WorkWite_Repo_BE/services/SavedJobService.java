@@ -36,6 +36,10 @@ public class SavedJobService {
                 .title(savedJob.getJobPosting().getTitle())
                 .description(savedJob.getJobPosting().getDescription())
                 .location(savedJob.getJobPosting().getLocation())
+                .jobType(savedJob.getJobPosting().getJobType())
+                .category(savedJob.getJobPosting().getCategory())
+                .employerName(savedJob.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
+
                 // thêm các field khác nếu có
                 .build();
 

@@ -26,6 +26,7 @@ public class ApplicantResponseDto {
     private String companyName;
     private String logoUrl;
     private String description_company;
+    private String location_company;
 
     private String description;
     private String resumeLink;
@@ -39,6 +40,8 @@ public class ApplicantResponseDto {
     private Boolean isSkillQualified;      // ✅ thêm
     private Boolean isExperienceQualified; // ✅ thêm
     private String skillMatchMessage;
+
+
 
     // Thêm history
     private List<ApplicantHistoryDto> history;
