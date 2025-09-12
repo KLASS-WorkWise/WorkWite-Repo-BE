@@ -33,9 +33,12 @@ public class Resume {
     @Column(name = "phone")
     private String phone;
 
-    @Lob    
+    @Lob
     @Column(name = "profile_picture",columnDefinition = "LONGTEXT")
     private String profilePicture;
+
+    @Column(name = "template")
+    private String template;
 
     @Column(columnDefinition = "TEXT")
     private String summary;

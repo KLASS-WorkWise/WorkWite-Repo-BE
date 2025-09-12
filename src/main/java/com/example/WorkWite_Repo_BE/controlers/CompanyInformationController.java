@@ -26,7 +26,7 @@ public class CompanyInformationController {
     @GetMapping
     public PaginatedCompanyInformationRespondeDto getAllCompanyInformation(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size
+            @RequestParam(defaultValue = "6") int size
     ){
         return this.companyInformationService.getAllCompanies(page, size);
     }
@@ -68,6 +68,11 @@ public class CompanyInformationController {
             @RequestParam(defaultValue = "3") int size
     ) {
         return companyInformationService.searchCompaniesByName(name, page, size);
+    }
+    // Lấy thông tin công ty theo employerId
+    @GetMapping("/employer/{employerId}")
+    public CompanyInformationReponseDto getCompanyByEmployerId(@PathVariable Long employerId) {
+        return companyInformationService.getCompanyByEmployerId(employerId);
     }
 
 }

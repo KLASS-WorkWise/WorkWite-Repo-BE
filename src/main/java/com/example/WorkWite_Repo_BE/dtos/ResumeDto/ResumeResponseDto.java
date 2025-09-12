@@ -16,6 +16,8 @@ public class    ResumeResponseDto {
     private String summary;
     private String createdAt;
     private String jobTitle;
+    private String template;
+    private List<Experience> experiences;
     private List<Education> educations;
     private List<Award> awards;
     private List<Activity> activities;
@@ -27,9 +29,9 @@ public class    ResumeResponseDto {
 
 
     public ResumeResponseDto(Long id, String profilePicture, String fullName, String email, String phone,
-                             String createdAt, String jobTitle, List<Activity> activities,
-                             List<Education> educations, List<Award> awards, List<Long> applicantIds,
-                             List<String> skillsResumes, String summary,Long candidateId) {
+                             String createdAt, String jobTitle,String template, List<Activity> activities,
+                             List<Education> educations, List<Award> awards,List<Long> applicantIds,
+                             List<String> skillsResumes, String summary,Long candidateId,List<Experience> experiences) {
         this.id = id;
         this.profilePicture = profilePicture;
         this.fullName = fullName;
@@ -37,6 +39,7 @@ public class    ResumeResponseDto {
         this.phone = phone;
         this.createdAt = createdAt;
         this.jobTitle = jobTitle;
+        this.template = template;
         this.activities = activities;
         this.educations = educations;
         this.awards = awards;
@@ -44,5 +47,6 @@ public class    ResumeResponseDto {
         this.skillsResumes = skillsResumes;
         this.summary = summary;
         this.candidateId=candidateId;
+        this.experiences = experiences;
     }
 }

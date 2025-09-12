@@ -19,13 +19,13 @@ public class EmployersControler {
     @GetMapping("")
     public PaginatedEmployerRespondeDto getAllEmployers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size) {
+            @RequestParam(defaultValue = "5") int size) {
         return this.employersService.getPaginatedEmployers(page, size);
     }
     @GetMapping("/upgradeEmployer")
     public PaginatedEmployerRespondeDto getUpgradeEmployer(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size) {
+            @RequestParam(defaultValue = "5") int size) {
         return this.employersService.getPaginatedUpgradeEmployers(page, size);
     }
 
