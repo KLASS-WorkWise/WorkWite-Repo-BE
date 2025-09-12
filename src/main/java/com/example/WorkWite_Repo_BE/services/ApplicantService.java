@@ -2,8 +2,10 @@ package com.example.WorkWite_Repo_BE.services;
 
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantStatusUpdateRequest;
 import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
+import com.example.WorkWite_Repo_BE.entities.ApplicantHistory;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
 import com.example.WorkWite_Repo_BE.entities.Resume;
@@ -12,8 +14,10 @@ import com.example.WorkWite_Repo_BE.repositories.ApplicantRepository;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.JobPostingRepository;
 import com.example.WorkWite_Repo_BE.repositories.ResumeJpaRepository;
+import com.example.WorkWite_Repo_BE.repositories.ApplicantHistoryRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,13 +49,13 @@ public class ApplicantService {
     private final AuthService authService;
     private final ApplicantHistoryRepository applicantHistoryRepository;
 
+    public static final String RESUME_UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/resumes/";
 
     @Transactional
     public Applicant updateApplicantStatus(Long applicantId, ApplicantStatusUpdateRequest request) {
         Applicant applicant = applicantRepository.findById(applicantId)
                 .orElseThrow(() -> new RuntimeException("Applicant không tồn tại"));
 
-        // Cập nhật trạng thái
         applicant.setApplicationStatus(request.getStatus());
         applicantRepository.save(applicant);
 
@@ -59,73 +63,48 @@ public class ApplicantService {
 
         return applicant;
     }
+
     private void logHistory(Applicant applicant, ApplicationStatus status, String note) {
         ApplicantHistory history = ApplicantHistory.builder()
                 .applicant(applicant)
                 .status(status)
                 .note(note)
-                .changedAt(LocalDateTime.now())
-//                .changedBy(changedBy)
+                .changedAt(java.time.LocalDateTime.now())
                 .build();
 
         applicantHistoryRepository.save(history);
     }
 
-    public ApplicantResponseDto getApplicantDetail(Long applicantId) {
-        Long currentCandidateId = authService.getCurrentUserCandidateId();
-
-        Applicant app = applicantRepository.findById(applicantId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        if (!app.getCandidate().getId().equals(currentCandidateId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
-        }
-        List<ApplicantHistory> historyList =
-                applicantHistoryRepository.findByApplicantIdOrderByChangedAtAsc(app.getId());
-
+    private ApplicantResponseDto convertToDto(Applicant app) {
         return ApplicantResponseDto.builder()
                 .id(app.getId())
                 .jobId(app.getJobPosting().getId())
                 .candidateId(app.getCandidate().getId())
-                .jobTitle(app.getJobPosting().getTitle())
-//                .description_company(app.getJobPosting().getEmployer().getCompanyInformation().getDescription())
-                .fullName(app.getResume() != null ? app.getResume().getFullName() : null)
-//                .companyName(app.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
-//                .logoUrl(app.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
-
-
-
-    public static final String RESUME_UPLOAD_DIR =  System.getProperty("user.dir") +"/uploads/resumes/";
-
-    private ApplicantResponseDto convertToDto(Applicant app){
-        return ApplicantResponseDto.builder()
-                .id(app.getId())
-                .jobId(app.getJobPosting().getId())
-                .candidateId(app.getCandidate().getId())
-                .resumesId(app.getResume()!=null ? app.getResume().getId():null)
+                .resumesId(app.getResume() != null ? app.getResume().getId() : null)
                 .resumeLink(app.getResumeLink())
                 .applicationStatus(app.getApplicationStatus())
                 .coverLetter(app.getCoverLetter())
                 .appliedAt(app.getAppliedAt())
                 .missingSkills(app.getMissingSkills() != null ? app.getMissingSkills() : List.of())
                 .minExperience(app.getMinExperience())
-                .experienceYears(app.getExperienceYears() != null ? app.getExperienceYears() : 0) // ✅ tránh null
-                .skillMatchPercent(app.getSkillMatchPercent())        // ✅ map field mới
-                .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
+                .experienceYears(app.getExperienceYears() != null ? app.getExperienceYears() : 0)
+                .skillMatchPercent(app.getSkillMatchPercent())
+                .isSkillQualified(app.getIsSkillQualified())
                 .isExperienceQualified(app.getIsExperienceQualified())
                 .build();
     }
-    private void validateFile(MultipartFile file){
+
+    private void validateFile(MultipartFile file) {
         String ct = file.getContentType();
-        if(!List.of(
+        if (!List.of(
                 "application/pdf",
                 "application/msword",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ).contains(ct))
+        ).contains(ct)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ upload PDF/DOC/DOCX");
         }
 
-        if(file.getSize() > 5*1024*1024)
+        if (file.getSize() > 5 * 1024 * 1024) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File không quá 5MB");
         }
     }
@@ -141,15 +120,12 @@ public class ApplicantService {
             file.transferTo(filePath.toFile());
             log.info("Upload resume thành công: {}", filename);
 
-            return filename; // chỉ lưu filename, không lưu đường dẫn tuyệt đối
+            return filename;
         } catch (IOException e) {
             log.error("Lỗi upload file resume", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi upload file");
         }
     }
-
-
-
 
     public ApplicantResponseDto applyJob(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
         Long candidateId = authService.getCurrentUserCandidateId();
@@ -160,13 +136,16 @@ public class ApplicantService {
         JobPosting jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job không tồn tại"));
 
-        // --- Xử lý trường hợp cùng chọn resume + upload file ---
-        if (applicantRequestDto.getResumesId() != null && applicantRequestDto.getResumeFile() != null && !applicantRequestDto.getResumeFile().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được chọn resume hoặc upload file, không được cùng lúc");
+        if (applicantRequestDto.getResumesId() != null &&
+                applicantRequestDto.getResumeFile() != null &&
+                !applicantRequestDto.getResumeFile().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chỉ được chọn resume hoặc upload file, không được cùng lúc");
         }
-        // --- 4. Check đã apply chưa ---
+
         if (applicantRepository.existsByJobPostingIdAndCandidateId(jobId, candidateId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã ứng tuyển công việc này rồi");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Bạn đã ứng tuyển công việc này rồi");
         }
 
         Resume resume = null;
@@ -174,8 +153,6 @@ public class ApplicantService {
         List<String> missingSkills = new ArrayList<>();
         String minExperience = null;
 
-
-        // --- 1. Nếu chọn resumeId ---
         if (applicantRequestDto.getResumesId() != null) {
             resume = resumeJpaRepository.findById(applicantRequestDto.getResumesId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume không tồn tại"));
@@ -184,26 +161,18 @@ public class ApplicantService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resume không thuộc về tài khoản của bạn");
             }
 
-            // Gán resumeLink an toàn
             resumeLink = resume.getResumeLink();
-
 
             List<String> requiredSkills = jobPosting.getRequiredSkills() != null ? jobPosting.getRequiredSkills() : new ArrayList<>();
             List<String> resumeSkills = resume.getSkillsResumes() != null ? resume.getSkillsResumes() : new ArrayList<>();
             missingSkills = requiredSkills.stream()
                     .filter(skill -> resumeSkills.stream().noneMatch(cv -> cv.equalsIgnoreCase(skill)))
                     .toList();
+
             long matchedSkillsCount = requiredSkills.size() - missingSkills.size();
             double matchPercent = requiredSkills.isEmpty() ? 100.0 :
                     ((double) matchedSkillsCount / requiredSkills.size()) * 100;
-            double threshold = 20.0;
-            String skillsWarning = "";
-            if (!missingSkills.isEmpty() && matchPercent < threshold) {
-                skillsWarning = "Thiếu kỹ năng: " + String.join(", ", missingSkills) +
-                        ". Tỷ lệ match: " + String.format("%.1f", matchPercent) + "% (yêu cầu ≥ " + threshold + "%)";
-            }
 
-            // Kiểm tra kinh nghiệm
             long totalExpYears = resume.getExperiences() != null
                     ? resume.getExperiences().stream()
                     .mapToLong(exp -> (exp.getStartYear() != null && exp.getEndYear() != null)
@@ -219,26 +188,18 @@ public class ApplicantService {
             } else {
                 minExperience = "Bạn đủ yêu cầu kinh nghiệm";
             }
-
-
         }
 
-        // --- 2. Nếu upload file mới ---
-        // --- Upload file mới ---
         MultipartFile file = applicantRequestDto.getResumeFile();
-        if(file != null && !file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             validateFile(file);
             resumeLink = saveResumeFile(file);
         }
-        // --- 3. Nếu không có resumeId và không upload file ---
+
         if (resume == null && (resumeLink == null || resumeLink.isEmpty())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn cần chọn resume hoặc upload file");
         }
 
-        System.out.println(missingSkills);
-        System.out.println(minExperience);
-
-        // --- 5. Tạo Applicant ---
         Applicant applicant = Applicant.builder()
                 .resume(resume)
                 .resumeLink(resumeLink)
@@ -265,24 +226,14 @@ public class ApplicantService {
                 .build();
     }
 
-
-//    public List<ApplicantResponseDto> getApplicantsByCurrentUser() {
-//        Long currentCandidateId = authService.getCurrentUserCandidateId();
-//        List<Applicant> applicants = applicantRepository.findByCandidateId(currentCandidateId);
-//        return applicants
-//                .stream()
-//                .map(this::convertToDto)
-//                .collect(Collectors.toList());
-//    }
-
     public PaginatedAppResponseDto getAllAppsByPage(int page, int size, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
 
-        Pageable pageable = PageRequest.of(page, size,sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Long currentCandidateId = authService.getCurrentUserCandidateId();
-        Page<Applicant> applicants = this.applicantRepository.findByCandidateId(currentCandidateId ,pageable);
+        Page<Applicant> applicants = this.applicantRepository.findByCandidateId(currentCandidateId, pageable);
         List<ApplicantResponseDto> appDtos = applicants.getContent().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -296,9 +247,7 @@ public class ApplicantService {
                 .hasNext(applicants.hasNext())
                 .hasPrevious(applicants.hasPrevious())
                 .build();
-
     }
-
 
     public ApplicantResponseDto getApplicantDetail(Long applicantId) {
         Long currentCandidateId = authService.getCurrentUserCandidateId();
@@ -320,19 +269,17 @@ public class ApplicantService {
         if (!applicant.getCandidate().getId().equals(currentCandidateId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
         }
-        // --- Xóa file resume nếu có ---
+
         String resumeLink = applicant.getResumeLink();
-        if(resumeLink != null && !resumeLink.isEmpty()){
+        if (resumeLink != null && !resumeLink.isEmpty()) {
             Path filePath = Paths.get(RESUME_UPLOAD_DIR).resolve(resumeLink).normalize();
             try {
                 Files.deleteIfExists(filePath);
                 log.info("Đã xóa file resume: {}", resumeLink);
             } catch (IOException e) {
-                // Có thể log lỗi, nhưng không block việc xóa applicant
-                System.err.println("Không xóa được file resume: " + e.getMessage());
+                log.error("Không xóa được file resume: {}", e.getMessage());
             }
         }
         applicantRepository.delete(applicant);
     }
-
 }

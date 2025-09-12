@@ -35,8 +35,8 @@ public class JobPostingServiceImpl implements JobPostingService {
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         // Lấy email hoặc username từ SecurityContextHolder
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String actor = null;
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    final String[] actorHolder = {null};
         if (authentication != null && authentication.getPrincipal() != null) {
             Object principal = authentication.getPrincipal();
             // Nếu có CustomUserDetails thì lấy email
@@ -44,21 +44,22 @@ public class JobPostingServiceImpl implements JobPostingService {
                 java.lang.reflect.Method getEmailMethod = principal.getClass().getMethod("getEmail");
                 Object emailObj = getEmailMethod.invoke(principal);
                 if (emailObj != null) {
-                    actor = emailObj.toString();
+                    actorHolder[0] = emailObj.toString();
                 }
             } catch (Exception e) {
                 // Không có getEmail, fallback lấy username
                 if (principal instanceof UserDetails) {
-                    actor = ((UserDetails) principal).getUsername();
+                    actorHolder[0] = ((UserDetails) principal).getUsername();
                 } else {
-                    actor = authentication.getName();
+                    actorHolder[0] = authentication.getName();
                 }
             }
         }
-        if (actor == null) {
+        if (actorHolder[0] == null) {
             throw new RuntimeException("Unauthorized: Cannot get actor from token");
         }
         // Tìm employer theo user đăng nhập
+        final String actor = actorHolder[0];
         Employers employer = employerRepository.findByUserId(
                 getUserIdByUsername(actor))
                 .orElseThrow(() -> new RuntimeException("Employer not found for user: " + actor));
