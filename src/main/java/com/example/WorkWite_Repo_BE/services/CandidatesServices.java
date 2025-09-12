@@ -62,7 +62,7 @@ public class CandidatesServices {
                             resume.getFullName(),
                             resume.getEmail(),
                             resume.getPhone(),
-                            createdAtStr,
+                            createdAtStr,   
                             resume.getJobTitle(),
                             resume.getTemplate(),
 //                            resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),

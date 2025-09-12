@@ -34,6 +34,7 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
         dto.setStatus(user.getStatus());
+        dto.setAvatarUrl(user.getAvatarUrl());
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toList()));
         }
@@ -88,6 +89,8 @@ public class UserService {
             user.setPassword(request.getPassword());
         if (request.getFullName() != null)
             user.setFullName(request.getFullName());
+        if( request.getAvatarUrl() != null)
+            user.setAvatarUrl(request.getAvatarUrl());
         userJpaRepository.save(user);
         return convertToDto(user);
     }
