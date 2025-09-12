@@ -3,25 +3,27 @@ package com.example.WorkWite_Repo_BE.controlers;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.repositories.ApplicantRepository;
-import com.example.WorkWite_Repo_BE.services.ApplicantHistoryService;
-import com.example.WorkWite_Repo_BE.services.ApplicantService;
-import com.example.WorkWite_Repo_BE.services.AuthService;
+import com.example.WorkWite_Repo_BE.services.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/api/applicant")
+@CrossOrigin(origins = "http://localhost:3000")
 @Validated
 @RequiredArgsConstructor
 public class ApplicantController {
@@ -30,68 +32,91 @@ public class ApplicantController {
     private final AuthService authService;
     private final ApplicantHistoryService applicantHistoryService;
     private final ApplicantRepository applicantRepository;
+    private final SseService sseService;
+    private final FirebaseStorageService firebaseStorageService;
+    private final RestTemplate restTemplate = new RestTemplate();
+    // ApplicantController.java
+    @GetMapping("/{id}/tracking")
+    public ResponseEntity<ApplicantTrackingDto> getApplicantTracking(@PathVariable Long id) {
+        Long candidateId = authService.getCurrentUserCandidateId();
+        Applicant applicant = applicantRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Applicant không tồn tại"));
+
+        if (!applicant.getCandidate().getId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
+        }
+
+        ApplicantResponseDto detail = applicantService.getApplicantDetail(id);
+        List<ApplicantHistoryDto> history = applicantHistoryService.getHistory(id);
+        List<ApplicantTimelineDto> timeline = applicantHistoryService.getFullTimeline(applicant);
+
+        ApplicantTrackingDto dto = ApplicantTrackingDto.builder()
+                .detail(detail)
+                .history(history)
+                .timeline(timeline)
+                .build();
+
+        return ResponseEntity.ok(dto);
+    }
+    // ApplicantController.java
+    @GetMapping("/{id}/subscribe")
+    public SseEmitter subscribe(@PathVariable Long id) {
+        Long candidateId = authService.getCurrentUserCandidateId();
+        Applicant applicant = applicantRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!applicant.getCandidate().getId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
+        }
+
+        return sseService.registerEmitter(id);
+    }
 
     @GetMapping("/{applicantId}/history")
     public List<ApplicantHistoryDto> getApplicantHistory(@PathVariable Long applicantId) {
         return applicantHistoryService.getHistory(applicantId);}
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateApplicantStatus(
+    public ResponseEntity<ApplicantResponseDto> updateApplicantStatus(
             @PathVariable Long id,
             @RequestBody ApplicantStatusUpdateRequest request
     ) {
-//        // 🚨 TODO: kiểm tra role HR/Admin (ví dụ thông qua AuthService)
-//        String changedBy = "Users"; // Lấy từ AuthService thực tế
-
-        Applicant updated = applicantService.updateApplicantStatus(id, request);
-
-        return ResponseEntity.ok("Cập nhật trạng thái thành công: " + updated.getApplicationStatus());
+        ApplicantResponseDto updated = applicantService.updateApplicantStatus(
+                id,
+                request.getStatus(),
+                request.getNote()
+        );
+        return ResponseEntity.ok(updated);
     }
 
-    @GetMapping("/{id}/timeline")
-    public ResponseEntity<List<ApplicantTimelineDto>> getApplicantTimeline(@PathVariable Long id) {
-        Long currentCandidateId = authService.getCurrentUserCandidateId();
-
-        Applicant applicant = applicantRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Applicant không tồn tại"));
-
-        if (!applicant.getCandidate().getId().equals(currentCandidateId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
-        }
-
-        return ResponseEntity.ok(applicantHistoryService.getFullTimeline(applicant));
-    }
-
-    @PostMapping(value = "/{jobId}/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApplicantResponseDto> applyJob(
-            @PathVariable  Long jobId,
-            @ModelAttribute  @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
-
-        ApplicantResponseDto response = applicantService.applyJob(jobId, applicantRequestDto);
-        System.out.println("ResumeFile: " + applicantRequestDto.getResumeFile());
-        System.out.println("CoverLetter: " + applicantRequestDto.getCoverLetter());
-        System.out.println("ResumesId: " + applicantRequestDto.getResumesId());
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-    }
-    //    @GetMapping
-//    public ResponseEntity<List<ApplicantResponseDto>> getMyApplicants() {
-//        return ResponseEntity.ok(applicantService.getApplicantsByCurrentUser());
+@PostMapping(value = "/{jobId}/apply",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<ApplicantResponseDto> applyJob(
+        @PathVariable  Long jobId,
+        @ModelAttribute  @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
+    // Nếu upload file
+//    if (applicantRequestDto.getResumeFile() != null && !applicantRequestDto.getResumeFile().isEmpty()) {
+//        String filename = applicantService.handleResumeFile(applicantRequestDto.getResumeFile());
+//        applicantRequestDto.setResumeLink(filename); // lưu filename
 //    }
+    ApplicantResponseDto response = applicantService.applyJob(jobId, applicantRequestDto );
+    System.out.println("ResumeFile: " + applicantRequestDto.getResumeFile());
+    System.out.println("CoverLetter: " + applicantRequestDto.getCoverLetter());
+    System.out.println("ResumesId: " + applicantRequestDto.getResumesId());
+
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+}
+
     @GetMapping("")
     public PaginatedAppResponseDto getAllAppsByPage(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "6") int size,
             @RequestParam(defaultValue = "appliedAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir){
         System.out.println("page: " + page);
         System.out.println("size: " + size);
         return this.applicantService.getAllAppsByPage(page, size,sortBy, sortDir);
     }
-//    @GetMapping("/{applicantId}")
-//    public ResponseEntity<ApplicantResponseDto> getDetail(@PathVariable Long applicantId) {
-//        return ResponseEntity.ok(applicantService.getApplicantDetail(applicantId));
-//    }
+
 
 
     @GetMapping("/detail/{applicantId}")
@@ -99,27 +124,49 @@ public class ApplicantController {
         return ResponseEntity.ok(applicantService.getApplicantDetail(applicantId));
     }
 
+//    @DeleteMapping("/delete/{applicantId}")
+//    public ResponseEntity<Void> deleteApplicant(@PathVariable Long applicantId) {
+//        applicantService.deleteApplicant(applicantId);
+//        return ResponseEntity.noContent().build();
+//    }
+//    @GetMapping("/resume-link/{filename}")
+//    public ResponseEntity<Resource> getResumeLink(@PathVariable String filename) {
+//        Resource resource = applicantService.getResumeResource(filename);
+//        String contentType = applicantService.getContentType(filename);
+//        boolean preview = applicantService.isPreviewable(filename);
+//
+//        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
+//                .contentType(MediaType.parseMediaType(contentType));
+//
+//        if (preview) {
+//            responseBuilder.header("Content-Disposition", "inline; filename=\"" + resource.getFilename() + "\"");
+//        } else {
+//            responseBuilder.header("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+//        }
+//
+//        return responseBuilder.body(resource);
+//    }
+@GetMapping("/resume-preview")
+public ResponseEntity<byte[]> previewResume(@RequestParam String url) {
+    try {
+        // Lấy file từ Firebase
+        ResponseEntity<byte[]> response = restTemplate.getForEntity(url, byte[].class);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF); // hoặc content-type từ response nếu cần
+        headers.setContentDisposition(ContentDisposition.inline().filename("resume.pdf").build());
+
+        return new ResponseEntity<>(response.getBody(), headers, HttpStatus.OK);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+    }
+}
+    // Delete applicant
     @DeleteMapping("/delete/{applicantId}")
     public ResponseEntity<Void> deleteApplicant(@PathVariable Long applicantId) {
         applicantService.deleteApplicant(applicantId);
         return ResponseEntity.noContent().build();
-    }
-    @GetMapping("/resume-link/{filename}")
-    public ResponseEntity<Resource> getResumeLink(@PathVariable String filename) {
-        Resource resource = applicantService.getResumeResource(filename);
-        String contentType = applicantService.getContentType(filename);
-        boolean preview = applicantService.isPreviewable(filename);
-
-        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType));
-
-        if (preview) {
-            responseBuilder.header("Content-Disposition", "inline; filename=\"" + resource.getFilename() + "\"");
-        } else {
-            responseBuilder.header("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-        }
-
-        return responseBuilder.body(resource);
     }
 
 
