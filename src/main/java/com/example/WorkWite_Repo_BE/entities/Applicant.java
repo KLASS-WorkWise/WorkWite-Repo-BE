@@ -6,6 +6,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Entity
 @Table(name = "applicants",
         uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "job_id"}))

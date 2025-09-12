@@ -50,6 +50,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/job-postings/**").permitAll()
                                 .requestMatchers("/api/applicant/**").permitAll()
                                 .requestMatchers("/api/upload/multiple**").permitAll()
+                                .requestMatchers("/api/statistics/**").permitAll()
+                                .requestMatchers("/api/admin/**").permitAll()
 
                         )
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
