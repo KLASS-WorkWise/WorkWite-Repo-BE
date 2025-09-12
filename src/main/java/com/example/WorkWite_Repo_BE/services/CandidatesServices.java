@@ -6,9 +6,7 @@ import com.example.WorkWite_Repo_BE.dtos.CandidateDto.UpdateCandidateRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
-import com.example.WorkWite_Repo_BE.entities.Applicant;
-import com.example.WorkWite_Repo_BE.entities.Candidate;
-import com.example.WorkWite_Repo_BE.entities.User;
+import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +51,11 @@ public class CandidatesServices {
                     if (resume.getCreatedAt() != null) {
                         createdAtStr = resume.getCreatedAt().format(formatter);
                     }
+                    List<Long> applicantIds = (resume.getApplicants() == null)
+                            ? java.util.Collections.emptyList()
+                            : resume.getApplicants().stream()
+                            .map(Applicant::getId)
+                            .toList();
                     return new ResumeResponseDto(
                             resume.getId(),
                             resume.getProfilePicture(),
@@ -61,14 +64,17 @@ public class CandidatesServices {
                             resume.getPhone(),
                             createdAtStr,
                             resume.getJobTitle(),
-                            resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
-                            resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
-                            resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
-                            resume.getApplicants() == null ? java.util.Collections.emptyList() :
-                                    resume.getApplicants().stream().map(Applicant::getId).collect(Collectors.toList()),
-                            resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
+                            resume.getTemplate(),
+//                            resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
+                            resume.getActivities() == null ? java.util.Collections.<Activity>emptyList() : resume.getActivities(),
+                            resume.getEducations() == null ? java.util.Collections.<Education>emptyList() : resume.getEducations(),
+                            resume.getAwards() == null ? java.util.Collections.<Award>emptyList() : resume.getAwards(),
+//                            resume.getApplicants() == null ? java.util.Collections.emptyList() : resume.getApplicants().stream().map(Applicant::getId).collect(Collectors.toList()),
+                            applicantIds,
+                            resume.getSkillsResumes() == null ? java.util.Collections.<String>emptyList() : resume.getSkillsResumes(),
                             resume.getSummary(),
-                            resume.getCandidate().getId()
+                            resume.getCandidate().getId(),
+                            resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences()
                     );
                 })
                 .collect(Collectors.toList());

@@ -5,13 +5,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "applicants",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "job_id"}))
+//@EntityListeners(ApplicantEntityListener.class)
+@Table( name = "applicants",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"job_posting_id", "candidate_id"})
+        })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,11 +53,31 @@ public class Applicant {
     @Column(name = "applied_at", nullable = false, updatable = false)
     private LocalDateTime appliedAt = LocalDateTime.now();
 
-    @Column(name = "missing_skills", columnDefinition = "TEXT")
-    private String missingSkills;
+    @ElementCollection
+    @CollectionTable(name = "applicant_missing_skills", joinColumns = @JoinColumn(name = "applicant_id"))
+    @Column(name = "skill")
+    private List<String> missingSkills = new ArrayList<>();
 
     @Column(name = "min_experience")
     private String minExperience;
+    @Column(name = "experience_years")
+    private Integer experienceYears;   // số năm kinh nghiệm
+
+    @Column(name = "skill_match_percent")
+    private Double skillMatchPercent;  // % match kỹ năng
+
+    @Column(name = "is_skill_qualified")
+    private Boolean isSkillQualified;  // có đạt yêu cầu skill không
+
+    @Column(name = "is_experience_qualified")
+    private Boolean isExperienceQualified; // có đạt yêu cầu exp không
+
+    @Column(length = 500)
+    private String skillMatchMessage;
+
+
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ApplicantHistory> history;
 
     @PrePersist
     public void prePersist() {

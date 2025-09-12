@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 public class UpdataResumeRequestDto {
     @NotBlank(message = "Họ tên không được để trống")
     private String fullName;
-
+    
+    private String template;
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;

@@ -1,9 +1,6 @@
-
 package com.example.WorkWite_Repo_BE.repositories;
-
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +14,7 @@ import java.util.List;
 public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
     boolean existsByJobPostingIdAndCandidateId(Long jobPostingId, Long candidateId);
 
-    Page<Applicant> findByCandidateId(Long candidateId, Pageable pageable);
+    Page<Applicant> findByCandidateId(Long candidateId , Pageable pageable);
 
     // List<Applicant> findByCandidateId(Long candidateId);
 
@@ -26,5 +23,8 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
     List<Object[]> countApplicantByMonth(@Param("year") int year);
 
     long countByApplicationStatus(ApplicationStatus status);
+
+//    List<Applicant> findByCandidateId(Long candidateId);
+List<Applicant> findByExperienceYearsGreaterThanEqual(int years);
 
 }

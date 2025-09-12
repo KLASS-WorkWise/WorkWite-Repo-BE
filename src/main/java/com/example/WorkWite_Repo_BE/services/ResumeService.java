@@ -3,9 +3,7 @@ package com.example.WorkWite_Repo_BE.services;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.CreatResumeRequestDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.UpdataResumeRequestDto;
-import com.example.WorkWite_Repo_BE.entities.Applicant;
-import com.example.WorkWite_Repo_BE.entities.Resume;
-import com.example.WorkWite_Repo_BE.entities.Candidate;
+import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.repositories.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -55,6 +53,8 @@ public class ResumeService {
         resume1.setProfilePicture(creatResumeRequestDto.getProfilePicture());
         resume1.setSummary(creatResumeRequestDto.getSummary());
         resume1.setJobTitle(creatResumeRequestDto.getJobTitle());
+        resume1.setTemplate(creatResumeRequestDto.getTemplate());
+        resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setCreatedAt(LocalDateTime.now());
         resumeRepository.save(resume1);
 
@@ -133,10 +133,12 @@ public class ResumeService {
             // Cập nhật các trường của Resume
             resume.setFullName(resumeUpdateDto.getFullName());
             resume.setEmail(resumeUpdateDto.getEmail());
+            resume.setTemplate(resumeUpdateDto.getTemplate());
             resume.setPhone(resumeUpdateDto.getPhone());
             resume.setProfilePicture(resumeUpdateDto.getProfilePicture());
             resume.setSummary(resumeUpdateDto.getSummary());
             resume.setJobTitle(resumeUpdateDto.getJobTitle());
+            resume.setTemplate(resumeUpdateDto.getTemplate());
             // Cập nhật skillsResumes nếu có truyền lên
             if (resumeUpdateDto.getSkillsResumes() != null) {
                 resume.setSkillsResumes(resumeUpdateDto.getSkillsResumes());
@@ -243,13 +245,16 @@ public class ResumeService {
                 resume.getPhone(),
                 createdAtStr,
                 resume.getJobTitle(),
-                resume.getActivities() == null ? java.util.Collections.emptyList() : resume.getActivities(),
-                resume.getEducations() == null ? java.util.Collections.emptyList() : resume.getEducations(),
-                resume.getAwards() == null ? java.util.Collections.emptyList() : resume.getAwards(),
+                resume.getTemplate(),
+                resume.getActivities() == null ? java.util.Collections.<Activity>emptyList() : resume.getActivities(),
+                resume.getEducations() == null ? java.util.Collections.<Education>emptyList() : resume.getEducations(),
+                resume.getAwards() == null ? java.util.Collections.<Award>emptyList() : resume.getAwards(),
                 applicantIds, // ✅ truyền list id,
-                resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
+                //resume.getSkillsResumes() == null ? java.util.Collections.emptyList() : resume.getSkillsResumes(),
+                resume.getSkillsResumes() == null ? java.util.Collections.<String>emptyList() : resume.getSkillsResumes(),
                 resume.getSummary(),
-                resume.getCandidate().getId()
+                resume.getCandidate().getId(),
+                resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences()
         );
     }
 }
