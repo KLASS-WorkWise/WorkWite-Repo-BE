@@ -35,6 +35,7 @@ public class UserService {
         dto.setFullName(user.getFullName());
         dto.setStatus(user.getStatus());
         dto.setAvatarUrl(user.getAvatarUrl());
+        dto.setBalance(String.valueOf(user.getBalance()));
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toList()));
         }

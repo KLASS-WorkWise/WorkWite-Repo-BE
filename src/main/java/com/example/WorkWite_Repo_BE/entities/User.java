@@ -43,4 +43,8 @@ public class User {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    // Số dư tài khoản (quản lý nạp/trừ tiền)
+    @Column(nullable = false)
+    private Long balance = 0L;
 }
