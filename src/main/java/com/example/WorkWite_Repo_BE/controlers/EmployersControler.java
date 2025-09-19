@@ -1,11 +1,17 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.*;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
+import com.example.WorkWite_Repo_BE.services.ApplicantService;
+import com.example.WorkWite_Repo_BE.services.EmployeeBrowseStatusService;
 import com.example.WorkWite_Repo_BE.services.EmployersService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/employers")
@@ -14,7 +20,9 @@ public class EmployersControler {
 
     public EmployersControler(EmployersService employersService) {
         this.employersService = employersService;
+
     }
+
 
     @GetMapping("")
     public PaginatedEmployerRespondeDto getAllEmployers(

@@ -15,5 +15,5 @@ import java.util.List;
 public class ApplicantTrackingDto {
     private ApplicantResponseDto detail;              // thông tin đơn apply
     private List<ApplicantHistoryDto> history;        // lịch sử thay đổi
-    private List<ApplicantTimelineDto> timeline;      // tiến trình apply
+    private List<TimelineEventResponse> timeline;      // tiến trình apply
 }

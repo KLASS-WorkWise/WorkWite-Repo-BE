@@ -3,13 +3,14 @@ package com.example.WorkWite_Repo_BE.dtos.applicant;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplicantTimelineDto {
+public class TimelineEventResponse {
     private int stepOrder;                          // Thứ tự step
     private ApplicationStatus status;               // PENDING, INTERVIEW, OFFER...
     private List<ApplicantHistoryDto> events;       // Các sự kiện trong step

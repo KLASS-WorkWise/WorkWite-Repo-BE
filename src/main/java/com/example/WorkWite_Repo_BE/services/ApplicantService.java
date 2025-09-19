@@ -1,8 +1,10 @@
 package com.example.WorkWite_Repo_BE.services;
 
+import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingPaginatedDTO;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
+import com.example.WorkWite_Repo_BE.helpers.EmailTemplateHelper;
 import com.example.WorkWite_Repo_BE.repositories.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -42,13 +44,22 @@ public class ApplicantService {
     private final SseService sseService;
 
     private final FirebaseStorageService firebaseStorageService;
+    private final ResumeParserService resumeParserService;
+    private final EmailService emailService;
+    private final EmailTemplateHelper emailTemplateHelper;
 
 
     // ApplicantService.java
     @Transactional
     public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicationStatus newStatus, String note) {
+        Long employerId = authService.getCurrentUserEmployerId();
         Applicant applicant = applicantRepository.findById(applicantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+
+        if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
+        }
 
         applicant.setApplicationStatus(newStatus);
         applicantRepository.save(applicant);
@@ -60,7 +71,20 @@ public class ApplicantService {
         // Push realtime SSE cho ứng viên
         sseService.sendEvent(applicantId, "statusUpdated", dto);
 
+// Gửi mail cho ứng viên
+        String candidateEmail = applicant.getCandidate().getUser().getEmail();
+        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+        String jobTitle = applicant.getJobPosting().getTitle();
+
+        String subject = "Cập nhật trạng thái đơn ứng tuyển";
+        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
+        emailService.sendEmail(candidateEmail, subject, content);
+
         return dto;
+    }
+    // Timeline
+    public List<ApplicantHistory> getTimeline(Long applicantId) {
+        return applicantHistoryRepository.findByApplicantIdOrderByChangedAtAsc(applicantId);
     }
 
     // ApplicantService.java
@@ -81,14 +105,29 @@ public class ApplicantService {
 
 
     public ApplicantResponseDto getApplicantDetail(Long applicantId) {
-        Long currentCandidateId = authService.getCurrentUserCandidateId();
+//        // Lấy thông tin user hiện tại
+//        Long currentCandidateId = authService.getCurrentUserCandidateId();
+//        Long currentEmployerId = authService.getCurrentUserEmployerId();
 
+        // Lấy applicant
         Applicant app = applicantRepository.findById(applicantId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Applicant không tồn tại"));
 
-        if (!app.getCandidate().getId().equals(currentCandidateId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Applicant không thuộc về bạn");
-        }
+//        // Kiểm tra quyền truy cập
+//        boolean canAccess = false;
+//
+//        if (currentCandidateId != null && app.getCandidate().getId().equals(currentCandidateId)) {
+//            canAccess = true;
+//        }
+//
+//        if (currentEmployerId != null && app.getJobPosting().getEmployer().getId().equals(currentEmployerId)) {
+//            canAccess = true;
+//        }
+//
+//        if (!canAccess) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không được phép xem applicant này");
+//        }
+
         List<ApplicantHistory> historyList =
                 applicantHistoryRepository.findByApplicantIdOrderByChangedAtAsc(app.getId());
 
@@ -98,10 +137,11 @@ public class ApplicantService {
                 .candidateId(app.getCandidate().getId())
                 .jobTitle(app.getJobPosting().getTitle())
                 .description_company(app.getJobPosting().getEmployer().getCompanyInformation().getDescription())
-                .fullName(app.getResume() != null ? app.getResume().getFullName() : null)
+//                .fullName(app.getResume() != null ? app.getResume().getFullName() : null)
+                .fullName(app.getCandidate().getUser().getFullName())
                 .companyName(app.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
                 .logoUrl(app.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
-
+                .salaryRange(app.getJobPosting().getSalaryRange())
                 .resumesId(app.getResume() != null ? app.getResume().getId() : null)
                 .resumeLink(app.getResumeLink())
                 .applicationStatus(app.getApplicationStatus())
@@ -113,12 +153,12 @@ public class ApplicantService {
                 .skillMatchPercent(app.getSkillMatchPercent())        // ✅ map field mới
                 .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
                 .isExperienceQualified(app.getIsExperienceQualified())
-                .history(historyList.stream().map(h -> ApplicantHistoryDto.builder()
-                        .status(h.getStatus())
-                        .note(h.getNote())
-                        .changedAt(h.getChangedAt())
-                        .changedBy(h.getChangedBy())
-                        .build()).toList())
+//                .history(historyList.stream().map(h -> ApplicantHistoryDto.builder()
+//                        .status(h.getStatus())
+//                        .note(h.getNote())
+//                        .changedAt(h.getChangedAt())
+//                        .changedBy(h.getChangedBy())
+//                        .build()).toList())
                 .build();
 
     }
@@ -153,6 +193,7 @@ public class ApplicantService {
                 .logoUrl(app.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
                 .location_company(app.getJobPosting().getEmployer().getCompanyInformation().getLocation())
                 .resumesId(app.getResume() != null ? app.getResume().getId() : null)
+                .salaryRange(app.getJobPosting().getSalaryRange())   // ✅ thêm dòng này
                 .resumeLink(app.getResumeLink())
                 .applicationStatus(app.getApplicationStatus())
                 .coverLetter(app.getCoverLetter())
@@ -390,12 +431,35 @@ public class ApplicantService {
             }
 
         }
-
-        MultipartFile file = applicantRequestDto.getResumeFile();
-        if (file != null && !file.isEmpty()) {
-            validateFile(file);
+        else if (applicantRequestDto.getResumeFile() != null && !applicantRequestDto.getResumeFile().isEmpty()) {
+            MultipartFile file = applicantRequestDto.getResumeFile();
+            if (file != null && !file.isEmpty()) {
+                validateFile(file);
 //            resumeLink = saveResumeFile(file);
-            resumeLink = firebaseStorageService.uploadFile(file);
+                resumeLink = firebaseStorageService.uploadFile(file);
+                String extractedText = resumeParserService.extractText(file);
+                List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
+                 totalExpYears = resumeParserService.extractExperienceYears(extractedText);
+
+// 👉 check skill match
+                missingSkills = calculateMissingSkills(jobPosting.getRequiredSkills(), extractedSkills);
+                skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), extractedSkills);
+                 requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
+                skillQualified = skillMatchPercent >= requiredSkillPercent;
+                skillMatchMessage = skillQualified
+                        ? String.format("Bạn đạt %.1f%% skill match (yêu cầu tối thiểu %.1f%%)", skillMatchPercent, requiredSkillPercent)
+                        : String.format("Bạn chỉ đạt %.1f%% skill match (yêu cầu tối thiểu %.1f%%)", skillMatchPercent, requiredSkillPercent);
+
+// 👉 check kinh nghiệm
+                expQualified = totalExpYears >= jobPosting.getMinExperience();
+                if (!expQualified) {
+                    minExperienceMessage = "Bạn chưa đủ " + jobPosting.getMinExperience()
+                            + " năm kinh nghiệm (hiện tại: " + totalExpYears + " năm)";
+                } else {
+                    minExperienceMessage = "Bạn đủ yêu cầu kinh nghiệm (" + totalExpYears + " năm)";
+                }
+
+            }
         }
 
         if (resume == null && (resumeLink == null || resumeLink.isEmpty())) {
@@ -421,6 +485,25 @@ public class ApplicantService {
 
         try {
             applicantRepository.save(applicant);
+
+            // Gửi mail cho ứng viên
+            String candidateEmail = applicant.getCandidate().getUser().getEmail();
+            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+            String jobTitle = applicant.getJobPosting().getTitle();
+
+            String subjectCandidate = "Xác nhận ứng tuyển thành công";
+            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+
+// Gửi mail cho Employer
+            Employers employer = applicant.getJobPosting().getEmployer();
+            String employerEmail = employer.getUser().getEmail();
+            String employerName = employer.getUser().getFullName();
+
+            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
+
             logHistory(applicant, ApplicationStatus.PENDING, "Ứng viên vừa apply job");
         } catch (DataIntegrityViolationException ex) {
             // Race condition: DB unique constraint bắt duplicate
@@ -464,9 +547,12 @@ public class ApplicantService {
 
     @Transactional
     public void deleteApplicant(Long applicantId) {
+        Long candidateId = authService.getCurrentUserCandidateId();
         Applicant applicant = applicantRepository.findById(applicantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Applicant not found"));
-
+        if (!applicant.getCandidate().getId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền xóa");
+        }
         deleteResume(applicant.getResumeLink());
         applicantRepository.delete(applicant);
     }
