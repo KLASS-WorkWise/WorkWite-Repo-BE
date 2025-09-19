@@ -74,4 +74,12 @@ public class Resume {
     private List<String> skillsResumes;
     @Column(name = "resume_link")
     private String resumeLink;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

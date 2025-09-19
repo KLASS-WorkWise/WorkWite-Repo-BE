@@ -19,4 +19,7 @@ public interface ExperienceJpaRepository extends JpaRepository<Experience, Long>
     @Transactional
     @Query("DELETE FROM Experience e WHERE e.resume.id = :resumeId")
     void deleteByResumeId(@Param("resumeId") Long resumeId);
+
+    @Query("SELECT e FROM Experience e WHERE e.resume.id = :resumeId")
+    List<Experience> findByResumeIdFromExperience(Long resumeId);
 }

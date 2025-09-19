@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/**").permitAll()
                                 .requestMatchers("/api/saved-jobs/**").permitAll()
                                 .requestMatchers("/api/vnpay/**").permitAll()
+                                .requestMatchers("/api/recommend/**").permitAll()
 
                         )
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
