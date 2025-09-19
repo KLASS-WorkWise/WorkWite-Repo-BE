@@ -2,7 +2,7 @@ package com.example.WorkWite_Repo_BE.enums;
 
 public enum ApplicationStatus {
     PENDING,
-    APPLIED,
+//    APPLIED,
     CV_REVIEW,
     INTERVIEW,
     OFFER,
@@ -13,7 +13,7 @@ public enum ApplicationStatus {
         // chuẩn hóa để tránh case-sensitive
         String normalized = step.trim().toUpperCase().replace(" ", "_");
         return switch (normalized) {
-            case "APPLIED" -> APPLIED;
+//            case "APPLIED" -> APPLIED;
             case "CV_REVIEW" -> CV_REVIEW;
             case "INTERVIEW" -> INTERVIEW;
             case "OFFER" -> OFFER;

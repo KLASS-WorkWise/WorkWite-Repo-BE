@@ -1,6 +1,7 @@
 package com.example.WorkWite_Repo_BE.repositories;
 import com.example.WorkWite_Repo_BE.dtos.applicant.ListApplicantResponseDTO;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
+import com.example.WorkWite_Repo_BE.entities.JobPosting;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
@@ -18,7 +20,9 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
 
     Page<Applicant> findByCandidateId(Long candidateId , Pageable pageable);
 
-    // List<Applicant> findByCandidateId(Long candidateId);
+    Optional<Applicant> findByIdAndCandidateId(Long id, Long candidateId);;
+    List<Applicant> findByJobPostingId(Long jobPostingId);
+    Page<JobPosting> findByJobPostingId(Long jobPostingId , Pageable pageable);
 
     // đếm số lượng appli HIRED
     @Query("SELECT MONTH(a.appliedAt) as month, COUNT(a) as value FROM Applicant a WHERE YEAR(a.appliedAt) = :year GROUP BY MONTH(a.appliedAt)")
@@ -26,7 +30,6 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
 
     long countByApplicationStatus(ApplicationStatus status);
 
-//    List<Applicant> findByCandidateId(Long candidateId);
     List<Applicant> findByExperienceYearsGreaterThanEqual(int years);
 
     @Query("SELECT new com.example.WorkWite_Repo_BE.dtos.applicant.ListApplicantResponseDTO( " +

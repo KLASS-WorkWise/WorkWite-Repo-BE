@@ -27,6 +27,7 @@ public class ApplicantResponseDto {
     private String logoUrl;
     private String description_company;
     private String location_company;
+    private String salaryRange;
 
     private String description;
     private String resumeLink;

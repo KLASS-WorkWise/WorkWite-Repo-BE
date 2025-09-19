@@ -37,6 +37,20 @@ public class FirebaseStorageService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Upload resume thất bại");
         }
     }
+    public String uploadPdf(byte[] pdfBytes, String filename) {
+        try {
+            Bucket bucket = StorageClient.getInstance().bucket();
+            Blob blob = bucket.create(filename, pdfBytes, "application/pdf");
+            return String.format(
+                    "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                    bucket.getName(),
+                    blob.getName().replace("/", "%2F")
+            );
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Upload PDF thất bại");
+        }
+    }
+
 
     // filename là tên file, không phải URL đầy đủ
     public Resource downloadFile(String filename) {

@@ -28,9 +28,12 @@ public class ResumeService {
     private final ActivityJpaRepository activityJpaRepository;
     private final ExperienceJpaRepository experienceJpaRepository;
 
+    private final PdfGeneratorService pdfGeneratorService;
+    private final FirebaseStorageService firebaseStorageService;
 
 
-    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository) {
+
+    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository, PdfGeneratorService pdfGeneratorService, FirebaseStorageService firebaseStorageService) {
         this.resumeRepository = resumeRepository;
         this.candidateJpaRepository = candidateJpaRepository;
         this.educationService = educationService;
@@ -42,6 +45,8 @@ public class ResumeService {
         this.activityJpaRepository = activityJpaRepository;
         this.experienceJpaRepository = experienceJpaRepository;
 
+        this.pdfGeneratorService = pdfGeneratorService;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     // Tạo mới Resume , activity, award, education,exp
@@ -90,6 +95,7 @@ public class ResumeService {
         }
 
         Resume resumeWithChildren = resumeRepository.findById(resume1.getId()).orElse(null);
+
         // Truy vấn từng list liên quan
         List educations = educationJpaRepository.findByResumeId(resume1.getId());
         List awards = awardJpaRepository.findByResumeId(resume1.getId());
@@ -102,7 +108,16 @@ public class ResumeService {
         resumeWithChildren.setActivities(activities);
         resumeWithChildren.setExperiences(experiences);
         resumeWithChildren.setSkillsResumes(skillsResumes);
-        return convertToDto(resumeWithChildren);
+
+        // ✅ Sinh PDF
+        byte[] pdfBytes = pdfGeneratorService.generateResumePdf(resumeWithChildren);
+        String pdfFilename = "Resume_" + resume1.getFullName() + ".pdf";
+        // ✅ Upload lên Firebase
+        String resumeLink = firebaseStorageService.uploadPdf(pdfBytes, pdfFilename);
+        // ✅ Lưu lại resumeLink
+        resume1.setResumeLink(resumeLink);
+        resumeRepository.save(resume1);
+        return convertToDto(resume1);
     }
 
     // Lấy tất cả Resume

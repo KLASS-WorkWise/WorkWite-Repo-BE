@@ -1,6 +1,7 @@
 
 package com.example.WorkWite_Repo_BE.repositories;
 
+import com.example.WorkWite_Repo_BE.entities.Applicant;
 import org.springframework.data.repository.query.Param;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,6 +34,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 	// đếm số lượng job posting đã đdăngddee stats
 	@Query("SELECT MONTH(j.createdAt) as month, COUNT(j) as value FROM JobPosting j WHERE YEAR(j.createdAt) = :year GROUP BY MONTH(j.createdAt)")
 	List<Object[]> countJobPostingByMonth(@Param("year") int year);
+
+    Page<JobPosting> findByEmployer_Id(Long employerId, Pageable pageable);
+//    List<JobPosting> findByApplicantId(Long ApplicantId);
 
 
 	

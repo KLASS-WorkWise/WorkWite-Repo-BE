@@ -30,7 +30,7 @@ public class ApplicantHistory {
     @Column(length = 500)
     private String note;
 
-    private LocalDateTime changedAt;
+    private LocalDateTime changedAt = LocalDateTime.now();;
 
     private String changedBy; // HR/Admin/Candidate
 }

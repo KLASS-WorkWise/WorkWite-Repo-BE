@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ApplicantHistoryRepository extends JpaRepository<ApplicantHistory, Long> {
     List<ApplicantHistory> findByApplicantIdOrderByChangedAtAsc(Long applicantId);
+    List<ApplicantHistory> findByApplicantId(Long applicantId);
 }
