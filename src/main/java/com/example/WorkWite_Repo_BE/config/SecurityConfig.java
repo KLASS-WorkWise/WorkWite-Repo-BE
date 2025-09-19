@@ -86,6 +86,10 @@ public class SecurityConfig {
                                         .requestMatchers("/api/banners/**").permitAll()
                                         .requestMatchers("/api/upload/**").permitAll()
                                                                 .requestMatchers("/api/system-logs/**").permitAll()
+                                .requestMatchers("/api/categories/**").permitAll()
+                                .requestMatchers("/api/blogs/**").permitAll()
+                                .requestMatchers("/api/aboutus/**").permitAll()
+                                .requestMatchers("/api/ourteam/**").permitAll()
 
                         )
 
