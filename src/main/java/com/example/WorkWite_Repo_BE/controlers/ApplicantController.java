@@ -2,26 +2,21 @@ package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
+import com.example.WorkWite_Repo_BE.entities.ApplicantHistory;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.repositories.ApplicantRepository;
 import com.example.WorkWite_Repo_BE.services.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -52,7 +47,7 @@ public class ApplicantController {
 
         ApplicantResponseDto detail = applicantService.getApplicantDetail(id);
         List<ApplicantHistoryDto> history = applicantHistoryService.getHistory(id);
-        List<ApplicantTimelineDto> timeline = applicantHistoryService.getFullTimeline(applicant);
+        List<TimelineEventResponse> timeline = applicantHistoryService.getFullTimeline(applicant);
 
         ApplicantTrackingDto dto = ApplicantTrackingDto.builder()
                 .detail(detail)
@@ -61,6 +56,10 @@ public class ApplicantController {
                 .build();
 
         return ResponseEntity.ok(dto);
+    }
+    @GetMapping("/{id}/timeline")
+    public ResponseEntity<List<ApplicantHistory>> timeline(@PathVariable Long id) {
+        return ResponseEntity.ok(applicantService.getTimeline(id));
     }
     // ApplicantController.java
     @GetMapping("/{id}/subscribe")
@@ -96,16 +95,7 @@ public class ApplicantController {
 public ResponseEntity<ApplicantResponseDto> applyJob(
         @PathVariable  Long jobId,
         @ModelAttribute  @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
-    // Nếu upload file
-//    if (applicantRequestDto.getResumeFile() != null && !applicantRequestDto.getResumeFile().isEmpty()) {
-//        String filename = applicantService.handleResumeFile(applicantRequestDto.getResumeFile());
-//        applicantRequestDto.setResumeLink(filename); // lưu filename
-//    }
     ApplicantResponseDto response = applicantService.applyJob(jobId, applicantRequestDto );
-    System.out.println("ResumeFile: " + applicantRequestDto.getResumeFile());
-    System.out.println("CoverLetter: " + applicantRequestDto.getCoverLetter());
-    System.out.println("ResumesId: " + applicantRequestDto.getResumesId());
-
     return new ResponseEntity<>(response, HttpStatus.CREATED);
 
 }

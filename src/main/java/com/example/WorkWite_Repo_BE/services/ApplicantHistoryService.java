@@ -23,7 +23,7 @@ public class ApplicantHistoryService {
                 .toList();
     }
 
-    public List<ApplicantTimelineDto> getFullTimeline(Applicant applicant) {
+    public List<TimelineEventResponse> getFullTimeline(Applicant applicant) {
         List<ApplicantHistoryDto> history = getHistory(applicant.getId());
 
         Map<ApplicationStatus, List<ApplicantHistoryDto>> grouped =
@@ -35,21 +35,22 @@ public class ApplicantHistoryService {
 
         // Thứ tự chuẩn
         List<ApplicationStatus> orderedSteps = List.of(
-                ApplicationStatus.PENDING,
-                ApplicationStatus.INTERVIEW,
-                ApplicationStatus.OFFER,
-                ApplicationStatus.HIRED,
-                ApplicationStatus.REJECTED
+//                ApplicationStatus.APPLIED,     // ứng viên đã nộp
+                ApplicationStatus.CV_REVIEW,   // xét CV
+                ApplicationStatus.INTERVIEW,   // phỏng vấn
+                ApplicationStatus.OFFER,       // gửi offer
+                ApplicationStatus.HIRED,       // nhận vào làm
+                ApplicationStatus.REJECTED     // loại
         );
 
         ApplicationStatus currentStatus = applicant.getApplicationStatus();
         int currentIndex = orderedSteps.indexOf(currentStatus);
 
-        List<ApplicantTimelineDto> timeline = new ArrayList<>();
+        List<TimelineEventResponse> timeline = new ArrayList<>();
         for (int i = 0; i < orderedSteps.size(); i++) {
             ApplicationStatus step = orderedSteps.get(i);
             timeline.add(
-                    ApplicantTimelineDto.builder()
+                    TimelineEventResponse.builder()
                             .stepOrder(i + 1)
                             .status(step)
                             .events(grouped.getOrDefault(step, new ArrayList<>()))
