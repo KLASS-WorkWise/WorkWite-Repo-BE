@@ -13,26 +13,19 @@ import java.util.List;
 public class SystemLogService {
     private final SystemLogRepository systemLogRepository;
 
-    public SystemLog saveLog(String actor, String action, String description, String ipAddress, String level,
-            Long targetUserId) {
+    public SystemLog saveLog(Long userId, String username, String action, String description, String status) {
         SystemLog log = SystemLog.builder()
-                .actor(actor)
+                .userId(userId)
+                .username(username)
                 .action(action)
                 .description(description)
-                .ipAddress(ipAddress)
+                .status(status)
                 .timestamp(LocalDateTime.now())
-                .level(level)
-                .targetUserId(targetUserId)
                 .build();
         return systemLogRepository.save(log);
     }
 
     public List<SystemLog> getAllLogs() {
         return systemLogRepository.findAll();
-    }
-
-    public List<SystemLog> searchLogs(String actor, String level, String action, LocalDateTime start,
-            LocalDateTime end) {
-        return systemLogRepository.searchLogs(actor, level, action, start, end);
     }
 }

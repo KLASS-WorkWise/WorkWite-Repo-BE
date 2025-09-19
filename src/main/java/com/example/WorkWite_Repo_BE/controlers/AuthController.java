@@ -34,9 +34,15 @@ public class AuthController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) throws Exception {
         LoginResponseDto result = this.userService.login(request);
         // Ghi log đăng nhập thành công
-        String actor = request.getUsername();
-        String ipAddress = "unknown"; // Có thể lấy từ request nếu cần
-        systemLogService.saveLog(actor, "LOGIN", "User login", ipAddress, "INFO", null); // Không có user bị tác động
+        Long userId = result.getLoggedInUser() != null ? result.getLoggedInUser().getId() : null;
+        String username = request.getUsername();
+        systemLogService.saveLog(
+            userId,
+            username,
+            "LOGIN_SUCCESS",
+            "User login",
+            "SUCCESS"
+        );
         return ResponseEntity.ok(result);
     }
 

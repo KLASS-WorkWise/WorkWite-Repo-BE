@@ -15,11 +15,10 @@ public class SystemLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String actor; // Người thực hiện (username hoặc email)
-    private String action; // Hành động (LOGIN, CREATE_JOB, APPLY_JOB, DELETE_USER...)
+    private Long userId; // Id người thực hiện
+    private String username; // Username/email người thực hiện
+    private String action; // Hành động (LOGIN_SUCCESS, DELETE_JOB_POST...)
     private String description; // Mô tả chi tiết
-    private String ipAddress; // Địa chỉ IP
+    private String status; // SUCCESS, FAIL
     private LocalDateTime timestamp; // Thời gian thực hiện
-    private String level; // Mức độ (INFO, WARN, ERROR, SECURITY)
-    private Long targetUserId; // Id user bị sửa/xóa
 }

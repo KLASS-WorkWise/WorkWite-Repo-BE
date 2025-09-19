@@ -1,35 +1,31 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.entities.SystemLog;
-import com.example.WorkWite_Repo_BE.services.SystemLogService;
+import com.example.WorkWite_Repo_BE.dtos.SystemLogDto.SystemLogRequestDTO;
+import com.example.WorkWite_Repo_BE.dtos.SystemLogDto.SystemLogResponseDTO;
+import com.example.WorkWite_Repo_BE.services.SystemLogServiceCustom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/logs")
+@RequestMapping("/api/system-logs")
 @RequiredArgsConstructor
 public class SystemLogController {
-    private final SystemLogService systemLogService;
+    private final SystemLogServiceCustom systemLogService;
 
-    // Lấy tất cả log
     @GetMapping
-    public ResponseEntity<List<SystemLog>> getAllLogs() {
-        return ResponseEntity.ok(systemLogService.getAllLogs());
-    }
-
-    // Tìm kiếm log theo tiêu chí
-    @GetMapping("/search")
-    public ResponseEntity<List<SystemLog>> searchLogs(
+    public ResponseEntity<List<SystemLogResponseDTO>> getAllLogs(
             @RequestParam(required = false) String actor,
-            @RequestParam(required = false) String level,
-            @RequestParam(required = false) String action,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        return ResponseEntity.ok(systemLogService.searchLogs(actor, level, action, start, end));
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+        java.time.LocalDateTime startDate = start != null ? java.time.LocalDateTime.parse(start) : null;
+        java.time.LocalDateTime endDate = end != null ? java.time.LocalDateTime.parse(end) : null;
+        if (actor != null || status != null || start != null || end != null) {
+            return ResponseEntity.ok(systemLogService.searchLogs(actor, status, startDate, endDate));
+        }
+        return ResponseEntity.ok(systemLogService.getAllLogs());
     }
 }
