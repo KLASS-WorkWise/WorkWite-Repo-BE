@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class UserUpdateRequestDto {
     private String username;
-    private String email;
-    private String password;
+//    private String email;
+//    private String password;
     private String fullName;
-    private String avatarUrl;
+//    private String avatarUrl;
 }

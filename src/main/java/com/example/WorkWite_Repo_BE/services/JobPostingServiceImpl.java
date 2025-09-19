@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,8 +26,14 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final EmployersJpaRepository employerRepository;
     private final SystemLogService systemLogService;
 
-    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, EmployersJpaRepository employerRepository,
-            SystemLogService systemLogService) {
+    @Autowired
+    private UserBalanceService userBalanceService;
+
+    public JobPostingServiceImpl(
+            JobPostingRepository jobPostingRepository,
+            EmployersJpaRepository employerRepository,
+            SystemLogService systemLogService
+    ) {
         this.jobPostingRepository = jobPostingRepository;
         this.employerRepository = employerRepository;
         this.systemLogService = systemLogService;
@@ -36,10 +43,9 @@ public class JobPostingServiceImpl implements JobPostingService {
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         // Lấy email hoặc username từ SecurityContextHolder
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-          String actor = null;
+        String actor = null;
         if (authentication != null && authentication.getPrincipal() != null) {
             Object principal = authentication.getPrincipal();
-            // Nếu có CustomUserDetails thì lấy email
             try {
                 java.lang.reflect.Method getEmailMethod = principal.getClass().getMethod("getEmail");
                 Object emailObj = getEmailMethod.invoke(principal);
@@ -47,7 +53,6 @@ public class JobPostingServiceImpl implements JobPostingService {
                     actor = emailObj.toString();
                 }
             } catch (Exception e) {
-                // Không có getEmail, fallback lấy username
                 if (principal instanceof UserDetails) {
                     actor = ((UserDetails) principal).getUsername();
                 } else {
@@ -58,10 +63,9 @@ public class JobPostingServiceImpl implements JobPostingService {
         if (actor == null) {
             throw new RuntimeException("Unauthorized: Cannot get actor from token");
         }
+        final String finalActor = actor;
         // Tìm employer theo user đăng nhập
-        String finalActor = actor;
-        Employers employer = employerRepository.findByUserId(
-                getUserIdByUsername(actor))
+        Employers employer = employerRepository.findByUserId(getUserIdByUsername(finalActor))
                 .orElseThrow(() -> new RuntimeException("Employer not found for user: " + finalActor));
 
         JobPosting jobPosting = new JobPosting();
@@ -76,23 +80,65 @@ public class JobPostingServiceImpl implements JobPostingService {
         jobPosting.setMinExperience(requestDTO.getMinExperience());
         jobPosting.setRequiredDegree(requestDTO.getRequiredDegree());
         jobPosting.setEndAt(requestDTO.getEndAt());
-        // Ghi log đăng tin tuyển dụng
-        String ipAddress = "unknown";
-        systemLogService.saveLog(actor, "CREATE_JOB", "Employer posted a job: " + jobPosting.getTitle(), ipAddress,
-                "INFO", null);
         jobPosting.setStatus(requestDTO.getStatus());
-        jobPosting.setCreatedAt(requestDTO.getCreatedAt() != null ? requestDTO.getCreatedAt() : LocalDateTime.now());
+        jobPosting.setCreatedAt(
+                requestDTO.getCreatedAt() != null ? requestDTO.getCreatedAt() : LocalDateTime.now()
+        );
+
+        // Tính giá bài đăng động
+        String postType = requestDTO.getPostType();
+        double pricePerDayUSD;
+        if (postType != null && postType.equalsIgnoreCase("VIP")) {
+            pricePerDayUSD = 2.0; // 5$/ngày cho VIP
+        } else {
+            postType = "NORMAL";
+            pricePerDayUSD = 1.0; // 1$/ngày cho NORMAL
+        }
+        jobPosting.setPostType(postType);
+        // Tính số ngày đăng
+        java.time.LocalDateTime start = requestDTO.getCreatedAt() != null ? requestDTO.getCreatedAt() : java.time.LocalDateTime.now();
+        java.time.LocalDateTime end = requestDTO.getEndAt();
+        long days = 1;
+        if (end != null && end.isAfter(start)) {
+            days = java.time.Duration.between(start, end).toDays();
+            if (days < 1) days = 1;
+        }
+        double totalUSD = pricePerDayUSD * days;
+        long VND_RATE = 26380L;
+        Long postPrice = (long)(totalUSD * VND_RATE); // phí backend tính bằng VND
+        jobPosting.setPostPrice(postPrice);
+        // ...existing code...
+
+            // Kiểm tra số dư trước khi trừ tiền
+            Long userId = employer.getUser().getId();
+            Long currentBalance = userBalanceService.getBalance(userId);
+            if (currentBalance == null || currentBalance < postPrice) {
+                throw new com.example.WorkWite_Repo_BE.exceptions.BusinessException("Your balance is not enough to post this job. Please top up your account.");
+            }
+        // Trừ tiền user khi đăng bài
+        userBalanceService.subtractBalance(userId, postPrice);
+
+    // Ghi log
+    systemLogService.saveLog(
+        userId,
+        actor,
+        "CREATE_JOB",
+        "Employer posted a job: " + jobPosting.getTitle() + " | Type: " + postType + " | Price: " + postPrice,
+        "SUCCESS"
+    );
 
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
-        return mapToResponseDTO(savedJobPosting);
+    JobPostingResponseDTO response = mapToResponseDTO(savedJobPosting);
+    response.setPostPriceUSD(Double.valueOf(totalUSD)); // Trả về tổng tiền USD cho FE
+    return response;
     }
 
     // Helper: lấy userId từ username
     private Long getUserIdByUsername(String username) {
-        // Nếu có UserRepository thì dùng, nếu không thì lấy từ employerRepository
         Optional<Employers> employerOpt = employerRepository.findAll().stream()
                 .filter(e -> e.getUser() != null && username.equals(e.getUser().getUsername()))
                 .findFirst();
+
         if (employerOpt.isPresent()) {
             return employerOpt.get().getUser().getId();
         }
@@ -118,7 +164,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job posting not found with id: " + id));
 
-        // Lấy email hoặc username từ SecurityContextHolder
+        // Lấy actor
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String actor = null;
         if (authentication != null && authentication.getPrincipal() != null) {
@@ -140,45 +186,40 @@ public class JobPostingServiceImpl implements JobPostingService {
         if (actor == null) {
             throw new RuntimeException("Unauthorized: Cannot get actor from token");
         }
-        // Chỉ kiểm tra username/email của user tạo job với user đăng nhập
+
+        // Kiểm tra quyền sửa
         if (!jobPosting.getEmployer().getUser().getUsername().equals(actor) &&
                 (jobPosting.getEmployer().getUser().getEmail() == null
                         || !jobPosting.getEmployer().getUser().getEmail().equals(actor))) {
             throw new RuntimeException("Forbidden: Only the owner employer can update this job posting");
         }
 
+        // Update fields
         if (updateDTO.getEmployerId() != null) {
             Employers employer = employerRepository.findById(updateDTO.getEmployerId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Employer not found with id: " + updateDTO.getEmployerId()));
+                    .orElseThrow(() -> new RuntimeException("Employer not found with id: " + updateDTO.getEmployerId()));
             jobPosting.setEmployer(employer);
         }
-        if (updateDTO.getTitle() != null)
-            jobPosting.setTitle(updateDTO.getTitle());
-        if (updateDTO.getDescription() != null)
-            jobPosting.setDescription(updateDTO.getDescription());
-        if (updateDTO.getLocation() != null)
-            jobPosting.setLocation(updateDTO.getLocation());
-        if (updateDTO.getSalaryRange() != null)
-            jobPosting.setSalaryRange(updateDTO.getSalaryRange());
-        if (updateDTO.getJobType() != null)
-            jobPosting.setJobType(updateDTO.getJobType());
-        if (updateDTO.getCategory() != null)
-            jobPosting.setCategory(updateDTO.getCategory());
-        // Ghi log sửa job
-        String ipAddress = "unknown";
-        systemLogService.saveLog(actor, "UPDATE_JOB", "Employer updated job: " + jobPosting.getTitle(), ipAddress,
-                "INFO", null);
-        if (updateDTO.getRequiredSkills() != null)
-            jobPosting.setRequiredSkills(updateDTO.getRequiredSkills());
-        if (updateDTO.getMinExperience() != null)
-            jobPosting.setMinExperience(updateDTO.getMinExperience());
-        if (updateDTO.getRequiredDegree() != null)
-            jobPosting.setRequiredDegree(updateDTO.getRequiredDegree());
-        if (updateDTO.getEndAt() != null)
-            jobPosting.setEndAt(updateDTO.getEndAt());
-        if (updateDTO.getStatus() != null)
-            jobPosting.setStatus(updateDTO.getStatus());
+        if (updateDTO.getTitle() != null) jobPosting.setTitle(updateDTO.getTitle());
+        if (updateDTO.getDescription() != null) jobPosting.setDescription(updateDTO.getDescription());
+        if (updateDTO.getLocation() != null) jobPosting.setLocation(updateDTO.getLocation());
+        if (updateDTO.getSalaryRange() != null) jobPosting.setSalaryRange(updateDTO.getSalaryRange());
+        if (updateDTO.getJobType() != null) jobPosting.setJobType(updateDTO.getJobType());
+        if (updateDTO.getCategory() != null) jobPosting.setCategory(updateDTO.getCategory());
+        if (updateDTO.getRequiredSkills() != null) jobPosting.setRequiredSkills(updateDTO.getRequiredSkills());
+        if (updateDTO.getMinExperience() != null) jobPosting.setMinExperience(updateDTO.getMinExperience());
+        if (updateDTO.getRequiredDegree() != null) jobPosting.setRequiredDegree(updateDTO.getRequiredDegree());
+        if (updateDTO.getEndAt() != null) jobPosting.setEndAt(updateDTO.getEndAt());
+        if (updateDTO.getStatus() != null) jobPosting.setStatus(updateDTO.getStatus());
+
+    // Ghi log
+    systemLogService.saveLog(
+        jobPosting.getEmployer().getUser().getId(),
+        actor,
+        "UPDATE_JOB",
+        "Employer updated job: " + jobPosting.getTitle(),
+        "SUCCESS"
+    );
 
         JobPosting updatedJobPosting = jobPostingRepository.save(jobPosting);
         return mapToResponseDTO(updatedJobPosting);
@@ -189,7 +230,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job posting not found with id: " + id));
 
-        // Lấy email hoặc username từ SecurityContextHolder
+        // Lấy actor
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String actor = null;
         if (authentication != null && authentication.getPrincipal() != null) {
@@ -211,7 +252,8 @@ public class JobPostingServiceImpl implements JobPostingService {
         if (actor == null) {
             throw new RuntimeException("Unauthorized: Cannot get actor from token");
         }
-        // Chỉ kiểm tra username/email của user tạo job với user đăng nhập
+
+        // Kiểm tra quyền xóa
         if (!jobPosting.getEmployer().getUser().getUsername().equals(actor) &&
                 (jobPosting.getEmployer().getUser().getEmail() == null
                         || !jobPosting.getEmployer().getUser().getEmail().equals(actor))) {
@@ -219,17 +261,23 @@ public class JobPostingServiceImpl implements JobPostingService {
         }
 
         jobPostingRepository.deleteById(id);
-        // Ghi log xóa job
-        String ipAddress = "unknown";
-        systemLogService.saveLog(actor, "DELETE_JOB", "Employer deleted job with id: " + id, ipAddress, "WARN",
-                null);
+
+    // Ghi log
+    systemLogService.saveLog(
+        jobPosting.getEmployer().getUser().getId(),
+        actor,
+        "DELETE_JOB",
+        "Employer deleted job with id: " + id,
+        "SUCCESS"
+    );
     }
 
     private JobPostingResponseDTO mapToResponseDTO(JobPosting jobPosting) {
         JobPostingResponseDTO responseDTO = new JobPostingResponseDTO();
         responseDTO.setId(jobPosting.getId());
         responseDTO.setEmployerId(jobPosting.getEmployer().getId());
-        // Lấy tên employer từ user hoặc companyInformation nếu có
+
+        // Lấy tên employer từ user hoặc companyInformation
         String employerName = null;
         if (jobPosting.getEmployer().getUser() != null) {
             employerName = jobPosting.getEmployer().getUser().getFullName();
@@ -237,6 +285,7 @@ public class JobPostingServiceImpl implements JobPostingService {
             employerName = jobPosting.getEmployer().getCompanyInformation().getCompanyName();
         }
         responseDTO.setEmployerName(employerName);
+
         responseDTO.setTitle(jobPosting.getTitle());
         responseDTO.setDescription(jobPosting.getDescription());
         responseDTO.setLocation(jobPosting.getLocation());
@@ -249,6 +298,9 @@ public class JobPostingServiceImpl implements JobPostingService {
         responseDTO.setCreatedAt(jobPosting.getCreatedAt());
         responseDTO.setEndAt(jobPosting.getEndAt());
         responseDTO.setStatus(jobPosting.getStatus());
+        responseDTO.setPostType(jobPosting.getPostType());
+        responseDTO.setPostPrice(jobPosting.getPostPrice());
+
         return responseDTO;
     }
 
@@ -262,35 +314,43 @@ public class JobPostingServiceImpl implements JobPostingService {
             String requiredDegree,
             Integer minExperience,
             Integer page,
-            Integer size) {
+            Integer size
+    ) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        org.springframework.data.domain.Page<JobPosting> jobPostingsPage = jobPostingRepository
-                .findByCategoryContainingAndLocationContainingAndSalaryRangeContainingAndJobTypeContainingAndRequiredDegreeContaining(
+
+        org.springframework.data.domain.Page<JobPosting> jobPostingsPage =
+                jobPostingRepository.findByCategoryContainingAndLocationContainingAndSalaryRangeContainingAndJobTypeContainingAndRequiredDegreeContaining(
                         category != null ? category : "",
                         location != null ? location : "",
                         salaryRange != null ? salaryRange : "",
                         jobType != null ? jobType : "",
                         requiredDegree != null ? requiredDegree : "",
-                        pageable);
-        // Nếu filter requiredSkills, lọc tiếp trên kết quả trả về
+                        pageable
+                );
+
+        // Nếu filter requiredSkills, lọc tiếp
         List<JobPosting> filtered = jobPostingsPage.getContent();
         if (requiredSkills != null && !requiredSkills.isEmpty()) {
             filtered = filtered.stream()
-                    .filter(jp -> jp.getRequiredSkills() != null && jp.getRequiredSkills().stream()
-                            .anyMatch(skill -> skill.toLowerCase().contains(requiredSkills.toLowerCase())))
+                    .filter(jp -> jp.getRequiredSkills() != null &&
+                            jp.getRequiredSkills().stream()
+                                    .anyMatch(skill -> skill.toLowerCase().contains(requiredSkills.toLowerCase())))
                     .collect(Collectors.toList());
         }
+
         if (minExperience != null) {
             filtered = filtered.stream()
                     .filter(jp -> jp.getMinExperience() != null && jp.getMinExperience() >= minExperience)
                     .collect(Collectors.toList());
         }
+
         JobPostingPaginatedDTO paginatedDTO = new JobPostingPaginatedDTO();
         paginatedDTO.setJobs(filtered.stream().map(this::mapToResponseDTO).collect(Collectors.toList()));
         paginatedDTO.setPage(page);
         paginatedDTO.setSize(size);
         paginatedDTO.setTotalElements(jobPostingsPage.getTotalElements());
         paginatedDTO.setTotalPages(jobPostingsPage.getTotalPages());
+
         return paginatedDTO;
     }
 }
