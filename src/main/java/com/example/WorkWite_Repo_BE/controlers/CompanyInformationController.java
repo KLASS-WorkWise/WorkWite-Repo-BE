@@ -69,5 +69,10 @@ public class CompanyInformationController {
     ) {
         return companyInformationService.searchCompaniesByName(name, page, size);
     }
+    // Lấy thông tin công ty theo employerId
+    @GetMapping("/employer/{employerId}")
+    public CompanyInformationReponseDto getCompanyByEmployerId(@PathVariable Long employerId) {
+        return companyInformationService.getCompanyByEmployerId(employerId);
+    }
 
 }

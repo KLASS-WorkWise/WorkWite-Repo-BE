@@ -1,116 +1,91 @@
-
 package com.example.WorkWite_Repo_BE.controlers;
 
-// import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.PaginatedUserResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.UserDto.UserResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto;
 import com.example.WorkWite_Repo_BE.services.EmployersService;
 import com.example.WorkWite_Repo_BE.services.UserService;
+import com.example.WorkWite_Repo_BE.services.SystemLogService;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
-@RestController()
+@RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final EmployersService  employersService;
+    private final EmployersService employersService;
+    private final SystemLogService systemLogService;
 
-    public UserController(UserService userService, EmployersService employersService) {
-        this.userService = userService;
-        this.employersService = employersService;
-    }
-
-    // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
-    // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
-    // API lấy danh sách user theo phân trang, trả về luôn ở endpoint /api/users
+    // Lấy tất cả user (phân trang)
     @GetMapping()
-    public ResponseEntity<?> getAllUsers(@RequestParam(defaultValue = "1") int page) {
-        int size = 10; // luôn lấy 10 user/trang
-        var result = this.userService.getAllUsersPaginated(page, size);
-        return ResponseEntity.ok(result);
+    public PaginatedUserResponseDto getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return this.userService.getAllUsersPaginated(page, size);
     }
 
     // Lấy user theo id
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        try {
-            var user = userService.getUserById(id);
-            return ResponseEntity.ok(user);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body("User not found");
-        }
+    public UserResponseDto getUserById(@PathVariable Long id) {
+        return this.userService.getUserById(id);
     }
 
-    // @GetMapping("/paging")
-    // public PaginatedUserResponseDto getAllUsersPaginated(
-    // @RequestParam(defaultValue = "1") int page,
-    // @RequestParam(defaultValue = "5") int size) {
-    // System.out.println("page: " + page);
-    // System.out.println("size: " + size);
-    // return this.userService.getAllUsersPaginated(page, size);
-    // }
-
-    ;
-
+    // Update user
     @PatchMapping("/{id}")
-    public UserResponseDto updateUser(@PathVariable("id") Long id,
-            @RequestBody @Valid com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto request) {
-        return this.userService.updateUser(id, request);
+    public UserResponseDto updateUser(
+            @PathVariable("id") Long id,
+            @RequestBody @Valid UserUpdateRequestDto userUpdateRequestDto) {
+        UserResponseDto response = this.userService.updateUser(id, userUpdateRequestDto);
+
+        // Ghi log sửa user
+        String actor = getCurrentUsernameOrEmail();
+        String ipAddress = "unknown";
+        systemLogService.saveLog(actor, "UPDATE_USER", "User updated", ipAddress, "INFO", id);
+
+        return response;
     }
 
+    // Delete user
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable("id") Long id) {
         this.userService.deleteUser(id);
+
+        // Ghi log xóa user
+        String actor = getCurrentUsernameOrEmail();
+        String ipAddress = "unknown";
+        systemLogService.saveLog(actor, "DELETE_USER", "User deleted", ipAddress, "WARN", id);
+
+        return ResponseEntity.ok("User with id " + id + " deleted successfully.");
     }
 
-    // @DeleteMapping("/soft-delete/{id}")
-    // public void softDeleteUser(@PathVariable("id") Long id) {
-    // this.userService.softDeleteUser(id);
-    // }
+    // Lấy username hoặc email của người thực hiện thao tác
+    private String getCurrentUsernameOrEmail() {
+        org.springframework.security.core.Authentication authentication =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
 
-    // @GetMapping("/get-all/deleted/false")
-    // public List<UserResponseDto> findAvailableUsers() {
-    // return this.userService.findAvailableUsers();
-    // }
+        if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails) {
+            return ((org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal()).getUsername();
+        } else if (authentication != null) {
+            return authentication.getName();
+        }
+        return "unknown";
+    }
 
-    // @GetMapping("/get-all/status")
-    // public List<UserResponseDto> findByStatus(@RequestParam("status")
-    // UserStatus status) {
-
-    // return this.userService.findByStatus(status);
-    // }
-
-    // @GetMapping("/get-all/department/{id}")
-    // public List<UserResponseDto> findByDepartment(@PathVariable("id") Long
-    // departmentId) {
-
-    // return this.userService.findByDepartmentId(departmentId);
-    // }
-
-    // @GetMapping("/get-all/name")
-    // public List<UserProjection> findByName(@RequestParam("name") String name) {
-    // return this.userService.findByNameContainingIgnoreCase(name);
-    // }
-
-    // @GetMapping("/get-all/email")
-    // public List<UserProjection> findByEmail(@RequestParam("email") String email)
-    // {
-    // return this.userService.searchByEmailContainingIgnoreCase(email);
-    // }
-
-    // admin duyệt
+    // Admin duyệt nâng cấp employer
     @PatchMapping("/approve-employer/{userId}")
-    public ResponseEntity<?> approve(@PathVariable Long userId){
+    public ResponseEntity<?> approve(@PathVariable Long userId) {
         employersService.approveUpgrade(userId);
         return ResponseEntity.ok("Approved");
     }
 
-    // admin từ chối
+    // Admin từ chối nâng cấp employer
     @PatchMapping("/reject-employer/{userId}")
-    public ResponseEntity<?> reject(@PathVariable Long userId){
+    public ResponseEntity<?> reject(@PathVariable Long userId) {
         employersService.rejectUpgrade(userId);
         return ResponseEntity.ok("Rejected");
     }
