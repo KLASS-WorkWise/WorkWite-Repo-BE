@@ -40,17 +40,21 @@ public class FileUploadController {
                 Files.createDirectories(uploadPath);
             }
 
-            Path filePath = uploadPath.resolve(file.getOriginalFilename());
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
             Files.write(filePath, file.getBytes());
 
             FileInfo info = new FileInfo();
-            info.setFilename(file.getOriginalFilename());
+            info.setFilename(fileName);
             info.setFilepath(filePath.toString());
             info.setFileType(file.getContentType());
             info.setUploadTime(LocalDateTime.now());
             fileInfoRepository.save(info);
 
-            return ResponseEntity.ok("Upload thành công: " + filePath.toAbsolutePath());
+            // Trả về link HTTP cho FE
+            String fileUrl = "/uploads/" + fileName;
+            String fullUrl = "http://localhost:8080" + fileUrl;
+            return ResponseEntity.ok(fullUrl);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Lỗi upload file: " + e.getMessage());
         }

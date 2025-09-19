@@ -12,6 +12,9 @@ import java.util.List;
 @Builder
 @Data
 public class JobPostingResponseDTO {
+    private Double postPriceUSD; // Tổng tiền USD cho FE
+    private String postType; // NORMAL hoặc VIP
+    private Long postPrice;
     private Long id;
     private Long employerId;
     private String employerName;
