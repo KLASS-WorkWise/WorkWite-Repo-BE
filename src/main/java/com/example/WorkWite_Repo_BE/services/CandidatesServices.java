@@ -74,7 +74,8 @@ public class CandidatesServices {
                             resume.getSkillsResumes() == null ? java.util.Collections.<String>emptyList() : resume.getSkillsResumes(),
                             resume.getSummary(),
                             resume.getCandidate().getId(),
-                            resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences()
+                            resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences(),
+                            resume.getResumeLink()
                     );
                 })
                 .collect(Collectors.toList());

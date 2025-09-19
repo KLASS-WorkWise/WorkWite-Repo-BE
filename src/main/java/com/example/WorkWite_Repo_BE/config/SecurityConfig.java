@@ -78,6 +78,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/**").permitAll()
                                 .requestMatchers("/api/saved-jobs/**").permitAll()
                                 .requestMatchers("/api/vnpay/**").permitAll()
+                                .requestMatchers("/api/recommend/**").permitAll()
                                         .requestMatchers(HttpMethod.PATCH, "/api/banners/**").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/banners/**").authenticated()
                                         .requestMatchers(HttpMethod.GET, "/api/banners/**").permitAll()

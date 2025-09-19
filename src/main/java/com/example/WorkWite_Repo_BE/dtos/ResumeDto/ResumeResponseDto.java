@@ -24,6 +24,7 @@ public class    ResumeResponseDto {
     private List<Long> applicantIds;
     private List<String> skillsResumes;
     private Long candidateId;
+    private String resumeLink;
 
     // Constructor với tất cả các trường
 
@@ -31,7 +32,7 @@ public class    ResumeResponseDto {
     public ResumeResponseDto(Long id, String profilePicture, String fullName, String email, String phone,
                              String createdAt, String jobTitle,String template, List<Activity> activities,
                              List<Education> educations, List<Award> awards,List<Long> applicantIds,
-                             List<String> skillsResumes, String summary,Long candidateId,List<Experience> experiences) {
+                             List<String> skillsResumes, String summary,Long candidateId,List<Experience> experiences, String resumeLink) {
         this.id = id;
         this.profilePicture = profilePicture;
         this.fullName = fullName;
@@ -48,5 +49,6 @@ public class    ResumeResponseDto {
         this.summary = summary;
         this.candidateId=candidateId;
         this.experiences = experiences;
+        this.resumeLink = resumeLink;
     }
 }
