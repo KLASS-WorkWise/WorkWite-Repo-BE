@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ResumeJpaRepository extends JpaRepository<Resume, Long> {
@@ -19,5 +20,8 @@ public interface ResumeJpaRepository extends JpaRepository<Resume, Long> {
     // rooif qua service lâ
 
     List<Resume> findByCandidateId(Long candidateId);
+
+    Optional<Resume> findTopByCandidateIdOrderByUpdatedAtDesc(Long candidateId);
+    Optional<Resume> findByResumeLink(String resumeLink);
 
 }

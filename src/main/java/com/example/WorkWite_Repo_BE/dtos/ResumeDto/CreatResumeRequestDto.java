@@ -23,6 +23,7 @@ public class CreatResumeRequestDto {
     private String summary;
     private String jobTitle;
     private String template;
+    private String resumeLink;
 
     private List<CreatEducationRequestDto> educations; // Dữ liệu tạo mới Education
     private List<CreatAwardRequestDto> awards; // Dữ liệu tạo mới Award

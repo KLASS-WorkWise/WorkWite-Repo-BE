@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +48,7 @@ public class ResumeService {
     public ResumeResponseDto creatResume(Long candidateId, CreatResumeRequestDto creatResumeRequestDto) {
         Resume resume1 = new Resume();
         Candidate candidate = candidateJpaRepository.findById(candidateId).orElse(null);
+        String urlLink = UUID.randomUUID().toString();
         resume1.setCandidate(candidate);
         resume1.setFullName(creatResumeRequestDto.getFullName());
         resume1.setEmail(creatResumeRequestDto.getEmail());
@@ -56,6 +59,7 @@ public class ResumeService {
         resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setCreatedAt(LocalDateTime.now());
+        resume1.setResumeLink(urlLink);
         resumeRepository.save(resume1);
 
         if (creatResumeRequestDto.getEducations() != null) {
@@ -123,6 +127,13 @@ public class ResumeService {
         if (resume == null) {
             return null;
         }
+        return convertToDto(resume);
+    }
+
+    // Lấy Resume theo resumeLink
+    public ResumeResponseDto getResumeByLink(String resumeLink) {
+        Resume resume = resumeRepository.findByResumeLink(resumeLink)
+                .orElseThrow(() -> new RuntimeException("Resume not found with link: " + resumeLink));
         return convertToDto(resume);
     }
 
@@ -254,7 +265,8 @@ public class ResumeService {
                 resume.getSkillsResumes() == null ? java.util.Collections.<String>emptyList() : resume.getSkillsResumes(),
                 resume.getSummary(),
                 resume.getCandidate().getId(),
-                resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences()
+                resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences(),
+                resume.getResumeLink()
         );
     }
 }
