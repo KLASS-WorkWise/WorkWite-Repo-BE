@@ -6,6 +6,7 @@ import com.example.WorkWite_Repo_BE.filters.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,24 +39,57 @@ public class SecurityConfig {
 //                                                .hasAnyRole("Administrators", "Managers")
 //                                                .anyRequest().permitAll())
 
-                        .authorizeHttpRequests(auth -> auth
+// open api config
+                                                .authorizeHttpRequests(auth -> auth
+                                                                .requestMatchers(
+                                                                        "/swagger-ui.html",
+                                                                        "/swagger-ui/**",
+                                                                        "/docs/**",
+                                                                        "/api-docs/**",
+                                                                        "/v3/api-docs.yaml"
+                                                                ).permitAll()
+
+
+                                .requestMatchers("/uploads/**").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/public/**").permitAll()
-                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
+//                                                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
                                 .requestMatchers("/api/employers/**").permitAll()
                                 .requestMatchers("/api/candidates/**").permitAll()
                                 .requestMatchers("/api/company/**").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/resumes/**").permitAll()
-                                .requestMatchers("/api/job-postings/**").permitAll()
+//.requestMatchers("/api/job-postings/**").authenticated()
+
+                                        // Job postings
+                                        .requestMatchers(HttpMethod.GET, "/api/job-postings/**").permitAll()
+                                        .requestMatchers(HttpMethod.PUT, "/api/job-postings/**").permitAll()
+                                        .requestMatchers(HttpMethod.DELETE, "/api/job-postings/**").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/job-postings/**").authenticated()
+
                                 .requestMatchers("/api/applicant/**").permitAll()
                                 .requestMatchers("/api/upload/multiple**").permitAll()
                                 .requestMatchers("/api/statistics/**").permitAll()
                                 .requestMatchers("/api/admin/**").permitAll()
                                 .requestMatchers("/api/saved-jobs/**").permitAll()
                                 .requestMatchers("/api/vnpay/**").permitAll()
+                                        .requestMatchers(HttpMethod.PATCH, "/api/banners/**").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/banners/**").authenticated()
+                                        .requestMatchers(HttpMethod.GET, "/api/banners/**").permitAll()
+                                        .requestMatchers(HttpMethod.DELETE, "/api/banners/**").permitAll()
+                                        .requestMatchers("/api/banners/**").permitAll()
+                                        .requestMatchers("/api/upload/**").permitAll()
+                                                                .requestMatchers("/api/system-logs/**").permitAll()
 
                         )
+
+
+
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

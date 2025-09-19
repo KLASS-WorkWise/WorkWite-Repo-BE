@@ -1,4 +1,4 @@
-package com.example.WorkWite_Repo_BE.controllers;
+package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.config.payment.VNPAYConfig;
 import com.example.WorkWite_Repo_BE.services.UserBalanceService;

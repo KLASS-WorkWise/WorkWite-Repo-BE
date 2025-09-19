@@ -84,28 +84,18 @@ public class UserService {
                 .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
         if (request.getUsername() != null)
             user.setUsername(request.getUsername());
-        if (request.getEmail() != null)
-            user.setEmail(request.getEmail());
-        if (request.getPassword() != null)
-            user.setPassword(request.getPassword());
+//        if (request.getEmail() != null)
+//            user.setEmail(request.getEmail());
+//        if (request.getPassword() != null)
+//            user.setPassword(request.getPassword());
         if (request.getFullName() != null)
             user.setFullName(request.getFullName());
-        if( request.getAvatarUrl() != null)
-            user.setAvatarUrl(request.getAvatarUrl());
+//        if( request.getAvatarUrl() != null)
+//            user.setAvatarUrl(request.getAvatarUrl());
         userJpaRepository.save(user);
         return convertToDto(user);
     }
     @Transactional
-    public void deleteUser(Long id) {
-        if (!userJpaRepository.existsById(id)) {
-            throw new HttpException("User not found", HttpStatus.NOT_FOUND);
-        }
-
-        // Xoá tất cả các liên kết với Candidate
-        candidateJpaRepository.deleteById(id);
-        // Xoá user
-        userJpaRepository.deleteById(id);
-    }
 
     public LoginResponseDto login(LoginRequestDto request) throws Exception {
         User user = this.userJpaRepository.findByUsername(request.getUsername())

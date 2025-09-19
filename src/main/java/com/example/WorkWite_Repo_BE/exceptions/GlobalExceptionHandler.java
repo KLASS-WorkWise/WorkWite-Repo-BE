@@ -14,6 +14,25 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    /**
+     * Xử lý lỗi không đủ số dư khi thuê banner
+     */
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<com.example.WorkWite_Repo_BE.api.RestResponse<Object>> handleInsufficientBalance(InsufficientBalanceException ex) {
+        java.util.Map<String, Object> details = new java.util.HashMap<>();
+        details.put("userId", ex.getUserId());
+        details.put("balance", ex.getBalance());
+        details.put("requiredAmount", ex.getRequiredAmount());
+        details.put("bannerType", ex.getBannerType());
+        return ResponseEntity.badRequest().body(
+            com.example.WorkWite_Repo_BE.api.RestResponse.builder()
+                .statusCode(400)
+                .error("Insufficient Balance")
+                .message("Không đủ số dư để thuê banner. Số dư hiện tại: " + ex.getBalance() + ", số tiền cần: " + ex.getRequiredAmount() + ", loại banner: " + ex.getBannerType())
+                .data(details)
+                .build()
+        );
+    }
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
@@ -61,16 +80,16 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpException.class)
     public ResponseEntity<RestResponse<Object>> handleHttpException(HttpException ex) {
-        log.warn("HttpException: {} - {}", ex.getStatus(), ex.getMessage());
+    log.warn("HttpException: {} - {}", ex.getStatus(), ex.getMessage());
 
-        return ResponseEntity.status(ex.getStatus()).body(
-                RestResponse.builder()
-                        .statusCode(ex.getStatus().value())
-                        .error(ex.getStatus().getReasonPhrase())
-                        .message(ex.getClass())
-                        .data(null)
-                        .build()
-        );
+    return ResponseEntity.status(ex.getStatus()).body(
+        RestResponse.builder()
+            .statusCode(ex.getStatus().value())
+            .error(ex.getStatus().getReasonPhrase())
+            .message(ex.getMessage())
+            .data(null)
+            .build()
+    );
     }
 
     /**
@@ -117,9 +136,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
                 RestResponse.builder()
                         .statusCode(HttpStatus.UNPROCESSABLE_ENTITY.value())
-                        .error(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase())
+                        // .error(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase())
                         .message(ex.getMessage())
-                        .data(null)
+                        // .data(null)
                         .build()
         );
     }

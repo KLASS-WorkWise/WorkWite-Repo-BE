@@ -14,20 +14,13 @@ public interface SystemLogRepository extends JpaRepository<SystemLog, Long> {
     // Lấy log theo khoảng thời gian
     List<SystemLog> findByTimestampBetween(LocalDateTime start, LocalDateTime end);
 
-    // Lấy log theo actor
-    List<SystemLog> findByActor(String actor);
+    // Lấy log theo trạng thái (SUCCESS/FAIL)
+    List<SystemLog> findByStatus(String status);
 
-    // Lấy log theo level
-    List<SystemLog> findByLevel(String level);
-
-    // Tìm kiếm log theo action
-    List<SystemLog> findByAction(String action);
-
-    // Tìm kiếm log theo nhiều tiêu chí
-    @Query("SELECT l FROM SystemLog l WHERE (:actor IS NULL OR l.actor = :actor) AND (:level IS NULL OR l.level = :level) AND (:action IS NULL OR l.action = :action) AND (:start IS NULL OR l.timestamp >= :start) AND (:end IS NULL OR l.timestamp <= :end)")
+    // Tìm kiếm log theo ngày và trạng thái
+    @Query("SELECT l FROM SystemLog l WHERE (:actor IS NULL OR l.username = :actor) AND (:status IS NULL OR l.status = :status) AND (:start IS NULL OR l.timestamp >= :start) AND (:end IS NULL OR l.timestamp <= :end)")
     List<SystemLog> searchLogs(@Param("actor") String actor,
-            @Param("level") String level,
-            @Param("action") String action,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
+        @Param("status") String status,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end);
 }
