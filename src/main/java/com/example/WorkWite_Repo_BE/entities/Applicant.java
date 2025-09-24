@@ -75,6 +75,8 @@ public class Applicant {
     @Column(length = 500)
     private String skillMatchMessage;
 
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead = false;  // mặc định false khi tạo
 
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ApplicantHistory> history;

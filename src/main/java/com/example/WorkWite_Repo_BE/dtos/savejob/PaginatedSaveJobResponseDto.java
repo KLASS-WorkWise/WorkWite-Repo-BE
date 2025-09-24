@@ -1,17 +1,17 @@
-package com.example.WorkWite_Repo_BE.dtos.applicant;
+package com.example.WorkWite_Repo_BE.dtos.savejob;
 
-import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaginatedEmployeeListJobResponseDto <T>  {
+public class PaginatedSaveJobResponseDto<T>  {
     private List<T> content;
     private int pageNumber;
     private int pageSize;
