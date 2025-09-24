@@ -205,6 +205,7 @@ public class ApplicantService {
                 .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
                 .isExperienceQualified(app.getIsExperienceQualified())
                 .skillMatchMessage(app.getSkillMatchMessage())
+                .isRead(false)
                 .build();
     }
 
@@ -423,11 +424,11 @@ public class ApplicantService {
             expQualified = totalExpYears >= jobPosting.getMinExperience();
 
             if (totalExpYears == 0) {
-                minExperienceMessage = "Bạn chưa nhập kinh nghiệm hoặc chưa có kinh nghiệm (" + expDetail + ")";
+                minExperienceMessage = "You have not entered experience or have no experience (" + expDetail + ")";
             } else if (!expQualified) {
-                minExperienceMessage = "Bạn chưa đủ " + jobPosting.getMinExperience() + " năm kinh nghiệm yêu cầu (hiện tại: " + expDetail + ")";
+                minExperienceMessage = "You are not enough " + jobPosting.getMinExperience() + " Years of experience required (current: " + expDetail + ")";
             } else {
-                minExperienceMessage = "Bạn đủ yêu cầu kinh nghiệm (" + expDetail + ")";
+                minExperienceMessage = "You have the required experience (" + expDetail + ")";
             }
 
         }
@@ -447,16 +448,16 @@ public class ApplicantService {
                  requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
                 skillQualified = skillMatchPercent >= requiredSkillPercent;
                 skillMatchMessage = skillQualified
-                        ? String.format("Bạn đạt %.1f%% skill match (yêu cầu tối thiểu %.1f%%)", skillMatchPercent, requiredSkillPercent)
-                        : String.format("Bạn chỉ đạt %.1f%% skill match (yêu cầu tối thiểu %.1f%%)", skillMatchPercent, requiredSkillPercent);
+                        ? String.format("You have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent)
+                        : String.format("You only have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent);
 
 // 👉 check kinh nghiệm
                 expQualified = totalExpYears >= jobPosting.getMinExperience();
                 if (!expQualified) {
-                    minExperienceMessage = "Bạn chưa đủ " + jobPosting.getMinExperience()
-                            + " năm kinh nghiệm (hiện tại: " + totalExpYears + " năm)";
+                    minExperienceMessage = "You do not have enough " + jobPosting.getMinExperience()
+                            + " years of experience (current: " + totalExpYears + " years)";
                 } else {
-                    minExperienceMessage = "Bạn đủ yêu cầu kinh nghiệm (" + totalExpYears + " năm)";
+                    minExperienceMessage = "You have enough experience requirement (" + totalExpYears + " years)";
                 }
 
             }
@@ -481,6 +482,7 @@ public class ApplicantService {
                 .isSkillQualified(skillQualified)        // ✅ lưu trạng thái skill
                 .isExperienceQualified(expQualified)     // ✅ lưu trạng thái exp
                 .skillMatchMessage(skillMatchMessage)
+                .isRead(false)
                 .build();
 
         try {
@@ -504,7 +506,7 @@ public class ApplicantService {
             String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
             emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
-            logHistory(applicant, ApplicationStatus.PENDING, "Ứng viên vừa apply job");
+            logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {
             // Race condition: DB unique constraint bắt duplicate
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already applied for this Job");
