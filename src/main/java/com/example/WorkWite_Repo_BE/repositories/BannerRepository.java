@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BannerRepository extends JpaRepository<Banner, Long> {
 	java.util.List<Banner> findByPositionAndStatus(String position, com.example.WorkWite_Repo_BE.enums.BannerStatus status);
+
+	java.util.List<Banner> findByStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus status);
 }

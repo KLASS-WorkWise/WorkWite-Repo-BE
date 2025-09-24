@@ -52,10 +52,12 @@ public class SecurityConfig {
 
                                 .requestMatchers("/uploads/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers("/api/login").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/public/**").permitAll()
-                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
+//                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
 //                                                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                                                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
@@ -90,6 +92,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/blogs/**").permitAll()
                                 .requestMatchers("/api/aboutus/**").permitAll()
                                 .requestMatchers("/api/ourteam/**").permitAll()
+                                                                .requestMatchers("api/employers-status/**").permitAll()
+                                                                .anyRequest().permitAll()
 
                         )
 

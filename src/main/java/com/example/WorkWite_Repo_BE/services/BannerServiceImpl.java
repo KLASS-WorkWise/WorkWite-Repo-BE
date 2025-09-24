@@ -23,6 +23,12 @@ public class BannerServiceImpl implements BannerService {
             .collect(java.util.stream.Collectors.toList());
     }
 
+    // Lấy danh sách banner theo status (dùng cho API active-list)
+    @Override
+    public java.util.List<com.example.WorkWite_Repo_BE.entities.Banner> getBannersByStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus status) {
+        return bannerRepository.findByStatus(status);
+    }
+
 
 
     // Xử lý hết hạn banner

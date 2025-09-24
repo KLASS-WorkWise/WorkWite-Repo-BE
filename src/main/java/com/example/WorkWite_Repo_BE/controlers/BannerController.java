@@ -1,3 +1,4 @@
+
 package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO;
@@ -183,5 +184,23 @@ public class BannerController {
             @RequestParam(required = false) String reason
     ) {
         return ResponseEntity.ok(bannerService.rejectBanner(id, reason));
+    }
+
+
+        // API lấy tất cả banner active, trả về các trường cần thiết
+    @GetMapping("/active-list")
+    public ResponseEntity<List<com.example.WorkWite_Repo_BE.dto.BannerResponse>> getActiveBannerList() {
+        List<com.example.WorkWite_Repo_BE.entities.Banner> activeBanners = bannerService.getBannersByStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus.ACTIVE);
+        List<com.example.WorkWite_Repo_BE.dto.BannerResponse> response = activeBanners.stream()
+            .map(b -> new com.example.WorkWite_Repo_BE.dto.BannerResponse(
+                b.getCompanyName(),
+                b.getPosition(),
+                b.getStartDate() != null ? b.getStartDate().toString() : null,
+                b.getEndDate() != null ? b.getEndDate().toString() : null,
+                b.getStatus() != null ? b.getStatus().name() : null,
+                b.getBannerImage() // imageUrl field in DTO
+            ))
+            .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 }

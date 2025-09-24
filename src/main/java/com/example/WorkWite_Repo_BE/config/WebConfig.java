@@ -23,11 +23,18 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-            .allowedOrigins("http://localhost:3000","http://localhost:5173","http://localhost:3001", "http://localhost:5174")
-            .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With")
-            .allowCredentials(true);
+                registry.addMapping("/api/**")
+                    .allowedOrigins(
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        "http://localhost:3001",
+                        "http://localhost:5174",
+                        "https://website-jobbox-search.vercel.app",
+                            "https://enchanting-crostata-6d80da.netlify.app"
+                    )
+                    .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
+                    .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With")
+                    .allowCredentials(true);
             }
         };
     }
