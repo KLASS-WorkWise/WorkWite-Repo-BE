@@ -45,6 +45,12 @@ public class BlogService {
         if(blog == null) return null;
         return convertToDto(blog);
     }
+    // get by slug
+    public BlogResponseDto getBlogBySlug(String slug) {
+        BLog blog = blogJpaRepository.findBySlug(slug).orElse(null);
+        if (blog == null) return null;
+        return convertToDto(blog);
+    }
     //creat blog
     public BlogResponseDto creatBlog(CreatBlogRequestDto creatBlog, Long categoryId){
        Category category = categoryJpaRepositpry.findById(categoryId).orElse(null);

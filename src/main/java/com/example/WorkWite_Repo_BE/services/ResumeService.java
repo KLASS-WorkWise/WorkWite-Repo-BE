@@ -1,11 +1,17 @@
 package com.example.WorkWite_Repo_BE.services;
 
+import com.example.WorkWite_Repo_BE.dtos.CandidateDto.CandidatesResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.CreatResumeRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.ResumeDto.PaginatedResumeResposeDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.UpdataResumeRequestDto;
 import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.repositories.*;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -283,5 +289,22 @@ public class ResumeService {
                 resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences(),
                 resume.getResumeLink()
         );
+    }
+    public PaginatedResumeResposeDto getResumePaginated(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Resume> resumePage = this.resumeRepository.findAll(pageable);
+        List<ResumeResponseDto> dtos = resumePage.getContent()
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        return PaginatedResumeResposeDto.builder()
+                .data(dtos)
+                .pageNumber(resumePage.getNumber())
+                .pageSize(resumePage.getSize())
+                .totalRecords((int) resumePage.getTotalElements())
+                .totalPages(resumePage.getTotalPages())
+                .hasNext(resumePage.hasNext())
+                .hasPrevious(resumePage.hasPrevious())
+                .build();
     }
 }

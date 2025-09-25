@@ -1,6 +1,8 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
+import com.example.WorkWite_Repo_BE.dtos.CandidateDto.PaginatedCandidateResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.CreatResumeRequestDto;
+import com.example.WorkWite_Repo_BE.dtos.ResumeDto.PaginatedResumeResposeDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.ResumeResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.ResumeDto.UpdataResumeRequestDto;
 import com.example.WorkWite_Repo_BE.exceptions.IdInvalidException;
@@ -87,6 +89,15 @@ public class ResumeController {
         List<ResumeResponseDto> resumes = resumeService.getResumesByCandidateId(candidate.getId());
         return ResponseEntity.ok(resumes);
     }
+//    @GetMapping("")
+//    public ResponseEntity<PaginatedResumeResposeDto> getAllResume(
+//            @RequestParam(defaultValue = "1") int page,
+//            @RequestParam(defaultValue = "5") int size
+//    ) {
+//        System.out.println("page:" + page + " size:" + size);
+//        PaginatedResumeResposeDto response = this.resumeService.getResumePaginated( page - 1 , size);
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ResumeResponseDto> getResumeById(@PathVariable Long id) throws IdInvalidException {
