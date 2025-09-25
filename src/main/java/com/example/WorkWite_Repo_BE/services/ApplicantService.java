@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.services;
 
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingPaginatedDTO;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.*;
@@ -72,13 +73,13 @@ public class ApplicantService {
         sseService.sendEvent(applicantId, "statusUpdated", dto);
 
 // Gửi mail cho ứng viên
-        String candidateEmail = applicant.getCandidate().getUser().getEmail();
-        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-        String jobTitle = applicant.getJobPosting().getTitle();
-
-        String subject = "Cập nhật trạng thái đơn ứng tuyển";
-        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
-        emailService.sendEmail(candidateEmail, subject, content);
+//        String candidateEmail = applicant.getCandidate().getUser().getEmail();
+//        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+//        String jobTitle = applicant.getJobPosting().getTitle();
+//
+//        String subject = "Cập nhật trạng thái đơn ứng tuyển";
+//        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
+//        emailService.sendEmail(candidateEmail, subject, content);
 
         return dto;
     }
@@ -358,7 +359,7 @@ public class ApplicantService {
 
 
     @Transactional
-    public ApplicantResponseDto applyJob(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
+    public RestResponse<ApplicantResponseDto> applyJob(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
         Long candidateId = authService.getCurrentUserCandidateId();
 
         Candidate candidate = candidateJpaRepository.findById(candidateId)
@@ -488,23 +489,23 @@ public class ApplicantService {
         try {
             applicantRepository.save(applicant);
 
-            // Gửi mail cho ứng viên
-            String candidateEmail = applicant.getCandidate().getUser().getEmail();
-            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-            String jobTitle = applicant.getJobPosting().getTitle();
-
-            String subjectCandidate = "Xác nhận ứng tuyển thành công";
-            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
-            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
-
-// Gửi mail cho Employer
-            Employers employer = applicant.getJobPosting().getEmployer();
-            String employerEmail = employer.getUser().getEmail();
-            String employerName = employer.getUser().getFullName();
-
-            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
-            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
-            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
+//            // Gửi mail cho ứng viên
+//            String candidateEmail = applicant.getCandidate().getUser().getEmail();
+//            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+//            String jobTitle = applicant.getJobPosting().getTitle();
+//
+//            String subjectCandidate = "Xác nhận ứng tuyển thành công";
+//            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+//            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+//
+//// Gửi mail cho Employer
+//            Employers employer = applicant.getJobPosting().getEmployer();
+//            String employerEmail = employer.getUser().getEmail();
+//            String employerName = employer.getUser().getFullName();
+//
+//            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+//            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+//            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
             logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {
@@ -519,7 +520,13 @@ public class ApplicantService {
         // Gửi notification (mock)
         log.info("Gửi thông báo tới Employer {}: Ứng viên {} vừa apply job {}", jobPosting.getEmployer().getId(), candidateId, jobId);
 
-        return convertToDto(applicant);
+        ApplicantResponseDto dto = convertToDto(applicant);
+        // ✅ Bọc response
+        return RestResponse.<ApplicantResponseDto>builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Ứng tuyển thành công")
+                .data(dto)
+                .build();
     }
 
     public PaginatedAppResponseDto getAllAppsByPage(int page, int size, String sortBy, String sortDir) {

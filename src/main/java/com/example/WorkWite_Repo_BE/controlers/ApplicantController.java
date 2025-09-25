@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.ApplicantHistory;
@@ -91,14 +92,14 @@ public class ApplicantController {
         return ResponseEntity.ok(updated);
     }
 
-@PostMapping(value = "/{jobId}/apply",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<ApplicantResponseDto> applyJob(
-        @PathVariable  Long jobId,
-        @ModelAttribute  @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
-    ApplicantResponseDto response = applicantService.applyJob(jobId, applicantRequestDto );
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PostMapping(value = "/{jobId}/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RestResponse<ApplicantResponseDto>> applyJob(
+            @PathVariable Long jobId,
+            @ModelAttribute @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(applicantService.applyJob(jobId, applicantRequestDto));
+    }
 
-}
 
     @GetMapping("")
     public PaginatedAppResponseDto getAllAppsByPage(
