@@ -1,7 +1,10 @@
 // Vip, Featured, Standard
 package com.example.WorkWite_Repo_BE.dtos.BannerDto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -24,5 +27,17 @@ public class BannerResponseDTO {
     private LocalDateTime updatedAt;
     private Long userId;
     private String userName;
-        private String bannerType; 
+    private String bannerType;
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class BannerResponse {
+    private String company;
+    private String position;
+    private String startDate;
+    private String endDate;
+    private String status;
+    private String imageUrl;
 }

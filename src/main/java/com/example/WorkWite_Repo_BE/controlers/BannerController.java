@@ -17,6 +17,13 @@ import java.util.List;
 @RequestMapping("/api/banners")
 @RequiredArgsConstructor
 public class BannerController {
+    // Lấy danh sách tất cả banner theo phân trang
+    @GetMapping("/paginated")
+    public ResponseEntity<com.example.WorkWite_Repo_BE.dtos.BannerDto.PaginatedBannerResponseDto> getAllBannersPaginated(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(bannerService.getAllBannersPaginated(page, size));
+    }
     @Value("${banner.upload.dir}")
     private String bannerUploadDir;
     
@@ -189,17 +196,20 @@ public class BannerController {
 
         // API lấy tất cả banner active, trả về các trường cần thiết
     @GetMapping("/active-list")
-    public ResponseEntity<List<com.example.WorkWite_Repo_BE.dto.BannerResponse>> getActiveBannerList() {
+    public ResponseEntity<List<com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO>> getActiveBannerList() {
         List<com.example.WorkWite_Repo_BE.entities.Banner> activeBanners = bannerService.getBannersByStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus.ACTIVE);
-        List<com.example.WorkWite_Repo_BE.dto.BannerResponse> response = activeBanners.stream()
-            .map(b -> new com.example.WorkWite_Repo_BE.dto.BannerResponse(
-                b.getCompanyName(),
-                b.getPosition(),
-                b.getStartDate() != null ? b.getStartDate().toString() : null,
-                b.getEndDate() != null ? b.getEndDate().toString() : null,
-                b.getStatus() != null ? b.getStatus().name() : null,
-                b.getBannerImage() // imageUrl field in DTO
-            ))
+        List<com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO> response = activeBanners.stream()
+            .map(b -> {
+                com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO dto = new com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO();
+                dto.setCompanyName(b.getCompanyName());
+                dto.setPosition(b.getPosition());
+                dto.setStartDate(b.getStartDate());
+                dto.setEndDate(b.getEndDate());
+                dto.setStatus(b.getStatus() != null ? b.getStatus().name() : null);
+                dto.setBannerImage(b.getBannerImage());
+                // Có thể set thêm các trường khác nếu cần
+                return dto;
+            })
             .collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(response);
     }

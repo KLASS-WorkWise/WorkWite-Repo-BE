@@ -2,7 +2,8 @@ package com.example.WorkWite_Repo_BE.controlers;
 
 import com.example.WorkWite_Repo_BE.dtos.SystemLogDto.SystemLogRequestDTO;
 import com.example.WorkWite_Repo_BE.dtos.SystemLogDto.SystemLogResponseDTO;
-import com.example.WorkWite_Repo_BE.services.SystemLogServiceCustom;
+import com.example.WorkWite_Repo_BE.dtos.SystemLogDto.PaginatedSystemLogResponseDto;
+import com.example.WorkWite_Repo_BE.services.SystemLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,19 +14,12 @@ import java.util.List;
 @RequestMapping("/api/system-logs")
 @RequiredArgsConstructor
 public class SystemLogController {
-    private final SystemLogServiceCustom systemLogService;
+    private final SystemLogService systemLogService;
 
-    @GetMapping
-    public ResponseEntity<List<SystemLogResponseDTO>> getAllLogs(
-            @RequestParam(required = false) String actor,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String start,
-            @RequestParam(required = false) String end) {
-        java.time.LocalDateTime startDate = start != null ? java.time.LocalDateTime.parse(start) : null;
-        java.time.LocalDateTime endDate = end != null ? java.time.LocalDateTime.parse(end) : null;
-        if (actor != null || status != null || start != null || end != null) {
-            return ResponseEntity.ok(systemLogService.searchLogs(actor, status, startDate, endDate));
-        }
-        return ResponseEntity.ok(systemLogService.getAllLogs());
+    @GetMapping()
+    public ResponseEntity<PaginatedSystemLogResponseDto> getAllLogsPaginated(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(systemLogService.getAllLogsPaginated(page, size));
     }
 }
