@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.services;
 
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.CompanyInformation.CompanyInformationReponseDto;
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.EmployerResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
@@ -11,8 +12,10 @@ import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.CompanyInformation;
 import com.example.WorkWite_Repo_BE.entities.Employers;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
+import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.repositories.ApplicantRepository;
 import com.example.WorkWite_Repo_BE.repositories.JobPostingRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +42,11 @@ public class EmployeeBrowseStatusService {
     }
 
     private JobPostingResponseDTO convertToDto(JobPosting jobPosting) {
+        Long applicantsCount = applicantRepository.countByJobPostingId(jobPosting.getId());
+//        Long newApplicantsCount = applicantRepository
+//                .countByJobPostingIdAndApplicationStatus(jobPosting.getId(), ApplicationStatus.PENDING);
+        Long newApplicantsCount = applicantRepository.countByJobPostingIdAndIsReadFalse(jobPosting.getId());
+        LocalDateTime lastAppliedAt = applicantRepository.findLastAppliedAtByJobId(jobPosting.getId());
         return JobPostingResponseDTO.builder()
                 .id(jobPosting.getId())
                 .employerName(jobPosting.getEmployer().getUser().getFullName())
@@ -53,30 +62,54 @@ public class EmployeeBrowseStatusService {
                 .endAt(jobPosting.getEndAt())
                 .status(jobPosting.getStatus())
                 .createdAt(jobPosting.getCreatedAt())
+                .applicantsCount(applicantsCount)
+                .newApplicantsCount(newApplicantsCount)
+                .lastAppliedAt(lastAppliedAt)
                 .build();
     }
 
-
-    public PaginatedEmployeeListJobResponseDto getEmployerJobs(int page, int size, String sortBy, String sortDir) {
-        // chỉ cho phép sort theo các field có trong JobPosting
-        List<String> allowedSortFields = List.of("createdAt", "title", "status", "salaryRange");
-        if (!allowedSortFields.contains(sortBy)) {
-            sortBy = "createdAt"; // fallback mặc định
-        }
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+    public RestResponse<PaginatedEmployeeListJobResponseDto<JobPostingResponseDTO>> getEmployerJobs(
+            int page, int size, String sortBy, String sortDir,
+            String status, Boolean isExpired , LocalDateTime startDate, LocalDateTime endDate
+    ) {
         Long employerId = authService.getCurrentUserEmployerId();
 
-        Page<JobPosting> jobPostingPage = jobPostingRepository.findByEmployer_Id(employerId, pageable);
+        Pageable pageable;
+        Page<JobPosting> jobPostingPage;
+
+        if ("lastAppliedAt".equalsIgnoreCase(sortBy)) {
+            pageable = PageRequest.of(page, size);
+            jobPostingPage = "asc".equalsIgnoreCase(sortDir)
+                    ? jobPostingRepository.findAllOrderByLastAppliedAtAsc(employerId, pageable)
+                    : jobPostingRepository.findAllOrderByLastAppliedAtDesc(employerId, pageable);
+
+        } else if ("pendingApplicants".equalsIgnoreCase(sortBy)) {
+            pageable = PageRequest.of(page, size);
+            jobPostingPage = jobPostingRepository.findAllOrderByPendingApplicantsDesc(employerId, pageable);
+
+        } else if ("applicantsCount".equalsIgnoreCase(sortBy)) {
+            pageable = PageRequest.of(page, size);
+            jobPostingPage = "asc".equalsIgnoreCase(sortDir)
+                    ? jobPostingRepository.findAllOrderByApplicantsCountAsc(employerId, pageable)
+                    : jobPostingRepository.findAllOrderByApplicantsCountDesc(employerId, pageable);
+
+        } else {
+            Sort sort = sortDir.equalsIgnoreCase("desc")
+                    ? Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+            pageable = PageRequest.of(page, size, sort);
+
+            jobPostingPage = jobPostingRepository.findByEmployerAndFilters(
+                    employerId, status, isExpired, startDate, endDate, pageable
+            );
+        }
+
         List<JobPostingResponseDTO> jobDtos = jobPostingPage.getContent().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        return PaginatedEmployeeListJobResponseDto.builder()
-                .data(jobDtos)
+        PaginatedEmployeeListJobResponseDto<JobPostingResponseDTO> pagedData = PaginatedEmployeeListJobResponseDto.<JobPostingResponseDTO>builder()
+                .content(jobDtos)
                 .pageNumber(jobPostingPage.getNumber())
                 .pageSize(jobPostingPage.getSize())
                 .totalRecords(jobPostingPage.getTotalElements())
@@ -84,9 +117,17 @@ public class EmployeeBrowseStatusService {
                 .hasNext(jobPostingPage.hasNext())
                 .hasPrevious(jobPostingPage.hasPrevious())
                 .build();
+        return RestResponse.<PaginatedEmployeeListJobResponseDto<JobPostingResponseDTO>>builder()
+                .statusCode(200)
+                .error(null)
+                .message("Success")
+                .data(pagedData)
+                .build();
     }
+
+
     // ✅ 2. Employer xem danh sách applicant trong 1 job cụ thể
-    public List<ApplicantResponseDto> getApplicantsByJob(Long jobId) {
+    public  RestResponse<List<ApplicantResponseDto>>  getApplicantsByJob(Long jobId) {
         Long employerId = authService.getCurrentUserEmployerId();
         JobPosting jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found"));
@@ -95,14 +136,13 @@ public class EmployeeBrowseStatusService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền xem job này");
         }
 
-        return applicantRepository.findByJobPostingId(jobId).stream()
+        List<ApplicantResponseDto> applicants = applicantRepository.findByJobPostingId(jobId).stream()
                 .map(app -> ApplicantResponseDto.builder()
                         .id(app.getId())
                         .jobId(app.getJobPosting().getId())
                         .candidateId(app.getCandidate().getId())
                         .jobTitle(app.getJobPosting().getTitle())
                         .description_company(app.getJobPosting().getEmployer().getCompanyInformation().getDescription())
-//                        .fullName(app.getResume() != null ? app.getResume().getFullName() : null)
                         .fullName(app.getCandidate().getUser().getFullName())
                         .companyName(app.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
                         .logoUrl(app.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
@@ -114,13 +154,31 @@ public class EmployeeBrowseStatusService {
                         .appliedAt(app.getAppliedAt())
                         .missingSkills(app.getMissingSkills() != null ? app.getMissingSkills() : List.of())
                         .minExperience(app.getMinExperience())
-                        .experienceYears(app.getExperienceYears() != null ? app.getExperienceYears() : 0) // ✅ tránh null
-                        .skillMatchPercent(app.getSkillMatchPercent())        // ✅ map field mới
-                        .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
+                        .experienceYears(app.getExperienceYears() != null ? app.getExperienceYears() : 0)
+                        .skillMatchPercent(app.getSkillMatchPercent())
+                        .isSkillQualified(app.getIsSkillQualified())
                         .isExperienceQualified(app.getIsExperienceQualified())
                         .skillMatchMessage(app.getSkillMatchMessage())
                         .build()
                 )
                 .collect(Collectors.toList());
+
+        return RestResponse.<List<ApplicantResponseDto>>builder()
+                .statusCode(200)
+                .error(null)
+                .message("Success")
+                .data(applicants)
+                .build();
     }
+    // EmployeeBrowseStatusService.java
+    @Transactional
+    public void markApplicantsAsRead(Long jobId, Long employerId) {
+        // kiểm tra job thuộc về employer
+        JobPosting job = jobPostingRepository.findByIdAndEmployer_Id(jobId, employerId)
+                .orElseThrow(() -> new RuntimeException("Job not found or not yours"));
+
+        // update all new applicants → set isNew = false
+        applicantRepository.markAllAsReadByJob(jobId);
+    }
+
 }

@@ -71,14 +71,14 @@ public class ApplicantService {
         // Push realtime SSE cho ứng viên
         sseService.sendEvent(applicantId, "statusUpdated", dto);
 
-// Gửi mail cho ứng viên
-        String candidateEmail = applicant.getCandidate().getUser().getEmail();
-        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-        String jobTitle = applicant.getJobPosting().getTitle();
-
-        String subject = "Cập nhật trạng thái đơn ứng tuyển";
-        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
-        emailService.sendEmail(candidateEmail, subject, content);
+//// Gửi mail cho ứng viên
+//        String candidateEmail = applicant.getCandidate().getUser().getEmail();
+//        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+//        String jobTitle = applicant.getJobPosting().getTitle();
+//
+//        String subject = "Cập nhật trạng thái đơn ứng tuyển";
+//        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
+//        emailService.sendEmail(candidateEmail, subject, content);
 
         return dto;
     }
@@ -205,6 +205,7 @@ public class ApplicantService {
                 .isSkillQualified(app.getIsSkillQualified())          // ✅ map field mới
                 .isExperienceQualified(app.getIsExperienceQualified())
                 .skillMatchMessage(app.getSkillMatchMessage())
+                .isRead(false)
                 .build();
     }
 
@@ -423,11 +424,11 @@ public class ApplicantService {
             expQualified = totalExpYears >= jobPosting.getMinExperience();
 
             if (totalExpYears == 0) {
-                minExperienceMessage = "Bạn chưa nhập kinh nghiệm hoặc chưa có kinh nghiệm (" + expDetail + ")";
+                minExperienceMessage = "You have not entered experience or have no experience (" + expDetail + ")";
             } else if (!expQualified) {
-                minExperienceMessage = "Bạn chưa đủ " + jobPosting.getMinExperience() + " năm kinh nghiệm yêu cầu (hiện tại: " + expDetail + ")";
+                minExperienceMessage = "You are not enough " + jobPosting.getMinExperience() + " Years of experience required (current: " + expDetail + ")";
             } else {
-                minExperienceMessage = "Bạn đủ yêu cầu kinh nghiệm (" + expDetail + ")";
+                minExperienceMessage = "You have the required experience (" + expDetail + ")";
             }
 
         }
@@ -447,16 +448,16 @@ public class ApplicantService {
                  requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
                 skillQualified = skillMatchPercent >= requiredSkillPercent;
                 skillMatchMessage = skillQualified
-                        ? String.format("Bạn đạt %.1f%% skill match (yêu cầu tối thiểu %.1f%%)", skillMatchPercent, requiredSkillPercent)
-                        : String.format("Bạn chỉ đạt %.1f%% skill match (yêu cầu tối thiểu %.1f%%)", skillMatchPercent, requiredSkillPercent);
+                        ? String.format("You have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent)
+                        : String.format("You only have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent);
 
 // 👉 check kinh nghiệm
                 expQualified = totalExpYears >= jobPosting.getMinExperience();
                 if (!expQualified) {
-                    minExperienceMessage = "Bạn chưa đủ " + jobPosting.getMinExperience()
-                            + " năm kinh nghiệm (hiện tại: " + totalExpYears + " năm)";
+                    minExperienceMessage = "You do not have enough " + jobPosting.getMinExperience()
+                            + " years of experience (current: " + totalExpYears + " years)";
                 } else {
-                    minExperienceMessage = "Bạn đủ yêu cầu kinh nghiệm (" + totalExpYears + " năm)";
+                    minExperienceMessage = "You have enough experience requirement (" + totalExpYears + " years)";
                 }
 
             }
@@ -481,30 +482,31 @@ public class ApplicantService {
                 .isSkillQualified(skillQualified)        // ✅ lưu trạng thái skill
                 .isExperienceQualified(expQualified)     // ✅ lưu trạng thái exp
                 .skillMatchMessage(skillMatchMessage)
+                .isRead(false)
                 .build();
 
         try {
             applicantRepository.save(applicant);
 
-            // Gửi mail cho ứng viên
-            String candidateEmail = applicant.getCandidate().getUser().getEmail();
-            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-            String jobTitle = applicant.getJobPosting().getTitle();
+//            // Gửi mail cho ứng viên
+//            String candidateEmail = applicant.getCandidate().getUser().getEmail();
+//            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+//            String jobTitle = applicant.getJobPosting().getTitle();
 
-            String subjectCandidate = "Xác nhận ứng tuyển thành công";
-            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
-            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+//            String subjectCandidate = "Xác nhận ứng tuyển thành công";
+//            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+//            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
 
 // Gửi mail cho Employer
-            Employers employer = applicant.getJobPosting().getEmployer();
-            String employerEmail = employer.getUser().getEmail();
-            String employerName = employer.getUser().getFullName();
+//            Employers employer = applicant.getJobPosting().getEmployer();
+//            String employerEmail = employer.getUser().getEmail();
+//            String employerName = employer.getUser().getFullName();
+//
+//            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+//            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+//            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
-            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
-            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
-            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
-
-            logHistory(applicant, ApplicationStatus.PENDING, "Ứng viên vừa apply job");
+            logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {
             // Race condition: DB unique constraint bắt duplicate
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already applied for this Job");

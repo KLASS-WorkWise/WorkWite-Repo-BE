@@ -3,9 +3,11 @@ import com.example.WorkWite_Repo_BE.dtos.applicant.ListApplicantResponseDTO;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -22,11 +24,24 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
 
     Optional<Applicant> findByIdAndCandidateId(Long id, Long candidateId);;
     List<Applicant> findByJobPostingId(Long jobPostingId);
-    Page<JobPosting> findByJobPostingId(Long jobPostingId , Pageable pageable);
+    // ✅ đếm đơn chưa đọc
+    Long countByJobPostingIdAndIsReadFalse(Long jobId);
+    @Modifying
+    @Query("UPDATE Applicant a SET a.isRead = true WHERE a.jobPosting.id = :jobId")
+    void markAllAsReadByJob(@Param("jobId") Long jobId);
+
+    @Query("SELECT MAX(a.appliedAt) FROM Applicant a WHERE a.jobPosting.id = :jobId")
+    LocalDateTime findLastAppliedAtByJobId(@Param("jobId") Long jobId);
 
     // đếm số lượng appli HIRED
     @Query("SELECT MONTH(a.appliedAt) as month, COUNT(a) as value FROM Applicant a WHERE YEAR(a.appliedAt) = :year GROUP BY MONTH(a.appliedAt)")
     List<Object[]> countApplicantByMonth(@Param("year") int year);
+    Long countByJobPostingId(Long jobId);
+    Long countByJobPostingIdAndApplicationStatus(Long jobPostingId, ApplicationStatus status);
+
+
+
+
 
     long countByApplicationStatus(ApplicationStatus status);
 

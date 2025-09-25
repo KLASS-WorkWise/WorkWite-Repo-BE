@@ -59,4 +59,13 @@ public class BlogController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<BlogResponseDto> getBlogBySlug(@PathVariable String slug) {
+        BlogResponseDto blog = blogService.getBlogBySlug(slug);
+        if (blog == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(blog);
+    }
+
 }

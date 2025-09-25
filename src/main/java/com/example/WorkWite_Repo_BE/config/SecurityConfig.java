@@ -6,6 +6,7 @@ import com.example.WorkWite_Repo_BE.filters.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -53,6 +54,21 @@ public class SecurityConfig {
                                 .requestMatchers("/api/statistics/**").permitAll()
                                 .requestMatchers("/api/admin/**").permitAll()
                                 .requestMatchers("/api/saved-jobs/**").permitAll()
+                                .requestMatchers("/api/vnpay/**").permitAll()
+                                .requestMatchers("/api/recommend/**").permitAll()
+                                        .requestMatchers(HttpMethod.PATCH, "/api/banners/**").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/banners/**").authenticated()
+                                        .requestMatchers(HttpMethod.GET, "/api/banners/**").permitAll()
+                                        .requestMatchers(HttpMethod.DELETE, "/api/banners/**").permitAll()
+                                        .requestMatchers("/api/banners/**").permitAll()
+                                        .requestMatchers("/api/upload/**").permitAll()
+                                                                .requestMatchers("/api/system-logs/**").permitAll()
+                                .requestMatchers("/api/categories/**").permitAll()
+                                .requestMatchers("/api/blogs/**").permitAll()
+                                .requestMatchers("/api/aboutus/**").permitAll()
+                                .requestMatchers("/api/ourteam/**").permitAll()
+                                .requestMatchers("api/employers-status/**").permitAll()
+
                                 // Default: permit all
                                 .anyRequest().permitAll()
                         )
