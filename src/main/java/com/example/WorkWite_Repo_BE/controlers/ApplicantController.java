@@ -79,18 +79,18 @@ public class ApplicantController {
     @GetMapping("/{applicantId}/history")
     public List<ApplicantHistoryDto> getApplicantHistory(@PathVariable Long applicantId) {
         return applicantHistoryService.getHistory(applicantId);}
-    @PutMapping("/{id}/status")
-    public ResponseEntity<ApplicantResponseDto> updateApplicantStatus(
-            @PathVariable Long id,
-            @RequestBody ApplicantStatusUpdateRequest request
-    ) {
-        ApplicantResponseDto updated = applicantService.updateApplicantStatus(
-                id,
-                request.getStatus(),
-                request.getNote()
-        );
-        return ResponseEntity.ok(updated);
-    }
+//    @PutMapping("/{id}/status")
+//    public ResponseEntity<ApplicantResponseDto> updateApplicantStatus(
+//            @PathVariable Long id,
+//            @RequestBody ApplicantStatusUpdateRequest request
+//    ) {
+//        ApplicantResponseDto updated = applicantService.updateApplicantStatus(
+//                id,
+//                request.getStatus(),
+//                request.getNote()
+//        );
+//        return ResponseEntity.ok(updated);
+//    }
 
     @PostMapping(value = "/{jobId}/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RestResponse<ApplicantResponseDto>> applyJob(

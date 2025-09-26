@@ -48,31 +48,32 @@ public class ApplicantService {
     private final ResumeParserService resumeParserService;
     private final EmailService emailService;
     private final EmailTemplateHelper emailTemplateHelper;
+    private final InterviewScheduleRepository interviewScheduleRepository;
 
 
-    // ApplicantService.java
-    @Transactional
-    public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicationStatus newStatus, String note) {
-        Long employerId = authService.getCurrentUserEmployerId();
-        Applicant applicant = applicantRepository.findById(applicantId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-
-        if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
-        }
-
-        applicant.setApplicationStatus(newStatus);
-        applicantRepository.save(applicant);
-
-        logHistory(applicant, newStatus, note);
-
-        ApplicantResponseDto dto = convertToDto(applicant);
-
-        // Push realtime SSE cho ứng viên
-        sseService.sendEvent(applicantId, "statusUpdated", dto);
-
-// Gửi mail cho ứng viên
+//    // ApplicantService.java
+//    @Transactional
+//    public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicationStatus newStatus, String note) {
+//        Long employerId = authService.getCurrentUserEmployerId();
+//        Applicant applicant = applicantRepository.findById(applicantId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+//
+//
+//        if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
+//        }
+//
+//        applicant.setApplicationStatus(newStatus);
+//        applicantRepository.save(applicant);
+//
+//        logHistory(applicant, newStatus, note);
+//
+//        ApplicantResponseDto dto = convertToDto(applicant);
+//
+//        // Push realtime SSE cho ứng viên
+//        sseService.sendEvent(applicantId, "statusUpdated", dto);
+//
+//// Gửi mail cho ứng viên
 //        String candidateEmail = applicant.getCandidate().getUser().getEmail();
 //        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
 //        String jobTitle = applicant.getJobPosting().getTitle();
@@ -80,9 +81,75 @@ public class ApplicantService {
 //        String subject = "Cập nhật trạng thái đơn ứng tuyển";
 //        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
 //        emailService.sendEmail(candidateEmail, subject, content);
+//
+//        return dto;
+//    }
 
-        return dto;
+// ApplicantService.java
+@Transactional
+public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantStatusUpdateRequest request) {
+
+    log.info("UpdateApplicantStatus request for applicantId={} request={}", applicantId, request);
+
+    if (request == null || request.getStatus() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing status in request body");
     }
+    Long employerId = authService.getCurrentUserEmployerId();
+    Applicant applicant = applicantRepository.findById(applicantId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+    if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
+    }
+
+    ApplicationStatus newStatus = request.getStatus();
+    applicant.setApplicationStatus(newStatus);
+    applicantRepository.save(applicant);
+
+    logHistory(applicant, newStatus, request.getNote());
+
+    ApplicantResponseDto dto = convertToDto(applicant);
+
+    // Push realtime SSE cho ứng viên
+    sseService.sendEvent(applicantId, "statusUpdated", dto);
+
+    // Gửi mail cho ứng viên
+    String candidateEmail = applicant.getCandidate().getUser().getEmail();
+    String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+    String jobTitle = applicant.getJobPosting().getTitle();
+
+    if (newStatus == ApplicationStatus.INTERVIEW) {
+        // ✅ Lưu lịch phỏng vấn
+        InterviewSchedule schedule = new InterviewSchedule();
+        schedule.setApplicant(applicant);
+        schedule.setScheduledAt(request.getScheduledAt());
+        schedule.setLocation(request.getLocation());
+        schedule.setInterviewer(request.getInterviewer());
+        interviewScheduleRepository.save(schedule);
+
+        // Gửi mail lịch phỏng vấn
+        String subject = "Thư mời phỏng vấn cho vị trí " + jobTitle;
+        String content = emailTemplateHelper.buildInterviewScheduleEmail(
+                candidateName,
+                jobTitle,
+                schedule.getScheduledAt(),
+                schedule.getLocation(),
+                schedule.getInterviewer()
+        );
+        emailService.sendEmail(candidateEmail, subject, content);
+
+    } else {
+        // Mail update status bình thường
+        String subject = "Cập nhật trạng thái đơn ứng tuyển";
+        String content = emailTemplateHelper.buildStatusUpdateEmail(
+                candidateName, jobTitle, newStatus.name(), request.getNote(), applicant.getId()
+        );
+        emailService.sendEmail(candidateEmail, subject, content);
+    }
+
+    return dto;
+}
+
     // Timeline
     public List<ApplicantHistory> getTimeline(Long applicantId) {
         return applicantHistoryRepository.findByApplicantIdOrderByChangedAtAsc(applicantId);
@@ -489,23 +556,23 @@ public class ApplicantService {
         try {
             applicantRepository.save(applicant);
 
-//            // Gửi mail cho ứng viên
-//            String candidateEmail = applicant.getCandidate().getUser().getEmail();
-//            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-//            String jobTitle = applicant.getJobPosting().getTitle();
-//
-//            String subjectCandidate = "Xác nhận ứng tuyển thành công";
-//            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
-//            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
-//
-//// Gửi mail cho Employer
-//            Employers employer = applicant.getJobPosting().getEmployer();
-//            String employerEmail = employer.getUser().getEmail();
-//            String employerName = employer.getUser().getFullName();
-//
-//            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
-//            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
-//            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
+            // Gửi mail cho ứng viên
+            String candidateEmail = applicant.getCandidate().getUser().getEmail();
+            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+            String jobTitle = applicant.getJobPosting().getTitle();
+
+            String subjectCandidate = "Xác nhận ứng tuyển thành công";
+            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+
+// Gửi mail cho Employer
+            Employers employer = applicant.getJobPosting().getEmployer();
+            String employerEmail = employer.getUser().getEmail();
+            String employerName = employer.getUser().getFullName();
+
+            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
             logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {

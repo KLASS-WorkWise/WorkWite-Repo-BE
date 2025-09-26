@@ -80,6 +80,8 @@ public class Applicant {
 
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ApplicantHistory> history;
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InterviewSchedule> schedules;
 
     @PrePersist
     public void prePersist() {

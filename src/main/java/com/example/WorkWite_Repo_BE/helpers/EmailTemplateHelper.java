@@ -2,6 +2,8 @@ package com.example.WorkWite_Repo_BE.helpers;
 
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class EmailTemplateHelper {
 
@@ -98,4 +100,25 @@ public class EmailTemplateHelper {
         </html>
         """.formatted(candidateName, jobTitle, status, note != null ? note : "(Không có ghi chú)", applicantId);
     }
+    public String buildInterviewScheduleEmail(String candidateName, String jobTitle,
+                                              LocalDateTime time, String location, String interviewer) {
+        return "<h2>Thư mời phỏng vấn</h2>"
+                + "<p>Xin chào " + candidateName + ",</p>"
+                + "<p>Bạn đã được mời phỏng vấn cho vị trí <b>" + jobTitle + "</b>.</p>"
+                + "<p><b>Thời gian:</b> " + time + "</p>"
+                + "<p><b>Địa điểm:</b> " + location + "</p>"
+                + "<p><b>Người phỏng vấn:</b> " + interviewer + "</p>"
+                + "<p>Chúc bạn may mắn!</p>";
+    }
+
+    public String buildInterviewReminderEmail(String candidateName, String jobTitle,
+                                              LocalDateTime time, String location) {
+        return "<h2>Nhắc nhở lịch phỏng vấn</h2>"
+                + "<p>Xin chào " + candidateName + ",</p>"
+                + "<p>Bạn có lịch phỏng vấn cho vị trí <b>" + jobTitle + "</b> trong 2 ngày tới.</p>"
+                + "<p><b>Thời gian:</b> " + time + "</p>"
+                + "<p><b>Địa điểm:</b> " + location + "</p>"
+                + "<p>Vui lòng sắp xếp thời gian tham dự đúng giờ.</p>";
+    }
+
 }

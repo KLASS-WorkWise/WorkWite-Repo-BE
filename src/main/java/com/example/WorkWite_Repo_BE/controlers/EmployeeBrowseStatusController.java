@@ -4,6 +4,7 @@ import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
+import com.example.WorkWite_Repo_BE.entities.InterviewSchedule;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.repositories.ApplicantRepository;
 import com.example.WorkWite_Repo_BE.services.*;
@@ -28,13 +29,17 @@ public class EmployeeBrowseStatusController {
     private final ApplicantRepository applicantRepository;
     private final EmployeeBrowseStatusService employeeBrowseStatusService;
 
+
     public EmployeeBrowseStatusController(ApplicantService applicantService, AuthService authService, ApplicantHistoryService applicantHistoryService, ApplicantRepository applicantRepository, EmployeeBrowseStatusService employeeBrowseStatusService) {
         this.applicantService = applicantService;
         this.authService = authService;
         this.applicantHistoryService = applicantHistoryService;
         this.applicantRepository = applicantRepository;
         this.employeeBrowseStatusService = employeeBrowseStatusService;
+
     }
+
+
     @GetMapping("/{id}/tracking")
     public ResponseEntity<RestResponse<ApplicantTrackingDto>> getApplicantTracking(@PathVariable Long id) {
         Long employeeId = authService.getCurrentUserEmployerId();
@@ -76,12 +81,24 @@ public ResponseEntity<RestResponse<List<ApplicantResponseDto>>> list(@PathVariab
 }
 
 
+//    @PutMapping("/applicants/{id}/status")
+//    public ResponseEntity<ApplicantResponseDto> updateStatus(@PathVariable Long id,
+//                                                             @RequestParam ApplicationStatus status,
+//                                                             @RequestParam(required = false) String note) {
+//        return ResponseEntity.ok(applicantService.updateApplicantStatus(id, status, note));
+//    }
+
+    // EmployeeBrowseStatusController.java
     @PutMapping("/applicants/{id}/status")
-    public ResponseEntity<ApplicantResponseDto> updateStatus(@PathVariable Long id,
-                                                             @RequestParam ApplicationStatus status,
-                                                             @RequestParam(required = false) String note) {
-        return ResponseEntity.ok(applicantService.updateApplicantStatus(id, status, note));
+    public ResponseEntity<ApplicantResponseDto> updateStatus(
+            @PathVariable Long id,
+            @RequestBody ApplicantStatusUpdateRequest request
+    ) {
+        return ResponseEntity.ok(
+                applicantService.updateApplicantStatus(id, request)
+        );
     }
+
     @GetMapping("/jobs")
     public ResponseEntity<RestResponse<PaginatedEmployeeListJobResponseDto<JobPostingResponseDTO>>> getMyJobs(
             @RequestParam(defaultValue = "0") int page,
