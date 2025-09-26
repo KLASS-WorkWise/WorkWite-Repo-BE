@@ -1,5 +1,6 @@
 package com.example.WorkWite_Repo_BE.controlers;
 
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.ApplicantHistory;
@@ -78,27 +79,27 @@ public class ApplicantController {
     @GetMapping("/{applicantId}/history")
     public List<ApplicantHistoryDto> getApplicantHistory(@PathVariable Long applicantId) {
         return applicantHistoryService.getHistory(applicantId);}
-    @PutMapping("/{id}/status")
-    public ResponseEntity<ApplicantResponseDto> updateApplicantStatus(
-            @PathVariable Long id,
-            @RequestBody ApplicantStatusUpdateRequest request
-    ) {
-        ApplicantResponseDto updated = applicantService.updateApplicantStatus(
-                id,
-                request.getStatus(),
-                request.getNote()
-        );
-        return ResponseEntity.ok(updated);
+//    @PutMapping("/{id}/status")
+//    public ResponseEntity<ApplicantResponseDto> updateApplicantStatus(
+//            @PathVariable Long id,
+//            @RequestBody ApplicantStatusUpdateRequest request
+//    ) {
+//        ApplicantResponseDto updated = applicantService.updateApplicantStatus(
+//                id,
+//                request.getStatus(),
+//                request.getNote()
+//        );
+//        return ResponseEntity.ok(updated);
+//    }
+
+    @PostMapping(value = "/{jobId}/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RestResponse<ApplicantResponseDto>> applyJob(
+            @PathVariable Long jobId,
+            @ModelAttribute @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(applicantService.applyJob(jobId, applicantRequestDto));
     }
 
-@PostMapping(value = "/{jobId}/apply",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<ApplicantResponseDto> applyJob(
-        @PathVariable  Long jobId,
-        @ModelAttribute  @Valid ApplicantRequestDto applicantRequestDto) throws Exception {
-    ApplicantResponseDto response = applicantService.applyJob(jobId, applicantRequestDto );
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-}
 
     @GetMapping("")
     public PaginatedAppResponseDto getAllAppsByPage(
