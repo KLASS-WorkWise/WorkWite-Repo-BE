@@ -1,6 +1,4 @@
-
 package com.example.WorkWite_Repo_BE.services;
-
 import com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO;
 import com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO;
 import com.example.WorkWite_Repo_BE.dtos.BannerDto.PaginatedBannerResponseDto;
@@ -13,14 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class BannerService {
-
     private final BannerRepository bannerRepository;
     private final UserJpaRepository userJpaRepository;
-    
     public PaginatedBannerResponseDto getAllBannersPaginated(int page, int size) {
         int pageNumber = Math.max(page - 1, 0);
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pageNumber, size);
@@ -36,19 +31,16 @@ public class BannerService {
         dto.setHasPrevious(bannerPage.hasPrevious());
         return dto;
     }
-
     public List<BannerResponseDTO> getBannersByUserId(Long userId) {
         return bannerRepository.findAll().stream()
-            .filter(b -> b.getUser() != null && b.getUser().getId().equals(userId))
-            .map(this::toDTO)
-            .collect(java.util.stream.Collectors.toList());
+                .filter(b -> b.getUser() != null && b.getUser().getId().equals(userId))
+                .map(this::toDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
-
     // Lấy danh sách banner theo status (dùng cho API active-list)
     public List<Banner> getBannersByStatus(BannerStatus status) {
         return bannerRepository.findByStatus(status);
     }
-
     // Xử lý hết hạn banner
     public void expireBannersIfNeeded() {
         List<Banner> banners = bannerRepository.findAll();
@@ -63,7 +55,7 @@ public class BannerService {
     }
     public List<BannerResponseDTO> getActiveBannersByPosition(String position) {
         return bannerRepository.findByPositionAndStatus(position, com.example.WorkWite_Repo_BE.enums.BannerStatus.ACTIVE)
-            .stream().map(this::toDTO).collect(java.util.stream.Collectors.toList());
+                .stream().map(this::toDTO).collect(java.util.stream.Collectors.toList());
     }
     public BannerResponseDTO approveBanner(Long id) {
         Banner banner = bannerRepository.findById(id).orElseThrow(() -> new RuntimeException("Banner not found"));
@@ -72,7 +64,6 @@ public class BannerService {
         Banner saved = bannerRepository.save(banner);
         return toDTO(saved);
     }
-
     public BannerResponseDTO rejectBanner(Long id, String reason) {
         Banner banner = bannerRepository.findById(id).orElseThrow(() -> new RuntimeException("Banner not found"));
         banner.setStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus.REJECTED);
@@ -87,7 +78,6 @@ public class BannerService {
         Banner saved = bannerRepository.save(banner);
         return toDTO(saved);
     }
-
     public BannerResponseDTO createBanner(BannerRequestDTO requestDTO) {
         // Lấy user từ SecurityContextHolder (JWT)
         org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
@@ -109,19 +99,17 @@ public class BannerService {
         } else {
             throw new RuntimeException("Invalid bannerType. Must be Vip, Featured, or Standard");
         }
-
         // Kiểm tra số dư
         if (user == null || user.getBalance() == null || user.getBalance() < price) {
             throw new com.example.WorkWite_Repo_BE.exceptions.InsufficientBalanceException(
-                user != null ? user.getId() : null,
-                user != null ? user.getBalance() : null,
-                price,
-                type
+                    user != null ? user.getId() : null,
+                    user != null ? user.getBalance() : null,
+                    price,
+                    type
             );
         }
         user.setBalance(user.getBalance() - price);
         userJpaRepository.save(user);
-
         Banner banner = new Banner();
         banner.setCompanyName(requestDTO.getCompanyName());
         banner.setCompanyEmail(requestDTO.getCompanyEmail());
@@ -143,22 +131,18 @@ public class BannerService {
         Banner saved = bannerRepository.save(banner);
         return toDTO(saved);
     }
-
     public List<BannerResponseDTO> getAllBanners() {
         return bannerRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
-
     public BannerResponseDTO getBannerById(Long id) {
         return bannerRepository.findById(id).map(this::toDTO).orElseThrow(() -> new RuntimeException("Banner not found"));
     }
-
     public void deleteBanner(Long id) {
         bannerRepository.deleteById(id);
     }
-
     public BannerResponseDTO updateBanner(Long id, BannerRequestDTO requestDTO) {
         Banner banner = bannerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Banner not found"));
+                .orElseThrow(() -> new RuntimeException("Banner not found"));
         banner.setCompanyName(requestDTO.getCompanyName());
         banner.setCompanyEmail(requestDTO.getCompanyEmail());
         banner.setCompanyPhone(requestDTO.getCompanyPhone());
@@ -177,7 +161,6 @@ public class BannerService {
         Banner saved = bannerRepository.save(banner);
         return toDTO(saved);
     }
-
     private BannerResponseDTO toDTO(Banner banner) {
         BannerResponseDTO dto = new BannerResponseDTO();
         dto.setBannerType(banner.getBannerType());
