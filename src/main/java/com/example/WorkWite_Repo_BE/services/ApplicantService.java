@@ -650,22 +650,22 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
             applicantRepository.save(applicant);
 //
 //            // Gửi mail cho ứng viên
-//            String candidateEmail = applicant.getCandidate().getUser().getEmail();
-//            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-//            String jobTitle = applicant.getJobPosting().getTitle();
-//
-//            String subjectCandidate = "Xác nhận ứng tuyển thành công";
-//            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
-//            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+           String candidateEmail = applicant.getCandidate().getUser().getEmail();
+           String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+           String jobTitle = applicant.getJobPosting().getTitle();
+
+           String subjectCandidate = "Xác nhận ứng tuyển thành công";
+           String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+           emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
 
 // Gửi mail cho Employer
-//            Employers employer = applicant.getJobPosting().getEmployer();
-//            String employerEmail = employer.getUser().getEmail();
-//            String employerName = employer.getUser().getFullName();
-//
-//            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
-//            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
-//            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
+           Employers employer = applicant.getJobPosting().getEmployer();
+           String employerEmail = employer.getUser().getEmail();
+           String employerName = employer.getUser().getFullName();
+
+           String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+           String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+           emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
             logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {
