@@ -3,6 +3,8 @@ package com.example.WorkWite_Repo_BE.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.example.WorkWite_Repo_BE.enums.BannerStatus;
 
@@ -24,13 +26,19 @@ public class Banner {
     // Thông tin banner
     private String bannerTitle;
     private String bannerImage;
-    private String bannerLink;
-    private String position;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Long amount;
+    private Long amount; // Số tiền đã trừ khi thuê banner
     private String description;
     private String bannerType; // Vip, Featured, Standard
+    public Long getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Long amount) {
+        this.amount = amount;
+    }
+
 
     @Enumerated(EnumType.STRING)
     private BannerStatus status; // PENDING, ACTIVE, REJECTED, EXPIRED

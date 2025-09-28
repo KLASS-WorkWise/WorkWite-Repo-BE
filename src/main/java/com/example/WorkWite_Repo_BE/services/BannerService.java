@@ -61,8 +61,8 @@ public class BannerService {
             }
         }
     }
-    public List<BannerResponseDTO> getActiveBannersByPosition(String position) {
-        return bannerRepository.findByPositionAndStatus(position, com.example.WorkWite_Repo_BE.enums.BannerStatus.ACTIVE)
+    public List<BannerResponseDTO> getActiveBannersByType(String bannerType) {
+        return bannerRepository.findByBannerTypeAndStatus(bannerType, BannerStatus.ACTIVE)
             .stream().map(this::toDTO).collect(java.util.stream.Collectors.toList());
     }
     public BannerResponseDTO approveBanner(Long id) {
@@ -89,37 +89,50 @@ public class BannerService {
     }
 
     public BannerResponseDTO createBanner(BannerRequestDTO requestDTO) {
-        // Lấy user từ SecurityContextHolder (JWT)
+        // Lấy user từ JWT (SecurityContextHolder)
         org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         String username = authentication != null ? authentication.getName() : null;
         User user = username != null ? userJpaRepository.findByUsername(username).orElse(null) : null;
-        // Tự động gán position và giá tiền theo bannerType
-        long price;
-        String type = requestDTO.getBannerType() != null ? requestDTO.getBannerType() : "Vip";
-        String position;
-        if ("Vip".equalsIgnoreCase(type)) {
-            price = 5;
-            position = "home_hero";
-        } else if ("Featured".equalsIgnoreCase(type)) {
-            price = 2;
-            position = "sidebar_right";
-        } else if ("Standard".equalsIgnoreCase(type)) {
-            price = 1;
-            position = "footer";
-        } else {
-            throw new RuntimeException("Invalid bannerType. Must be Vip, Featured, or Standard");
+        if (user == null) {
+            throw new RuntimeException("User not found");
         }
 
-        // Kiểm tra số dư
-        if (user == null || user.getBalance() == null || user.getBalance() < price) {
-            throw new com.example.WorkWite_Repo_BE.exceptions.InsufficientBalanceException(
-                user != null ? user.getId() : null,
-                user != null ? user.getBalance() : null,
-                price,
-                type
-            );
+        // Lấy bannerType từ request, kiểm tra hợp lệ
+        String type = requestDTO.getBannerType();
+        if (type == null ||
+            !(type.equalsIgnoreCase("Vip") || type.equalsIgnoreCase("Featured") || type.equalsIgnoreCase("Standard"))) {
+            throw new RuntimeException("Invalid bannerType. Must be Vip, Featured, or Standard");
         }
-        user.setBalance(user.getBalance() - price);
+        final long USD_TO_VND = 26410;
+        long pricePerDay;
+        if ("Vip".equalsIgnoreCase(type)) {
+            pricePerDay = 3 * USD_TO_VND;
+        } else if ("Featured".equalsIgnoreCase(type)) {
+            pricePerDay = 2 * USD_TO_VND;
+        } else {
+            pricePerDay = 1 * USD_TO_VND;
+        }
+
+        // Tính số ngày thuê (bao gồm cả ngày bắt đầu và kết thúc)
+        java.time.LocalDate start = requestDTO.getStartDate();
+        java.time.LocalDate end = requestDTO.getEndDate();
+        if (start == null || end == null || end.isBefore(start)) {
+            throw new RuntimeException("Ngày bắt đầu/kết thúc không hợp lệ");
+        }
+        long days = java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1;
+        if (days <= 0) {
+            throw new RuntimeException("Số ngày thuê phải lớn hơn 0");
+        }
+
+        long totalPrice = pricePerDay * days;
+
+        // Kiểm tra số dư
+        if (user.getBalance() == null || user.getBalance() < totalPrice) {
+            throw new RuntimeException("Số dư không đủ để thuê banner");
+        }
+
+        // Trừ tiền
+        user.setBalance(user.getBalance() - totalPrice);
         userJpaRepository.save(user);
 
         Banner banner = new Banner();
@@ -129,11 +142,9 @@ public class BannerService {
         banner.setCompanyWebsite(requestDTO.getCompanyWebsite());
         banner.setBannerTitle(requestDTO.getBannerTitle());
         banner.setBannerImage(requestDTO.getBannerImage());
-        banner.setBannerLink(requestDTO.getBannerLink());
-        banner.setPosition(position);
-        banner.setStartDate(requestDTO.getStartDate() != null ? requestDTO.getStartDate().atStartOfDay() : null);
-        banner.setEndDate(requestDTO.getEndDate() != null ? requestDTO.getEndDate().atStartOfDay() : null);
-        banner.setAmount(price);
+        banner.setStartDate(start != null ? start.atStartOfDay() : null);
+        banner.setEndDate(end != null ? end.atStartOfDay() : null);
+        banner.setAmount(totalPrice); // Số tiền đã trừ
         banner.setBannerType(type);
         banner.setDescription(requestDTO.getDescription());
         banner.setStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus.PENDING);
@@ -148,9 +159,6 @@ public class BannerService {
         return bannerRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public BannerResponseDTO getBannerById(Long id) {
-        return bannerRepository.findById(id).map(this::toDTO).orElseThrow(() -> new RuntimeException("Banner not found"));
-    }
 
     public void deleteBanner(Long id) {
         bannerRepository.deleteById(id);
@@ -165,11 +173,9 @@ public class BannerService {
         banner.setCompanyWebsite(requestDTO.getCompanyWebsite());
         banner.setBannerTitle(requestDTO.getBannerTitle());
         banner.setBannerImage(requestDTO.getBannerImage());
-        banner.setBannerLink(requestDTO.getBannerLink());
-        banner.setPosition(requestDTO.getPosition());
         banner.setStartDate(requestDTO.getStartDate() != null ? requestDTO.getStartDate().atStartOfDay() : null);
         banner.setEndDate(requestDTO.getEndDate() != null ? requestDTO.getEndDate().atStartOfDay() : null);
-        banner.setAmount(requestDTO.getAmount());
+    // Không cho phép cập nhật amount từ request, giữ nguyên amount cũ
         banner.setDescription(requestDTO.getDescription());
         banner.setBannerType(requestDTO.getBannerType());
         banner.setStatus(com.example.WorkWite_Repo_BE.enums.BannerStatus.PENDING); // Đặt lại trạng thái về PENDING
@@ -188,8 +194,6 @@ public class BannerService {
         dto.setCompanyWebsite(banner.getCompanyWebsite());
         dto.setBannerTitle(banner.getBannerTitle());
         dto.setBannerImage(banner.getBannerImage());
-        dto.setBannerLink(banner.getBannerLink());
-        dto.setPosition(banner.getPosition());
         dto.setStartDate(banner.getStartDate());
         dto.setEndDate(banner.getEndDate());
         dto.setAmount(banner.getAmount());

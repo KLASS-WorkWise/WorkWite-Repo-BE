@@ -14,12 +14,9 @@ public class BannerRequestDTO {
 
     // Thông tin banner
     private String bannerTitle;
-    private String bannerImage; // URL hoặc file
-    private String bannerLink;
-    private String position;
+    private String bannerImage;
     private java.time.LocalDate startDate;
     private java.time.LocalDate endDate;
-    private Long amount;
     private String description;
 
         private String bannerType; // Vip, Featured, Standard
