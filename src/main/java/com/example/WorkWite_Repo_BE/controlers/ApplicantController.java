@@ -194,7 +194,16 @@ public ResponseEntity<byte[]> previewResume(@RequestParam String url) {
 
     }
 
-
-
+    @PostMapping(
+            value = "/{jobId}/preview",
+            consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE }
+    )
+    public ResponseEntity<PreviewResponseDto> previewApplication(
+            @PathVariable Long jobId,
+            @Valid @ModelAttribute ApplicantRequestDto applicantRequestDto
+    ) {
+        PreviewResponseDto response = applicantService.previewJobApplication(jobId, applicantRequestDto);
+        return ResponseEntity.ok(response);
+    }
 
 }

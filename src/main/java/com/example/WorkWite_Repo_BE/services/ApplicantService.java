@@ -7,7 +7,8 @@ import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.helpers.EmailTemplateHelper;
 import com.example.WorkWite_Repo_BE.repositories.*;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -307,6 +308,31 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
         }
         return dp[a.length()][b.length()];
     }
+    //chuẩn hóa học vấn
+    private String normalizeDegree(String degree) {
+        if (degree == null) return "";
+        return degree.trim().toLowerCase()
+                .replace("đại học", "bachelor")
+                .replace("cử nhân", "bachelor")
+                .replace("cao đẳng", "college")
+                .replace("thạc sĩ", "master")
+                .replace("tiến sĩ", "phd")
+                .replace("associate", "associate")
+                .replace("bachelor", "bachelor")
+                .replace("college", "college")
+                .replace("master", "master")
+                .replace("phd", "phd");
+    }
+    private int degreeLevel(String normDegree) {
+        return switch (normDegree) {
+            case "associate" -> 1; // Trung cấp / Associate
+            case "college"   -> 2; // Cao đẳng / College
+            case "bachelor"  -> 3; // Đại học / Bachelor
+            case "master"    -> 4; // Thạc sĩ / Master
+            case "phd"       -> 5; // Tiến sĩ / PhD
+            default -> 0;
+        };
+    }
     // Alias map: chuẩn hóa skill về dạng gốc
     private static final Map<String, String> SKILL_ALIASES = Map.ofEntries(
             Map.entry("js", "javascript"),
@@ -411,19 +437,74 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
             return totalYears + " năm " + totalMonths + " tháng";
         }
     }
-    // ✅ Tính % skill match
-    private double calculateSkillMatchPercent(List<String> required, List<String> actual) {
-        List<String> normRequired = normalizeSkillList(required);
-        List<String> normActual = normalizeSkillList(actual);
+    //  Tính % skill match
+    private double calculateSkillMatchPercent(List<String> requiredSkills, List<String> candidateSkills) {
+        if (requiredSkills == null || requiredSkills.isEmpty()) return 0.0;
+        if (candidateSkills == null || candidateSkills.isEmpty()) return 0.0;
 
-        if (normRequired.isEmpty()) return 100.0; // không yêu cầu kỹ năng
-        if (normActual.isEmpty()) return 0.0;     // ứng viên không có kỹ năng nào
+        long matched = candidateSkills.stream()
+                .filter(c -> requiredSkills.stream()
+                        .anyMatch(req -> req.equalsIgnoreCase(c)))
+                .count();
 
-        List<String> missing = calculateMissingSkills(normRequired, normActual);
-        int matched = normRequired.size() - missing.size();
-        return ((double) matched / normRequired.size()) * 100.0;
+        // lấy trung bình giữa tỉ lệ match so với job và so với ứng viên
+        double percentByJob = (matched * 100.0) / requiredSkills.size();
+        double percentByCandidate = (matched * 100.0) / candidateSkills.size();
+
+        return (percentByJob + percentByCandidate) / 2.0;
     }
+    // Tính kinh nghiệm
+    public double calculateExperienceScore(double totalExpYears, double requiredExp) {
+        if (totalExpYears <= 0) {
+            return 0; // Không có kinh nghiệm
+        }
 
+        if (requiredExp <= 0) {
+            return 100; // Job không yêu cầu kinh nghiệm
+        }
+
+        if (totalExpYears >= requiredExp) {
+            return 100; // Đủ hoặc nhiều hơn yêu cầu
+        }
+
+        // Nếu ít hơn yêu cầu thì tính tỉ lệ %
+        double ratio = (double) totalExpYears / requiredExp;
+        return (int) Math.round(ratio * 100);
+    }
+    public double calculateEducationScore(String requiredDegree, List<String> candidateDegrees) {
+        if (requiredDegree == null || requiredDegree.isBlank()) {
+            return 100; // Không yêu cầu / No requirement
+        }
+        if (candidateDegrees == null || candidateDegrees.isEmpty()) {
+            return 0; // Không có học vấn / No education info
+        }
+
+        String requiredNorm = normalizeDegree(requiredDegree);
+        double requiredLevel = degreeLevel(requiredNorm);
+
+        // Lấy mức học vấn cao nhất của ứng viên / Get candidate's highest degree
+        double maxCandidateLevel = candidateDegrees.stream()
+                .map(this::normalizeDegree)
+                .mapToInt(this::degreeLevel)
+                .max()
+                .orElse(0);
+
+        if (requiredLevel == 0) return 0;
+
+        if (maxCandidateLevel >= requiredLevel) {
+            return 100; // Đủ hoặc cao hơn yêu cầu / Equal or higher than required
+        }
+
+        // Tính tỷ lệ nếu thấp hơn yêu cầu / Scale proportionally if lower
+        return (double) Math.round(((double) maxCandidateLevel / requiredLevel) * 100);
+    }
+    public double calculateTotalMatchWeighted(double skillScore, double expScore, double eduScore) {
+        double skillWeight = 0.6; // 60%
+        double expWeight   = 0.2; // 20%
+        double eduWeight   = 0.2; // 20%
+
+        return (skillScore * skillWeight) + (expScore * expWeight) + (eduScore * eduWeight);
+    }
 
     @Transactional
     public RestResponse<ApplicantResponseDto> applyJob(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
@@ -746,4 +827,122 @@ public Page<ListApplicantResponseDTO> getApplicantsByEmployerAndPeriod(
             employerId, jobPostingId, status, startDate, endDate, pageable
     );
 }
+
+// Tính tỷ lệ % matching cv
+//@Transactional(readOnly = true)
+//public RestResponse<PreviewResponseDto> previewJobApplication(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
+//    Long candidateId = authService.getCurrentUserCandidateId();
+//
+//    Candidate candidate = candidateJpaRepository.findById(candidateId)
+//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidate not found"));
+//
+//    JobPosting jobPosting = jobPostingRepository.findById(jobId)
+//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job posting not found"));
+//
+//    double skillMatchPercent = 0.0;
+//
+//    if (applicantRequestDto.getResumesId() != null) {
+//        Resume resume = resumeJpaRepository.findById(applicantRequestDto.getResumesId())
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+//
+//        if (!resume.getCandidate().getId().equals(candidateId)) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resume không thuộc về tài khoản của bạn");
+//        }
+//
+//        skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), resume.getSkillsResumes());
+//
+//    } else if (applicantRequestDto.getResumeFile() != null && !applicantRequestDto.getResumeFile().isEmpty()) {
+//        MultipartFile file = applicantRequestDto.getResumeFile();
+//        validateFile(file);
+//
+//        String extractedText = resumeParserService.extractText(file);
+//        List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
+//        log.info("Extracted text length: {}", extractedText.length());
+//        log.info("Extracted text sample: {}", extractedText.substring(0, Math.min(500, extractedText.length())));
+//        log.info("Uploaded file: {}, size: {}", file.getOriginalFilename(), file.getSize());
+//        log.info("Job required skills: {}", jobPosting.getRequiredSkills());
+//        log.info("Extracted skills from CV: {}", extractedSkills);
+//
+//        skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), extractedSkills);
+//    } else {
+//        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn cần chọn Resume hoặc upload file");
+//    }
+//
+//    PreviewResponseDto dto = PreviewResponseDto.builder()
+//            .skillMatchPercent(skillMatchPercent)
+//            .build();
+//
+//    return RestResponse.<PreviewResponseDto>builder()
+//            .statusCode(HttpStatus.OK.value())
+//            .message("Preview successful")
+//            .data(dto)
+//            .build();
+//}
+
+    @Transactional(readOnly = true)
+    public PreviewResponseDto previewJobApplication(Long jobId,
+                                                          @Valid ApplicantRequestDto applicantRequestDto) {
+        Long candidateId = authService.getCurrentUserCandidateId();
+
+        Candidate candidate = candidateJpaRepository.findById(candidateId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidate not found"));
+
+        JobPosting jobPosting = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job posting not found"));
+
+        double skillMatchPercent = 0.0;
+
+        if (applicantRequestDto.getResumesId() != null) {
+            Resume resume = resumeJpaRepository.findById(applicantRequestDto.getResumesId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+
+            if (!resume.getCandidate().getId().equals(candidateId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resume không thuộc về tài khoản của bạn");
+            }
+
+            // ✅ Tính toán % match từ resume đã lưu
+            double skillScore  = calculateSkillMatchPercent(
+                    jobPosting.getRequiredSkills(),
+                    resume.getSkillsResumes()
+            );
+            // ✅ Exp
+            double totalExpYears = calculateExperienceYears(resume);
+            double expScore = calculateExperienceScore(totalExpYears, jobPosting.getMinExperience());
+            // ✅ Edu
+            List<String> candidateEdu = resume.getEducations().stream().map(Education::getDegree).toList();   // ví dụ Bachelor = 3
+            String requiredEdu  = jobPosting.getRequiredDegree();  // ví dụ Master = 4
+            double eduScore = calculateEducationScore(requiredEdu, candidateEdu);
+
+            skillMatchPercent = calculateTotalMatchWeighted(skillScore,expScore,eduScore);
+
+            return PreviewResponseDto.builder()
+                    .resumesId(resume.getId())
+                    .skillMatchPercent(skillMatchPercent)
+                    .build();
+
+        } else if (applicantRequestDto.getResumeFile() != null
+                && !applicantRequestDto.getResumeFile().isEmpty()) {
+
+            MultipartFile file = applicantRequestDto.getResumeFile();
+            validateFile(file);
+
+            // ❌ Preview: không upload Firebase, chỉ phân tích text
+            String extractedText = resumeParserService.extractText(file);
+            List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
+
+            skillMatchPercent = calculateSkillMatchPercent(
+                    jobPosting.getRequiredSkills(),
+                    extractedSkills
+            );
+
+            return PreviewResponseDto.builder()
+                    .resumesId(null)
+                    .skillMatchPercent(skillMatchPercent)
+                    .build();
+        }
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn phải chọn resumeId hoặc upload file");
+    }
+
+
 }
