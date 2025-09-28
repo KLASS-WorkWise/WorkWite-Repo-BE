@@ -21,10 +21,8 @@ public class Banner {
     private String companyName;
     private String companyEmail;
     private String companyPhone;
-    private String companyWebsite;
 
     // Thông tin banner
-    private String bannerTitle;
     private String bannerImage;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

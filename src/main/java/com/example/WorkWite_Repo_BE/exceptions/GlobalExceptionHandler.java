@@ -15,6 +15,23 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     /**
+     * Xử lý lỗi nghiệp vụ chung (ví dụ: chồng ngày, spam booking banner, ...)
+     * Trả về message chi tiết cho frontend để hiển thị đúng lỗi.
+     * Đã thêm bởi Copilot - Banner booking conflict handler
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<RestResponse<Object>> handleRuntimeException(RuntimeException ex) {
+        log.warn("RuntimeException: {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(
+                RestResponse.builder()
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .message(ex.getMessage()) // Trả về message chi tiết
+                        .data(null)
+                        .build()
+        );
+    }
+    /**
      * Xử lý lỗi không đủ số dư khi thuê banner
      */
     @ExceptionHandler(InsufficientBalanceException.class)

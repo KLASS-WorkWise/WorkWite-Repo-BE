@@ -13,8 +13,6 @@ public class BannerResponseDTO {
     private String companyName;
     private String companyEmail;
     private String companyPhone;
-    private String companyWebsite;
-    private String bannerTitle;
     private String bannerImage;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

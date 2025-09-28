@@ -10,10 +10,8 @@ public class BannerRequestDTO {
     private String companyName;
     private String companyEmail;
     private String companyPhone;
-    private String companyWebsite;
 
     // Thông tin banner
-    private String bannerTitle;
     private String bannerImage;
     private java.time.LocalDate startDate;
     private java.time.LocalDate endDate;

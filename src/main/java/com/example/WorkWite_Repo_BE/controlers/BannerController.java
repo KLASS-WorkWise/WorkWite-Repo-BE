@@ -45,8 +45,6 @@ public class BannerController {
             @RequestParam String companyName,
             @RequestParam String companyEmail,
             @RequestParam String companyPhone,
-            @RequestParam String companyWebsite,
-            @RequestParam String bannerTitle,
             @RequestParam String bannerType,
             @RequestParam String startDate,
             @RequestParam String endDate,
@@ -62,8 +60,6 @@ public class BannerController {
         dto.setCompanyName(companyName);
         dto.setCompanyEmail(companyEmail);
         dto.setCompanyPhone(companyPhone);
-        dto.setCompanyWebsite(companyWebsite);
-        dto.setBannerTitle(bannerTitle);
     dto.setBannerType(bannerType);
         dto.setStartDate(java.time.LocalDate.parse(startDate));
         dto.setEndDate(java.time.LocalDate.parse(endDate));
@@ -108,8 +104,6 @@ public class BannerController {
             @RequestParam String companyName,
             @RequestParam String companyEmail,
             @RequestParam String companyPhone,
-            @RequestParam String companyWebsite,
-            @RequestParam String bannerTitle,
             @RequestParam String bannerType,
             @RequestParam String startDate,
             @RequestParam String endDate,
@@ -121,8 +115,6 @@ public class BannerController {
         dto.setCompanyName(companyName);
         dto.setCompanyEmail(companyEmail);
         dto.setCompanyPhone(companyPhone);
-        dto.setCompanyWebsite(companyWebsite);
-        dto.setBannerTitle(bannerTitle);
         dto.setBannerType(bannerType);
         dto.setStartDate(java.time.LocalDate.parse(startDate));
         dto.setEndDate(java.time.LocalDate.parse(endDate));
