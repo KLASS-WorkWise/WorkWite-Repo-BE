@@ -94,6 +94,7 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
     if (request == null || request.getStatus() == null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing status in request body");
     }
+
     Long employerId = authService.getCurrentUserEmployerId();
     Applicant applicant = applicantRepository.findById(applicantId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -102,24 +103,51 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
     }
 
+    ApplicationStatus currentStatus = applicant.getApplicationStatus();
     ApplicationStatus newStatus = request.getStatus();
+
+    // === RÀNG BUỘC TRẠNG THÁI ===
+    Map<ApplicationStatus, List<ApplicationStatus>> allowedNextStatus = Map.of(
+            ApplicationStatus.PENDING, List.of(ApplicationStatus.CV_REVIEW),
+            ApplicationStatus.CV_REVIEW, List.of(ApplicationStatus.INTERVIEW, ApplicationStatus.REJECTED),
+            ApplicationStatus.INTERVIEW, List.of(ApplicationStatus.OFFER, ApplicationStatus.REJECTED),
+            ApplicationStatus.OFFER, List.of(ApplicationStatus.HIRED, ApplicationStatus.REJECTED),
+            ApplicationStatus.HIRED, List.of(),
+            ApplicationStatus.REJECTED, List.of()
+    );
+
+    // Nếu đã HIRED hoặc REJECTED thì không được update
+    if (currentStatus == ApplicationStatus.HIRED || currentStatus == ApplicationStatus.REJECTED) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Cannot update status. Applicant is already " + currentStatus.name());
+    }
+
+    // Kiểm tra trạng thái hợp lệ
+    List<ApplicationStatus> allowedNext = allowedNextStatus.getOrDefault(currentStatus, List.of());
+    if (!allowedNext.contains(newStatus)) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Invalid status update from " + currentStatus.name() + " to " + newStatus.name());
+    }
+
+    // === CẬP NHẬT TRẠNG THÁI ===
     applicant.setApplicationStatus(newStatus);
     applicantRepository.save(applicant);
 
+    // === Lưu lịch sử thay đổi ===
     logHistory(applicant, newStatus, request.getNote());
 
     ApplicantResponseDto dto = convertToDto(applicant);
 
-    // Push realtime SSE cho ứng viên
+    // === Push SSE ===
     sseService.sendEvent(applicantId, "statusUpdated", dto);
 
-    // Gửi mail cho ứng viên
+//    // === Gửi email ===
     String candidateEmail = applicant.getCandidate().getUser().getEmail();
     String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
     String jobTitle = applicant.getJobPosting().getTitle();
 
     if (newStatus == ApplicationStatus.INTERVIEW) {
-        // ✅ Lưu lịch phỏng vấn
+        // Lưu lịch phỏng vấn
         InterviewSchedule schedule = new InterviewSchedule();
         schedule.setApplicant(applicant);
         schedule.setScheduledAt(request.getScheduledAt());

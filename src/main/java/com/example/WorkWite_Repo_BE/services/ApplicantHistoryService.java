@@ -28,6 +28,7 @@ public class ApplicantHistoryService {
     public List<TimelineEventResponse> getFullTimeline(Applicant applicant) {
         List<ApplicantHistoryDto> history = getHistory(applicant.getId());
 
+        // Gom history theo status
         Map<ApplicationStatus, List<ApplicantHistoryDto>> grouped =
                 history.stream().collect(Collectors.groupingBy(
                         ApplicantHistoryDto::getStatus,
@@ -35,28 +36,36 @@ public class ApplicantHistoryService {
                         Collectors.toList()
                 ));
 
-        // Thứ tự chuẩn
+        // Thứ tự chuẩn các bước
         List<ApplicationStatus> orderedSteps = List.of(
-//                ApplicationStatus.APPLIED,     // ứng viên đã nộp
-                ApplicationStatus.CV_REVIEW,   // xét CV
-                ApplicationStatus.INTERVIEW,   // phỏng vấn
-                ApplicationStatus.OFFER,       // gửi offer
-                ApplicationStatus.HIRED,       // nhận vào làm
-                ApplicationStatus.REJECTED     // loại
+                ApplicationStatus.PENDING,
+                ApplicationStatus.CV_REVIEW,
+                ApplicationStatus.INTERVIEW,
+                ApplicationStatus.OFFER,
+                ApplicationStatus.HIRED,
+                ApplicationStatus.REJECTED
         );
 
         ApplicationStatus currentStatus = applicant.getApplicationStatus();
         int currentIndex = orderedSteps.indexOf(currentStatus);
 
         List<TimelineEventResponse> timeline = new ArrayList<>();
+
         for (int i = 0; i < orderedSteps.size(); i++) {
             ApplicationStatus step = orderedSteps.get(i);
 
+            boolean hasHistory = grouped.containsKey(step);
+            boolean isCurrentStep = step == currentStatus;
+
+            // Nếu bước này không có history và không phải current → bỏ qua
+            if (!hasHistory && !isCurrentStep) {
+                continue;
+            }
+
             List<Object> events = new ArrayList<>();
-            // Lấy lịch sử
             events.addAll(grouped.getOrDefault(step, new ArrayList<>()));
 
-            // Nếu bước là INTERVIEW thì lấy thêm lịch phỏng vấn
+            // Thêm lịch phỏng vấn nếu là bước INTERVIEW
             if (step == ApplicationStatus.INTERVIEW) {
                 List<InterviewScheduleDto> schedules =
                         interviewScheduleRepository.findAll().stream()
@@ -71,18 +80,27 @@ public class ApplicantHistoryService {
                 events.addAll(schedules);
             }
 
+            boolean completed = i < currentIndex;
+
             timeline.add(
                     TimelineEventResponse.builder()
-                            .stepOrder(i + 1)
+                            .stepOrder(timeline.size() + 1) // số thứ tự liền mạch
                             .status(step)
-                            .events(events)   // chứa cả history + interview
-                            .currentStep(i == currentIndex)
-                            .completed(i < currentIndex)
+                            .events(events)
+                            .currentStep(isCurrentStep)
+                            .completed(completed)
                             .build()
             );
+
+            // Nếu là REJECTED hoặc HIRED → dừng vòng lặp
+            if (isCurrentStep && (currentStatus == ApplicationStatus.REJECTED || currentStatus == ApplicationStatus.HIRED)) {
+                break;
+            }
         }
+
         return timeline;
     }
+
 
     private ApplicantHistoryDto convertToDto(ApplicantHistory history) {
         return ApplicantHistoryDto.builder()
