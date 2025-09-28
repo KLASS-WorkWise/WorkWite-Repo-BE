@@ -33,8 +33,8 @@ public class BannerController {
         return ResponseEntity.ok(bannerService.getBannersByUserId(userId));
     }
     @GetMapping("/active")
-    public ResponseEntity<List<BannerResponseDTO>> getActiveBannersByPosition(@RequestParam String position) {
-        return ResponseEntity.ok(bannerService.getActiveBannersByPosition(position));
+    public ResponseEntity<List<BannerResponseDTO>> getActiveBannersByType(@RequestParam String bannerType) {
+        return ResponseEntity.ok(bannerService.getActiveBannersByType(bannerType));
     }
 
     private final BannerService bannerService;
@@ -45,9 +45,6 @@ public class BannerController {
             @RequestParam String companyName,
             @RequestParam String companyEmail,
             @RequestParam String companyPhone,
-            @RequestParam String companyWebsite,
-            @RequestParam String bannerTitle,
-            @RequestParam String bannerLink,
             @RequestParam String bannerType,
             @RequestParam String startDate,
             @RequestParam String endDate,
@@ -58,23 +55,12 @@ public class BannerController {
         if (!"Vip".equalsIgnoreCase(bannerType) && !"Featured".equalsIgnoreCase(bannerType) && !"Standard".equalsIgnoreCase(bannerType)) {
             return ResponseEntity.badRequest().body(null);
         }
-        String position;
-        if ("Vip".equalsIgnoreCase(bannerType)) {
-            position = "home_hero";
-        } else if ("Featured".equalsIgnoreCase(bannerType)) {
-            position = "featured";
-        } else {
-            position = "standard";
-        }
+        // Không dùng position nữa, chỉ dùng bannerType
         com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO dto = new com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO();
         dto.setCompanyName(companyName);
         dto.setCompanyEmail(companyEmail);
         dto.setCompanyPhone(companyPhone);
-        dto.setCompanyWebsite(companyWebsite);
-        dto.setBannerTitle(bannerTitle);
-        dto.setBannerLink(bannerLink);
-        dto.setBannerType(bannerType);
-        dto.setPosition(position);
+    dto.setBannerType(bannerType);
         dto.setStartDate(java.time.LocalDate.parse(startDate));
         dto.setEndDate(java.time.LocalDate.parse(endDate));
         dto.setDescription(description);
@@ -111,12 +97,6 @@ public class BannerController {
         return ResponseEntity.ok(bannerService.getAllBanners());
     }
 
-    // Lấy banner theo id
-    @GetMapping("/{id}")
-    public ResponseEntity<BannerResponseDTO> getBannerById(@PathVariable Long id) {
-        return ResponseEntity.ok(bannerService.getBannerById(id));
-    }
-
     // Cập nhật banner
     @PatchMapping(value = "/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<BannerResponseDTO> updateBanner(
@@ -124,14 +104,10 @@ public class BannerController {
             @RequestParam String companyName,
             @RequestParam String companyEmail,
             @RequestParam String companyPhone,
-            @RequestParam String companyWebsite,
-            @RequestParam String bannerTitle,
-            @RequestParam String bannerLink,
             @RequestParam String bannerType,
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam(required = false) String description,
-            @RequestParam String position,
             @RequestParam(required = false) String bannerImageOld,
             @RequestParam(value = "bannerImage", required = false) org.springframework.web.multipart.MultipartFile bannerImage
     ) {
@@ -139,11 +115,7 @@ public class BannerController {
         dto.setCompanyName(companyName);
         dto.setCompanyEmail(companyEmail);
         dto.setCompanyPhone(companyPhone);
-        dto.setCompanyWebsite(companyWebsite);
-        dto.setBannerTitle(bannerTitle);
-        dto.setBannerLink(bannerLink);
         dto.setBannerType(bannerType);
-        dto.setPosition(position);
         dto.setStartDate(java.time.LocalDate.parse(startDate));
         dto.setEndDate(java.time.LocalDate.parse(endDate));
         dto.setDescription(description);
@@ -202,7 +174,6 @@ public class BannerController {
             .map(b -> {
                 com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO dto = new com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO();
                 dto.setCompanyName(b.getCompanyName());
-                dto.setPosition(b.getPosition());
                 dto.setStartDate(b.getStartDate());
                 dto.setEndDate(b.getEndDate());
                 dto.setStatus(b.getStatus() != null ? b.getStatus().name() : null);
