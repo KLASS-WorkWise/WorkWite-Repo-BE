@@ -335,25 +335,83 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
         }
         return dp[a.length()][b.length()];
     }
-    // Alias map: chuẩn hóa skill về dạng gốc
     private static final Map<String, String> SKILL_ALIASES = Map.ofEntries(
+            // JavaScript ecosystem
             Map.entry("js", "javascript"),
             Map.entry("javascript", "javascript"),
+            Map.entry("ecmascript", "javascript"),
             Map.entry("nodejs", "nodejs"),
             Map.entry("node", "nodejs"),
+            Map.entry("expressjs", "nodejs"),
             Map.entry("ts", "typescript"),
             Map.entry("typescript", "typescript"),
+
+            // React ecosystem
             Map.entry("reactjs", "react"),
             Map.entry("react", "react"),
+            Map.entry("nextjs", "react"),
+            Map.entry("redux", "react"),
+
+            // Spring / Java
             Map.entry("springboot", "spring"),
             Map.entry("spring boot", "spring"),
+            Map.entry("spring framework", "spring"),
+            Map.entry("hibernate orm", "hibernate"),
+
+            // SQL / Database
             Map.entry("sql", "sql"),
             Map.entry("mysql", "sql"),
             Map.entry("postgresql", "sql"),
+            Map.entry("postgres", "sql"),
+            Map.entry("mssql", "sql"),
+            Map.entry("oracle", "sql"),
+            Map.entry("sqlite", "sql"),
             Map.entry("nosql", "nosql"),
-            Map.entry("mongodb", "nosql")
-            // 👉 bạn có thể mở rộng thêm tùy nhu cầu
+            Map.entry("mongodb", "nosql"),
+            Map.entry("cassandra", "nosql"),
+            Map.entry("dynamodb", "nosql"),
+
+            // Cloud
+            Map.entry("amazon web services", "aws"),
+            Map.entry("aws", "aws"),
+            Map.entry("azure cloud", "azure"),
+            Map.entry("gcp", "gcp"),
+            Map.entry("google cloud", "gcp"),
+
+            // DevOps
+            Map.entry("k8s", "kubernetes"),
+            Map.entry("kubernetes", "kubernetes"),
+            Map.entry("docker-compose", "docker"),
+            Map.entry("ci/cd", "devops"),
+            Map.entry("jenkins pipeline", "jenkins"),
+
+            // Programming languages (aliases / abbreviations)
+            Map.entry("c++", "c++"),
+            Map.entry("cpp", "c++"),
+            Map.entry("c#", "c#"),
+            Map.entry("c sharp", "c#"),
+            Map.entry("py", "python"),
+            Map.entry("python", "python"),
+            Map.entry("golang", "go"),
+            Map.entry("go", "go"),
+            Map.entry("jsf", "java"),
+            Map.entry("jsp", "java"),
+
+            // Mobile
+            Map.entry("android sdk", "android"),
+            Map.entry("ios", "ios"),
+            Map.entry("swiftui", "swift"),
+            Map.entry("objective-c", "objective-c"),
+            Map.entry("rn", "react native"),
+            Map.entry("react native", "react native"),
+
+            // Tools
+            Map.entry("gitlab ci", "gitlab ci"),
+            Map.entry("github actions", "github actions"),
+            Map.entry("jira software", "jira"),
+            Map.entry("confluence wiki", "confluence")
     );
+
 
     // ✅ Kiểm tra 2 skill có giống nhau không (alias + typo nhỏ)
     private boolean isSimilarSkill(String skill1, String skill2) {
@@ -409,7 +467,7 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
     }
     private String calculateExperienceDetail(Resume resume) {
         if (resume.getExperiences() == null || resume.getExperiences().isEmpty()) {
-            return "Chưa có kinh nghiệm";
+            return "No experience";
         }
 
         int totalYears = 0;
@@ -430,13 +488,13 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
         totalMonths = totalMonths % 12;
 
         if (totalYears == 0 && totalMonths == 0) {
-            return "Chưa có kinh nghiệm";
+            return "No experience";
         } else if (totalYears == 0) {
-            return totalMonths + " tháng";
+            return totalMonths + " month";
         } else if (totalMonths == 0) {
-            return totalYears + " năm";
+            return totalYears + " years";
         } else {
-            return totalYears + " năm " + totalMonths + " tháng";
+            return totalYears + " years " + totalMonths + " month";
         }
     }
     // ✅ Tính % skill match
@@ -535,20 +593,27 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
 //            resumeLink = saveResumeFile(file);
                 resumeLink = firebaseStorageService.uploadFile(file);
                 String extractedText = resumeParserService.extractText(file);
-                List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
-                 totalExpYears = resumeParserService.extractExperienceYears(extractedText);
 
-// 👉 check skill match
+                // 👉 Trích xuất skill
+                List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
                 missingSkills = calculateMissingSkills(jobPosting.getRequiredSkills(), extractedSkills);
                 skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), extractedSkills);
-                 requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
+                requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
                 skillQualified = skillMatchPercent >= requiredSkillPercent;
+                System.out.println("extractedTextssssssssssssssssssssssss:"+extractedText);
+                System.out.println("extractedSkillssssssssssssssssssssssss:"+extractedSkills);
+                System.out.println("missingSkillssssssssssssssssssssssss:"+missingSkills);
+                System.out.println("skillMatchPercentssssssssssssssssssssssss:"+skillMatchPercent);
+                System.out.println("requiredSkillPercentssssssssssssssssssssssss:"+requiredSkillPercent);
+
                 skillMatchMessage = skillQualified
                         ? String.format("You have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent)
                         : String.format("You only have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent);
 
-// 👉 check kinh nghiệm
+                // 👉 Trích xuất kinh nghiệm
+                totalExpYears = resumeParserService.extractExperienceYears(extractedText);
                 expQualified = totalExpYears >= jobPosting.getMinExperience();
+
                 if (!expQualified) {
                     minExperienceMessage = "You do not have enough " + jobPosting.getMinExperience()
                             + " years of experience (current: " + totalExpYears + " years)";
@@ -583,24 +648,24 @@ public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantSta
 
         try {
             applicantRepository.save(applicant);
-
-            // Gửi mail cho ứng viên
-            String candidateEmail = applicant.getCandidate().getUser().getEmail();
-            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-            String jobTitle = applicant.getJobPosting().getTitle();
-
-            String subjectCandidate = "Xác nhận ứng tuyển thành công";
-            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
-            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+//
+//            // Gửi mail cho ứng viên
+//            String candidateEmail = applicant.getCandidate().getUser().getEmail();
+//            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+//            String jobTitle = applicant.getJobPosting().getTitle();
+//
+//            String subjectCandidate = "Xác nhận ứng tuyển thành công";
+//            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+//            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
 
 // Gửi mail cho Employer
-            Employers employer = applicant.getJobPosting().getEmployer();
-            String employerEmail = employer.getUser().getEmail();
-            String employerName = employer.getUser().getFullName();
-
-            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
-            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
-            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
+//            Employers employer = applicant.getJobPosting().getEmployer();
+//            String employerEmail = employer.getUser().getEmail();
+//            String employerName = employer.getUser().getFullName();
+//
+//            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+//            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+//            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
             logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {
