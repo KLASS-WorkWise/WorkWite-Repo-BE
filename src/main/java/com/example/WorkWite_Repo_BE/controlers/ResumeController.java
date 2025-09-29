@@ -69,11 +69,7 @@ public class ResumeController {
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<ResumeResponseDto>> getAllResumes() {
-//        List<ResumeResponseDto> resumes = resumeService.getAllResumes();
-//        return ResponseEntity.ok(resumes);
-//    }
+
 
     @GetMapping
     public ResponseEntity<List<ResumeResponseDto>> getMyResumes() {
@@ -113,4 +109,11 @@ public class ResumeController {
         resumeService.deleteResumeById(id);
         return ResponseEntity.noContent().build();
     }
+
+    // API public để lấy CV theo resumeLink
+    @GetMapping("/public/{resumeLink}")
+    public ResumeResponseDto getResumeByLink(@PathVariable String resumeLink) {
+        return resumeService.getResumeByLink(resumeLink);
+    }
+
 }

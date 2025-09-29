@@ -6,6 +6,7 @@ import com.example.WorkWite_Repo_BE.dtos.UserDto.UserUpdateRequestDto;
 import com.example.WorkWite_Repo_BE.services.EmployersService;
 import com.example.WorkWite_Repo_BE.services.UserService;
 import com.example.WorkWite_Repo_BE.services.SystemLogService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class UserController {
 
     // Lấy tất cả user (phân trang)
     @GetMapping()
+    @Operation(summary = "Lấy ra hết tất cả user", description = "Trả về về danh sách user theo phân trang mỗi trang 10 user")
     public PaginatedUserResponseDto getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -31,37 +33,21 @@ public class UserController {
 
     // Lấy user theo id
     @GetMapping("/{id}")
+    @Operation(summary = "Lấy thông tin user theo ID", description = "Trả về chi tiết một user")
     public UserResponseDto getUserById(@PathVariable Long id) {
         return this.userService.getUserById(id);
     }
 
-    // Update user
+//    update user
     @PatchMapping("/{id}")
-    public UserResponseDto updateUser(
+    public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable("id") Long id,
             @RequestBody @Valid UserUpdateRequestDto userUpdateRequestDto) {
-        UserResponseDto response = this.userService.updateUser(id, userUpdateRequestDto);
-
-        // Ghi log sửa user
-        String actor = getCurrentUsernameOrEmail();
-        String ipAddress = "unknown";
-        systemLogService.saveLog(actor, "UPDATE_USER", "User updated", ipAddress, "INFO", id);
-
-        return response;
+        UserResponseDto response = this.userService.updateUser(id, userUpdateRequestDto, getCurrentUsernameOrEmail());
+        return ResponseEntity.ok(response);
     }
 
-    // Delete user
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable("id") Long id) {
-        this.userService.deleteUser(id);
 
-        // Ghi log xóa user
-        String actor = getCurrentUsernameOrEmail();
-        String ipAddress = "unknown";
-        systemLogService.saveLog(actor, "DELETE_USER", "User deleted", ipAddress, "WARN", id);
-
-        return ResponseEntity.ok("User with id " + id + " deleted successfully.");
-    }
 
     // Lấy username hoặc email của người thực hiện thao tác
     private String getCurrentUsernameOrEmail() {

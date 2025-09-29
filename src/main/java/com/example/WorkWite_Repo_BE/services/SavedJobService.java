@@ -1,6 +1,12 @@
 package com.example.WorkWite_Repo_BE.services;
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
+import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedEmployeeListJobResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.savejob.PaginatedSaveJobResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.savejob.SavedJobDTO;
+import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.Candidate;
 import com.example.WorkWite_Repo_BE.entities.JobPosting;
 import com.example.WorkWite_Repo_BE.entities.SavedJob;
@@ -8,10 +14,15 @@ import com.example.WorkWite_Repo_BE.repositories.CandidateJpaRepository;
 import com.example.WorkWite_Repo_BE.repositories.JobPostingRepository;
 import com.example.WorkWite_Repo_BE.repositories.SavedJobRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +50,7 @@ public class SavedJobService {
                 .jobType(savedJob.getJobPosting().getJobType())
                 .category(savedJob.getJobPosting().getCategory())
                 .employerName(savedJob.getJobPosting().getEmployer().getCompanyInformation().getCompanyName())
+                .requiredDegree(savedJob.getJobPosting().getEmployer().getCompanyInformation().getLogoUrl())
 
                 // thêm các field khác nếu có
                 .build();
@@ -74,12 +86,46 @@ public class SavedJobService {
     }
 
     // Lấy danh sách job đã lưu
-    public List<SavedJobDTO> getMySavedJobs() {
-        Long candidateId = authService.getCurrentUserCandidateId();
-        return savedJobRepository.findByCandidateId(candidateId) // ✅ dùng repo, không cần candidate.getSavedJobs()
-                .stream()
+//    public List<SavedJobDTO> getMySavedJobs() {
+//        Long candidateId = authService.getCurrentUserCandidateId();
+//        return savedJobRepository.findByCandidateId(candidateId) // ✅ dùng repo, không cần candidate.getSavedJobs()
+//                .stream()
+//                .map(this::mapToDTO)
+//                .collect(Collectors.toList());
+//    }
+
+    public RestResponse<PaginatedSaveJobResponseDto<SavedJobDTO>> getMySavedJobs(
+            int page, int size, String sortBy, String sortDir
+    ) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Long currentCandidateId = authService.getCurrentUserCandidateId();
+
+        Page<SavedJob> savedJobs = savedJobRepository.findByCandidateId(currentCandidateId, pageable);
+
+        List<SavedJobDTO> savedJobDTOSDtos = savedJobs.getContent().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+
+        PaginatedSaveJobResponseDto<SavedJobDTO> pagedData = PaginatedSaveJobResponseDto.<SavedJobDTO>builder()
+                .content(savedJobDTOSDtos)
+                .pageNumber(savedJobs.getNumber())
+                .pageSize(savedJobs.getSize())
+                .totalRecords(savedJobs.getTotalElements())
+                .totalPages(savedJobs.getTotalPages())
+                .hasNext(savedJobs.hasNext())
+                .hasPrevious(savedJobs.hasPrevious())
+                .build();
+        return RestResponse.<PaginatedSaveJobResponseDto<SavedJobDTO>>builder()
+                .statusCode(200)
+                .error(null)
+                .message("Success")
+                .data(pagedData)
+                .build();
     }
 
     // Xóa job đã lưu

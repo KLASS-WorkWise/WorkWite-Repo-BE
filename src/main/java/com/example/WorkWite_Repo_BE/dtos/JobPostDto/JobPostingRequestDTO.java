@@ -14,6 +14,8 @@ import java.util.List;
 
 @Data
 public class JobPostingRequestDTO {
+    private String postType; // NORMAL hoặc VIP
+    private Long postPrice;
     @NotNull(message = "Employer ID is required")
     private Long employerId;
 
@@ -45,5 +47,5 @@ public class JobPostingRequestDTO {
 
     private java.time.LocalDateTime endAt;
 
-    private String status;  
-} 
+    private String status;
+}

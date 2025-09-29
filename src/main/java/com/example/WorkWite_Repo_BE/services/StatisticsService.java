@@ -3,6 +3,8 @@ package com.example.WorkWite_Repo_BE.services;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,21 @@ import com.example.WorkWite_Repo_BE.repositories.UserJpaRepository;
 
 @Service
 public class StatisticsService {
+    /**
+     * Trả về danh sách top công ty được ứng viên apply nhiều nhất
+     */
+    public List<Map<String, Object>> getTopCompaniesByApplications() {
+        List<Object[]> results = applicantRepo.findTopCompaniesByApplications();
+        List<Map<String, Object>> companies = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> company = new HashMap<>();
+            company.put("employerId", row[0]);
+            company.put("companyName", row[1]);
+            company.put("totalApply", row[2]);
+            companies.add(company);
+        }
+        return companies;
+    }
     @Autowired
     private UserJpaRepository userRepo;
     @Autowired
@@ -62,9 +79,16 @@ public class StatisticsService {
         return data;
     }
 
-    public double getConversionRate() {
-        long hired = applicantRepo.countByApplicationStatus(com.example.WorkWite_Repo_BE.enums.ApplicationStatus.HIRED);
-        long total = applicantRepo.count();
-        return total > 0 ? (hired * 100.0 / total) : 0;
+    /**
+     * Thống kê ứng tuyển: tổng số lượt ứng tuyển và tỉ lệ ứng viên ứng tuyển/số tin đăng
+     */
+    public Map<String, Object> getApplicationStats() {
+        long totalApplications = applicantRepo.count();
+        long totalJobPostings = jobRepo.count();
+        double applyRate = totalJobPostings > 0 ? (totalApplications * 1.0 / totalJobPostings) : 0;
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalApplications", totalApplications);
+        stats.put("applyRate", applyRate);
+        return stats;
     }
 }

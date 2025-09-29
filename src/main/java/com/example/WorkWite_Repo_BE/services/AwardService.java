@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-public class AwardService {
+public class    AwardService {
     public AwardJpaRepository awardJpaRepository;
     private final ResumeJpaRepository resumeJpaRepository;
 

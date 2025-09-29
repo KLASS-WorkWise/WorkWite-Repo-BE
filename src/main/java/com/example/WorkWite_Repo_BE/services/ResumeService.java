@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,9 +28,12 @@ public class ResumeService {
     private final ActivityJpaRepository activityJpaRepository;
     private final ExperienceJpaRepository experienceJpaRepository;
 
+    private final PdfGeneratorService pdfGeneratorService;
+    private final FirebaseStorageService firebaseStorageService;
 
 
-    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository) {
+
+    public ResumeService(ResumeJpaRepository resumeRepository, CandidateJpaRepository candidateJpaRepository, EducationService educationService, ExperienceService experienceService, ActivityService activityService, AwardService awardService, EducationJpaRepository educationJpaRepository, AwardJpaRepository awardJpaRepository, ActivityJpaRepository activityJpaRepository, ExperienceJpaRepository experienceJpaRepository, PdfGeneratorService pdfGeneratorService, FirebaseStorageService firebaseStorageService) {
         this.resumeRepository = resumeRepository;
         this.candidateJpaRepository = candidateJpaRepository;
         this.educationService = educationService;
@@ -40,12 +45,15 @@ public class ResumeService {
         this.activityJpaRepository = activityJpaRepository;
         this.experienceJpaRepository = experienceJpaRepository;
 
+        this.pdfGeneratorService = pdfGeneratorService;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     // Tạo mới Resume , activity, award, education,exp
     public ResumeResponseDto creatResume(Long candidateId, CreatResumeRequestDto creatResumeRequestDto) {
         Resume resume1 = new Resume();
         Candidate candidate = candidateJpaRepository.findById(candidateId).orElse(null);
+//        String urlLink = UUID.randomUUID().toString();
         resume1.setCandidate(candidate);
         resume1.setFullName(creatResumeRequestDto.getFullName());
         resume1.setEmail(creatResumeRequestDto.getEmail());
@@ -56,6 +64,7 @@ public class ResumeService {
         resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setCreatedAt(LocalDateTime.now());
+        resume1.setResumeLink(creatResumeRequestDto.getResumeLink());
         resumeRepository.save(resume1);
 
         if (creatResumeRequestDto.getEducations() != null) {
@@ -86,6 +95,7 @@ public class ResumeService {
         }
 
         Resume resumeWithChildren = resumeRepository.findById(resume1.getId()).orElse(null);
+
         // Truy vấn từng list liên quan
         List educations = educationJpaRepository.findByResumeId(resume1.getId());
         List awards = awardJpaRepository.findByResumeId(resume1.getId());
@@ -98,7 +108,16 @@ public class ResumeService {
         resumeWithChildren.setActivities(activities);
         resumeWithChildren.setExperiences(experiences);
         resumeWithChildren.setSkillsResumes(skillsResumes);
-        return convertToDto(resumeWithChildren);
+
+//        // ✅ Sinh PDF
+//        byte[] pdfBytes = pdfGeneratorService.generateResumePdf(resumeWithChildren);
+//        String pdfFilename = "Resume_" + resume1.getFullName() + ".pdf";
+//        // ✅ Upload lên Firebase
+//        String resumeLink = firebaseStorageService.uploadPdf(pdfBytes, pdfFilename);
+//        // ✅ Lưu lại resumeLink
+//        resume1.setResumeLink(resumeLink);
+        resumeRepository.save(resume1);
+        return convertToDto(resume1);
     }
 
     // Lấy tất cả Resume
@@ -123,6 +142,13 @@ public class ResumeService {
         if (resume == null) {
             return null;
         }
+        return convertToDto(resume);
+    }
+
+    // Lấy Resume theo resumeLink
+    public ResumeResponseDto getResumeByLink(String resumeLink) {
+        Resume resume = resumeRepository.findByResumeLink(resumeLink)
+                .orElseThrow(() -> new RuntimeException("Resume not found with link: " + resumeLink));
         return convertToDto(resume);
     }
 
@@ -254,7 +280,8 @@ public class ResumeService {
                 resume.getSkillsResumes() == null ? java.util.Collections.<String>emptyList() : resume.getSkillsResumes(),
                 resume.getSummary(),
                 resume.getCandidate().getId(),
-                resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences()
+                resume.getExperiences() == null ? java.util.Collections.<Experience>emptyList() : resume.getExperiences(),
+                resume.getResumeLink()
         );
     }
 }

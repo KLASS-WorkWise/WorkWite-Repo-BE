@@ -1,0 +1,4 @@
+api test : swagger
+
+http://localhost:8080/api-docs    ( dạng json )
+http://localhost:8080/docs        ( dạng swagger )

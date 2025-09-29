@@ -13,6 +13,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "job_postings")
 @Data
 public class JobPosting {
+    @Column(name = "post_type", length = 20)
+    private String postType; // NORMAL hoặc VIP
+
+    @Column(name = "post_price")
+    private Long postPrice;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
