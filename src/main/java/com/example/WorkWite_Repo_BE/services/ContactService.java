@@ -22,7 +22,7 @@ public class ContactService {
         Contact saved = contactRepository.save(contact);
 
         // Gửi email cho admin
-        String adminEmail = "dhhpp.reply.jobbox@gmail.com"; 
+        String adminEmail = "vokhacdoai2003@gmail.com";
         String subject = "New Contact Message";
         String content = "<b>Name:</b> " + dto.getName() + "<br>"
                 + "<b>Email:</b> " + dto.getEmail() + "<br>"

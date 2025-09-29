@@ -75,8 +75,11 @@ public class EmployeeBrowseStatusController {
 //        return ResponseEntity.ok(employeeBrowseStatusService.getApplicantsByJob(jobId));
 //    }
 @GetMapping("/applicants/{jobId}")
-public ResponseEntity<RestResponse<List<ApplicantResponseDto>>> list(@PathVariable Long jobId) {
-    RestResponse<List<ApplicantResponseDto>> response = employeeBrowseStatusService.getApplicantsByJob(jobId);
+public ResponseEntity<RestResponse<ApplicantsWithStatsDto>> list(
+        @PathVariable Long jobId,
+        @RequestParam(required = false) ApplicationStatus status
+) {
+    RestResponse<ApplicantsWithStatsDto> response = employeeBrowseStatusService.getApplicantsByJob(jobId, status);
     return ResponseEntity.ok(response);
 }
 

@@ -79,4 +79,12 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
             Pageable pageable
     );
 
+    List<Applicant> findByJobPostingIdAndApplicationStatus(Long jobId, ApplicationStatus status);
+
+    @Query("SELECT a.applicationStatus, COUNT(a) " +
+            "FROM Applicant a " +
+            "WHERE a.jobPosting.id = :jobId " +
+            "GROUP BY a.applicationStatus")
+    List<Object[]> countApplicantsByStatus(@Param("jobId") Long jobId);
+
 }

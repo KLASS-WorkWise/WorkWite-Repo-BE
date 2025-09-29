@@ -4,10 +4,7 @@ import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.CompanyInformation.CompanyInformationReponseDto;
 import com.example.WorkWite_Repo_BE.dtos.EmployersDto.EmployerResponseDto;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingResponseDTO;
-import com.example.WorkWite_Repo_BE.dtos.applicant.ApplicantResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.EmployeeJobCompanyDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedAppResponseDto;
-import com.example.WorkWite_Repo_BE.dtos.applicant.PaginatedEmployeeListJobResponseDto;
+import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.Applicant;
 import com.example.WorkWite_Repo_BE.entities.CompanyInformation;
 import com.example.WorkWite_Repo_BE.entities.Employers;
@@ -26,7 +23,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -127,7 +126,8 @@ public class EmployeeBrowseStatusService {
 
 
     // ✅ 2. Employer xem danh sách applicant trong 1 job cụ thể
-    public  RestResponse<List<ApplicantResponseDto>>  getApplicantsByJob(Long jobId) {
+//    Employer xem danh sách applicant trong 1 job cụ thể (có lọc status)
+    public RestResponse<ApplicantsWithStatsDto> getApplicantsByJob(Long jobId, ApplicationStatus status) {
         Long employerId = authService.getCurrentUserEmployerId();
         JobPosting jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found"));
@@ -136,7 +136,12 @@ public class EmployeeBrowseStatusService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền xem job này");
         }
 
-        List<ApplicantResponseDto> applicants = applicantRepository.findByJobPostingId(jobId).stream()
+        // Nếu có status thì lọc theo status
+        List<Applicant> applicantList = (status != null)
+                ? applicantRepository.findByJobPostingIdAndApplicationStatus(jobId, status)
+                : applicantRepository.findByJobPostingId(jobId);
+
+        List<ApplicantResponseDto> applicants = applicantList.stream()
                 .map(app -> ApplicantResponseDto.builder()
                         .id(app.getId())
                         .jobId(app.getJobPosting().getId())
@@ -163,11 +168,42 @@ public class EmployeeBrowseStatusService {
                 )
                 .collect(Collectors.toList());
 
-        return RestResponse.<List<ApplicantResponseDto>>builder()
+
+//        // lấy thống kê theo trạng thái
+//        List<Object[]> rawStats = applicantRepository.countApplicantsByStatus(jobId);
+//        Map<String, Long> stats = rawStats.stream()
+//                .collect(Collectors.toMap(
+//                        row -> ((ApplicationStatus) row[0]).name(),
+//                        row -> (Long) row[1]
+//                ));
+        // 2. Lấy thống kê từ DB (group by status)
+        List<Object[]> rawStats = applicantRepository.countApplicantsByStatus(jobId);
+
+        // 3. Khởi tạo map stats đầy đủ các trạng thái với mặc định = 0
+        Map<String, Long> stats = new HashMap<>();
+        for (ApplicationStatus s : ApplicationStatus.values()) {
+            stats.put(s.name(), 0L);
+        }
+
+        // 4. Ghi đè lại những trạng thái có dữ liệu thật
+        for (Object[] row : rawStats) {
+            ApplicationStatus s = (ApplicationStatus) row[0];
+            Long count = (Long) row[1];
+            stats.put(s.name(), count);
+        }
+        // ✅ thêm ALL = tổng tất cả
+        long total = stats.values().stream().mapToLong(Long::longValue).sum();
+        stats.put("ALL", total);
+        ApplicantsWithStatsDto result = ApplicantsWithStatsDto.builder()
+                .applicants(applicants)
+                .stats(stats)
+                .build();
+
+        return RestResponse.<ApplicantsWithStatsDto>builder()
                 .statusCode(200)
                 .error(null)
                 .message("Success")
-                .data(applicants)
+                .data(result)
                 .build();
     }
     // EmployeeBrowseStatusService.java
