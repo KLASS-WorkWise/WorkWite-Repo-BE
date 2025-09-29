@@ -47,4 +47,5 @@ public class User {
     // Số dư tài khoản (quản lý nạp/trừ tiền)
     @Column(nullable = true)
     private Long balance = 0L;
+
 }

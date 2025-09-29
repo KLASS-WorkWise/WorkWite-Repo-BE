@@ -12,4 +12,6 @@ public class RegisterResponseDto {
     private String email;
     private String fullname;
     private String username;
+    private String address;
+    private String message;
 }

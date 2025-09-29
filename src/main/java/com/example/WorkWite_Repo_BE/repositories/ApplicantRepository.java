@@ -18,6 +18,16 @@ import java.util.Optional;
 
 @Repository
 public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
+    /**
+     * Lấy danh sách các công ty (employer) được ứng viên apply nhiều nhất
+     */
+    @Query("SELECT e.id, e.companyInformation.companyName, COUNT(a) as totalApply " +
+            "FROM Applicant a " +
+            "JOIN a.jobPosting jp " +
+            "JOIN jp.employer e " +
+            "GROUP BY e.id, e.companyInformation.companyName " +
+            "ORDER BY totalApply DESC")
+    List<Object[]> findTopCompaniesByApplications();
     boolean existsByJobPostingIdAndCandidateId(Long jobPostingId, Long candidateId);
 
     Page<Applicant> findByCandidateId(Long candidateId , Pageable pageable);
