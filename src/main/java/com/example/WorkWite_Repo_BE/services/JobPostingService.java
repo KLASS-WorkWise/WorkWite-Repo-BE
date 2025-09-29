@@ -15,14 +15,14 @@ public interface JobPostingService {
 
     // Search/filter/paginate
     JobPostingPaginatedDTO searchJobPostings(
-        String category,
-        String location,
-        String salaryRange,
-        String jobType,
-        String requiredSkills,
-        String requiredDegree,
-        Integer minExperience,
-        Integer page,
-        Integer size
+            String category,
+            String location,
+            String salaryRange,
+            String jobType,
+            String requiredSkills,
+            String requiredDegree,
+            Integer minExperience,
+            Integer page,
+            Integer size
     );
-} 
+}

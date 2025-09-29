@@ -14,6 +14,7 @@ public class JobScoreDto {
     private String salary_range;
     private String location;
     private String logoUrl;
+    private String description;
     private String companyName;
     private String major;
     private double score; // 0.0 - 100.0

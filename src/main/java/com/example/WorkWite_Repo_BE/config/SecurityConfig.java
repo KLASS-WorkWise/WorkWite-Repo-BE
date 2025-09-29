@@ -27,11 +27,11 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http.csrf(AbstractHttpConfigurer::disable)
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .exceptionHandling(exceptionHandlingCustomizer -> exceptionHandlingCustomizer
-                                                .authenticationEntryPoint(this.customAuthenticationEntryPoint)
-                                                .accessDeniedHandler(this.customAccessDeniedHandler))
+                        .sessionManagement(session -> session
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .exceptionHandling(exceptionHandlingCustomizer -> exceptionHandlingCustomizer
+                                .authenticationEntryPoint(this.customAuthenticationEntryPoint)
+                                .accessDeniedHandler(this.customAccessDeniedHandler))
 //                                .authorizeHttpRequests(auth -> auth
 //                                                .requestMatchers("/api/auth/**").permitAll()
 //                                                .requestMatchers("/api/public/**").permitAll()
@@ -39,39 +39,16 @@ public class SecurityConfig {
 //                                                .hasAnyRole("Administrators", "Managers")
 //                                                .anyRequest().permitAll())
 
-// open api config
-                                                .authorizeHttpRequests(auth -> auth
-                                                                .requestMatchers(
-                                                                        "/swagger-ui.html",
-                                                                        "/swagger-ui/**",
-                                                                        "/docs/**",
-                                                                        "/api-docs/**",
-                                                                        "/v3/api-docs.yaml"
-                                                                ).permitAll()
-
-
-                                .requestMatchers("/uploads/**").permitAll()
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/public/**").permitAll()
-                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
-//                                                                .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
                                 .requestMatchers("/api/employers/**").permitAll()
                                 .requestMatchers("/api/candidates/**").permitAll()
                                 .requestMatchers("/api/company/**").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/resumes/**").permitAll()
-//.requestMatchers("/api/job-postings/**").authenticated()
-
-                                        // Job postings
-                                        .requestMatchers(HttpMethod.GET, "/api/job-postings/**").permitAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/job-postings/**").permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/job-postings/**").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/job-postings/**").authenticated()
-
+                                .requestMatchers("/api/job-postings/**").permitAll()
                                 .requestMatchers("/api/applicant/**").permitAll()
                                 .requestMatchers("/api/upload/multiple**").permitAll()
                                 .requestMatchers("/api/statistics/**").permitAll()
@@ -92,11 +69,10 @@ public class SecurityConfig {
                                 .requestMatchers("/api/ourteam/**").permitAll()
                                 .requestMatchers("api/employers-status/**").permitAll()
 
+                                // Default: permit all
+                                .anyRequest().permitAll()
                         )
-
-
-
-                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }

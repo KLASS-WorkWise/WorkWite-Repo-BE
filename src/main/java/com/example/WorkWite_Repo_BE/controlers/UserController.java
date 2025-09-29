@@ -43,17 +43,7 @@ public class UserController {
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable("id") Long id,
             @RequestBody @Valid UserUpdateRequestDto userUpdateRequestDto) {
-        UserResponseDto response = this.userService.updateUser(id, userUpdateRequestDto);
-
-        String username = getCurrentUsernameOrEmail();
-        Long userId = response.getId();
-        systemLogService.saveLog(
-            userId,
-            username,
-            "UPDATE_USER",
-            "User updated",
-            "SUCCESS"
-        );
+        UserResponseDto response = this.userService.updateUser(id, userUpdateRequestDto, getCurrentUsernameOrEmail());
         return ResponseEntity.ok(response);
     }
 

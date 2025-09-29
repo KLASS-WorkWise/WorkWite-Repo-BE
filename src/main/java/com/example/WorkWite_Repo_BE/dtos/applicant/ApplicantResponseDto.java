@@ -41,7 +41,7 @@ public class ApplicantResponseDto {
     private Boolean isSkillQualified;      // ✅ thêm
     private Boolean isExperienceQualified; // ✅ thêm
     private String skillMatchMessage;
-
+    private Boolean isRead = false;
 
 
     // Thêm history

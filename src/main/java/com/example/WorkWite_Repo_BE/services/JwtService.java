@@ -116,12 +116,12 @@ public class JwtService {
                 && "access_token".equals(tokenType); // Only access tokens for authentication
     }
 
-    // Kiểm tra refresh token hợp lệ
-    public Boolean isRefreshTokenValid(String token, String username) {
-        final String tokenUsername = extractUsername(token);
-        final String tokenType = extractTokenType(token);
-        return (tokenUsername.equals(username))
-                && !isTokenExpired(token)
-                && "refresh_token".equals(tokenType);
-    }
+    // // Kiểm tra refresh token hợp lệ
+    // public Boolean isRefreshTokenValid(String token, String username) {
+    //     final String tokenUsername = extractUsername(token);
+    //     final String tokenType = extractTokenType(token);
+    //     return (tokenUsername.equals(username))
+    //             && !isTokenExpired(token)
+    //             && "refresh_token".equals(tokenType);
+    // }
 }

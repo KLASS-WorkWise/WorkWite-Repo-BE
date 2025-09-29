@@ -11,8 +11,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaginatedEmployeeListJobResponseDto {
-    private List<JobPostingResponseDTO> data;
+public class PaginatedEmployeeListJobResponseDto <T>  {
+    private List<T> content;
     private int pageNumber;
     private int pageSize;
     private long totalRecords;

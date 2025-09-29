@@ -69,11 +69,7 @@ public class ResumeController {
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<ResumeResponseDto>> getAllResumes() {
-//        List<ResumeResponseDto> resumes = resumeService.getAllResumes();
-//        return ResponseEntity.ok(resumes);
-//    }
+
 
     @GetMapping
     public ResponseEntity<List<ResumeResponseDto>> getMyResumes() {

@@ -181,6 +181,7 @@ public class RecommendationService {
                         job.getSalaryRange(),
                         job.getLocation(),
                         companyInfo.getLogoUrl(),
+                        job.getDescription(),
                         companyInfo.getCompanyName(),
                         resume.getEducations().get(0).getMajor(),
                         round(finalScore),

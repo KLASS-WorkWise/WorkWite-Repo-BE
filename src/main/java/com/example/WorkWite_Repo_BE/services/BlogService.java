@@ -86,4 +86,11 @@ public class BlogService {
         return convertToDto(updatedBlog);
     }
 
+    // get by slug
+    public BlogResponseDto getBlogBySlug(String slug) {
+        BLog blog = blogJpaRepository.findBySlug(slug).orElse(null);
+        if (blog == null) return null;
+        return convertToDto(blog);
+    }
+
 }

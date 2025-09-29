@@ -1,14 +1,14 @@
+
 package com.example.WorkWite_Repo_BE.controlers;
 
-import com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO;
 import com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerResponseDTO;
+import com.example.WorkWite_Repo_BE.entities.Banner;
 import com.example.WorkWite_Repo_BE.services.BannerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
-import java.io.File;
-import java.io.IOException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,6 +16,13 @@ import java.util.List;
 @RequestMapping("/api/banners")
 @RequiredArgsConstructor
 public class BannerController {
+    // Lấy danh sách tất cả banner theo phân trang
+    @GetMapping("/paginated")
+    public ResponseEntity<com.example.WorkWite_Repo_BE.dtos.BannerDto.PaginatedBannerResponseDto> getAllBannersPaginated(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(bannerService.getAllBannersPaginated(page, size));
+    }
     @Value("${banner.upload.dir}")
     private String bannerUploadDir;
     
@@ -25,8 +32,8 @@ public class BannerController {
         return ResponseEntity.ok(bannerService.getBannersByUserId(userId));
     }
     @GetMapping("/active")
-    public ResponseEntity<List<BannerResponseDTO>> getActiveBannersByPosition(@RequestParam String position) {
-        return ResponseEntity.ok(bannerService.getActiveBannersByPosition(position));
+    public ResponseEntity<List<BannerResponseDTO>> getActiveBannersByType(@RequestParam String bannerType) {
+        return ResponseEntity.ok(bannerService.getActiveBannersByType(bannerType));
     }
 
     private final BannerService bannerService;
@@ -37,76 +44,20 @@ public class BannerController {
             @RequestParam String companyName,
             @RequestParam String companyEmail,
             @RequestParam String companyPhone,
-            @RequestParam String companyWebsite,
-            @RequestParam String bannerTitle,
-            @RequestParam String bannerLink,
             @RequestParam String bannerType,
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam(required = false) String description,
-            @RequestParam(value = "bannerImage", required = false) org.springframework.web.multipart.MultipartFile bannerImage
+            @RequestParam(value = "bannerImage", required = false) MultipartFile bannerImage
     ) {
-        // Kiểm tra hợp lệ bannerType
-        if (!"Vip".equalsIgnoreCase(bannerType) && !"Featured".equalsIgnoreCase(bannerType) && !"Standard".equalsIgnoreCase(bannerType)) {
-            return ResponseEntity.badRequest().body(null);
-        }
-        String position;
-        if ("Vip".equalsIgnoreCase(bannerType)) {
-            position = "home_hero";
-        } else if ("Featured".equalsIgnoreCase(bannerType)) {
-            position = "featured";
-        } else {
-            position = "standard";
-        }
-        com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO dto = new com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO();
-        dto.setCompanyName(companyName);
-        dto.setCompanyEmail(companyEmail);
-        dto.setCompanyPhone(companyPhone);
-        dto.setCompanyWebsite(companyWebsite);
-        dto.setBannerTitle(bannerTitle);
-        dto.setBannerLink(bannerLink);
-        dto.setBannerType(bannerType);
-        dto.setPosition(position);
-        dto.setStartDate(java.time.LocalDate.parse(startDate));
-        dto.setEndDate(java.time.LocalDate.parse(endDate));
-        dto.setDescription(description);
-        System.out.println("bannerUploadDir = " + bannerUploadDir);
-        System.out.println("bannerImage object = " + bannerImage);
-        if (bannerImage != null && !bannerImage.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + org.springframework.util.StringUtils.cleanPath(bannerImage.getOriginalFilename());
-            try {
-                java.nio.file.Path uploadPath = java.nio.file.Paths.get(bannerUploadDir);
-                if (!java.nio.file.Files.exists(uploadPath)) {
-                    java.nio.file.Files.createDirectories(uploadPath);
-                }
-                try (java.io.InputStream in = bannerImage.getInputStream()) {
-                    java.nio.file.Files.copy(in, uploadPath.resolve(fileName), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                }
-                // Trả về URL đầy đủ cho FE
-                String baseUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-                String imageUrl = baseUrl + "/uploads/banners/" + fileName;
-                dto.setBannerImage(imageUrl);
-                System.out.println("Saved bannerImage as: " + imageUrl);
-            } catch (Exception e) {
-                e.printStackTrace();
-                dto.setBannerImage(null);
-            }
-        } else {
-            System.out.println("No bannerImage sent or file is empty");
-        }
-        return ResponseEntity.ok(bannerService.createBanner(dto));
+        BannerResponseDTO response = bannerService.createBanner(companyName, companyEmail, companyPhone, bannerType, startDate, endDate, bannerImage, bannerUploadDir);
+        return ResponseEntity.ok(response);
     }
 
     // Lấy danh sách tất cả banner
     @GetMapping
     public ResponseEntity<List<BannerResponseDTO>> getAllBanners() {
         return ResponseEntity.ok(bannerService.getAllBanners());
-    }
-
-    // Lấy banner theo id
-    @GetMapping("/{id}")
-    public ResponseEntity<BannerResponseDTO> getBannerById(@PathVariable Long id) {
-        return ResponseEntity.ok(bannerService.getBannerById(id));
     }
 
     // Cập nhật banner
@@ -116,51 +67,14 @@ public class BannerController {
             @RequestParam String companyName,
             @RequestParam String companyEmail,
             @RequestParam String companyPhone,
-            @RequestParam String companyWebsite,
-            @RequestParam String bannerTitle,
-            @RequestParam String bannerLink,
             @RequestParam String bannerType,
             @RequestParam String startDate,
             @RequestParam String endDate,
-            @RequestParam(required = false) String description,
-            @RequestParam String position,
             @RequestParam(required = false) String bannerImageOld,
-            @RequestParam(value = "bannerImage", required = false) org.springframework.web.multipart.MultipartFile bannerImage
+        @RequestParam(value = "bannerImage", required = false) MultipartFile bannerImage
     ) {
-        com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO dto = new com.example.WorkWite_Repo_BE.dtos.BannerDto.BannerRequestDTO();
-        dto.setCompanyName(companyName);
-        dto.setCompanyEmail(companyEmail);
-        dto.setCompanyPhone(companyPhone);
-        dto.setCompanyWebsite(companyWebsite);
-        dto.setBannerTitle(bannerTitle);
-        dto.setBannerLink(bannerLink);
-        dto.setBannerType(bannerType);
-        dto.setPosition(position);
-        dto.setStartDate(java.time.LocalDate.parse(startDate));
-        dto.setEndDate(java.time.LocalDate.parse(endDate));
-        dto.setDescription(description);
-        // Xử lý ảnh mới nếu có
-        if (bannerImage != null && !bannerImage.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + org.springframework.util.StringUtils.cleanPath(bannerImage.getOriginalFilename());
-            try {
-                java.nio.file.Path uploadPath = java.nio.file.Paths.get(bannerUploadDir);
-                if (!java.nio.file.Files.exists(uploadPath)) {
-                    java.nio.file.Files.createDirectories(uploadPath);
-                }
-                try (java.io.InputStream in = bannerImage.getInputStream()) {
-                    java.nio.file.Files.copy(in, uploadPath.resolve(fileName), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                }
-                String baseUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-                String imageUrl = baseUrl + "/uploads/banners/" + fileName;
-                dto.setBannerImage(imageUrl);
-            } catch (Exception e) {
-                e.printStackTrace();
-                dto.setBannerImage(bannerImageOld); // Nếu lỗi thì giữ ảnh cũ
-            }
-        } else {
-            dto.setBannerImage(bannerImageOld); // Nếu không upload mới thì giữ ảnh cũ
-        }
-        return ResponseEntity.ok(bannerService.updateBanner(id, dto));
+        BannerResponseDTO response = bannerService.updateBanner(id, companyName, companyEmail, companyPhone, bannerType, startDate, endDate, bannerImageOld, bannerImage, bannerUploadDir);
+        return ResponseEntity.ok(response);
     }
 
     // Xóa banner
@@ -183,5 +97,13 @@ public class BannerController {
             @RequestParam(required = false) String reason
     ) {
         return ResponseEntity.ok(bannerService.rejectBanner(id, reason));
+    }
+
+
+        // API lấy tất cả banner active, trả về các trường cần thiết
+    @GetMapping("/active-list")
+    public ResponseEntity<List<BannerResponseDTO>> getActiveBannerList() {
+        List<BannerResponseDTO> response = bannerService.getActiveBannerList();
+        return ResponseEntity.ok(response);
     }
 }

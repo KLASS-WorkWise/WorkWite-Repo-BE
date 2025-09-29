@@ -109,28 +109,28 @@ public class JobPostingServiceImpl implements JobPostingService {
         jobPosting.setPostPrice(postPrice);
         // ...existing code...
 
-            // Kiểm tra số dư trước khi trừ tiền
-            Long userId = employer.getUser().getId();
-            Long currentBalance = userBalanceService.getBalance(userId);
-            if (currentBalance == null || currentBalance < postPrice) {
-                throw new com.example.WorkWite_Repo_BE.exceptions.BusinessException("Your balance is not enough to post this job. Please top up your account.");
-            }
+        // Kiểm tra số dư trước khi trừ tiền
+        Long userId = employer.getUser().getId();
+        Long currentBalance = userBalanceService.getBalance(userId);
+        if (currentBalance == null || currentBalance < postPrice) {
+            throw new com.example.WorkWite_Repo_BE.exceptions.BusinessException("Your balance is not enough to post this job. Please top up your account.");
+        }
         // Trừ tiền user khi đăng bài
         userBalanceService.subtractBalance(userId, postPrice);
 
-    // Ghi log
-    systemLogService.saveLog(
-        userId,
-        actor,
-        "CREATE_JOB",
-        "Employer posted a job: " + jobPosting.getTitle() + " | Type: " + postType + " | Price: " + postPrice,
-        "SUCCESS"
-    );
+        // Ghi log
+        systemLogService.saveLog(
+                userId,
+                actor,
+                "CREATE_JOB",
+                "Employer posted a job: " + jobPosting.getTitle() + " | Type: " + postType + " | Price: " + postPrice,
+                "SUCCESS"
+        );
 
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
-    JobPostingResponseDTO response = mapToResponseDTO(savedJobPosting);
-    response.setPostPriceUSD(Double.valueOf(totalUSD)); // Trả về tổng tiền USD cho FE
-    return response;
+        JobPostingResponseDTO response = mapToResponseDTO(savedJobPosting);
+        response.setPostPriceUSD(Double.valueOf(totalUSD)); // Trả về tổng tiền USD cho FE
+        return response;
     }
 
     // Helper: lấy userId từ username
@@ -212,14 +212,14 @@ public class JobPostingServiceImpl implements JobPostingService {
         if (updateDTO.getEndAt() != null) jobPosting.setEndAt(updateDTO.getEndAt());
         if (updateDTO.getStatus() != null) jobPosting.setStatus(updateDTO.getStatus());
 
-    // Ghi log
-    systemLogService.saveLog(
-        jobPosting.getEmployer().getUser().getId(),
-        actor,
-        "UPDATE_JOB",
-        "Employer updated job: " + jobPosting.getTitle(),
-        "SUCCESS"
-    );
+        // Ghi log
+        systemLogService.saveLog(
+                jobPosting.getEmployer().getUser().getId(),
+                actor,
+                "UPDATE_JOB",
+                "Employer updated job: " + jobPosting.getTitle(),
+                "SUCCESS"
+        );
 
         JobPosting updatedJobPosting = jobPostingRepository.save(jobPosting);
         return mapToResponseDTO(updatedJobPosting);
@@ -262,14 +262,14 @@ public class JobPostingServiceImpl implements JobPostingService {
 
         jobPostingRepository.deleteById(id);
 
-    // Ghi log
-    systemLogService.saveLog(
-        jobPosting.getEmployer().getUser().getId(),
-        actor,
-        "DELETE_JOB",
-        "Employer deleted job with id: " + id,
-        "SUCCESS"
-    );
+        // Ghi log
+        systemLogService.saveLog(
+                jobPosting.getEmployer().getUser().getId(),
+                actor,
+                "DELETE_JOB",
+                "Employer deleted job with id: " + id,
+                "SUCCESS"
+        );
     }
 
     private JobPostingResponseDTO mapToResponseDTO(JobPosting jobPosting) {
