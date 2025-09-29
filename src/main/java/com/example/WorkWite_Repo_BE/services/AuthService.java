@@ -125,7 +125,7 @@ public class AuthService {
             + "<h2 style='color:#2b6cb0;'>JobBox - Password Reset</h2>"
             + "<p>Xin chào,</p>"
             + "<p>Bạn vừa yêu cầu đặt lại mật khẩu. Mã xác thực của bạn là:</p>"
-            + "<div style='font-size:24px;font-weight:bold;color:#e53e3e;margin:16px 0;" + code + "</div>"
+            + "<div style='font-size:24px;font-weight:bold;color:#e53e3e;margin:16px 0;'>" + code + "</div>"
             + "<p>Mã này có hiệu lực trong 15 phút.</p>"
             + "<p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>"
             + "<hr style='margin:16px 0;'>"
