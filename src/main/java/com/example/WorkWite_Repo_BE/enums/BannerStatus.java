@@ -4,5 +4,6 @@ public enum BannerStatus {
     PENDING,
     ACTIVE,
     REJECTED,
-    EXPIRED
+    EXPIRED,
+    APPROVED
 }
