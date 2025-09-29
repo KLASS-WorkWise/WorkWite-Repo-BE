@@ -55,6 +55,7 @@ dependencies {
     implementation 'com.itextpdf:itext7-core:7.2.5'
     implementation 'org.apache.tika:tika-core:2.9.2'
     implementation 'org.apache.tika:tika-parsers-standard-package:2.9.2'
+
 }
 
 tasks.named('test') {

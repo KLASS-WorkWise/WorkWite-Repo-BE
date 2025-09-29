@@ -1,12 +1,14 @@
 package com.example.WorkWite_Repo_BE.services;
 
+import com.example.WorkWite_Repo_BE.api.RestResponse;
 import com.example.WorkWite_Repo_BE.dtos.JobPostDto.JobPostingPaginatedDTO;
 import com.example.WorkWite_Repo_BE.dtos.applicant.*;
 import com.example.WorkWite_Repo_BE.entities.*;
 import com.example.WorkWite_Repo_BE.enums.ApplicationStatus;
 import com.example.WorkWite_Repo_BE.helpers.EmailTemplateHelper;
 import com.example.WorkWite_Repo_BE.repositories.*;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,30 +49,31 @@ public class ApplicantService {
     private final ResumeParserService resumeParserService;
     private final EmailService emailService;
     private final EmailTemplateHelper emailTemplateHelper;
+    private final InterviewScheduleRepository interviewScheduleRepository;
 
 
-    // ApplicantService.java
-    @Transactional
-    public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicationStatus newStatus, String note) {
-        Long employerId = authService.getCurrentUserEmployerId();
-        Applicant applicant = applicantRepository.findById(applicantId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-
-        if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
-        }
-
-        applicant.setApplicationStatus(newStatus);
-        applicantRepository.save(applicant);
-
-        logHistory(applicant, newStatus, note);
-
-        ApplicantResponseDto dto = convertToDto(applicant);
-
-        // Push realtime SSE cho ứng viên
-        sseService.sendEvent(applicantId, "statusUpdated", dto);
-
+//    // ApplicantService.java
+//    @Transactional
+//    public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicationStatus newStatus, String note) {
+//        Long employerId = authService.getCurrentUserEmployerId();
+//        Applicant applicant = applicantRepository.findById(applicantId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+//
+//
+//        if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
+//        }
+//
+//        applicant.setApplicationStatus(newStatus);
+//        applicantRepository.save(applicant);
+//
+//        logHistory(applicant, newStatus, note);
+//
+//        ApplicantResponseDto dto = convertToDto(applicant);
+//
+//        // Push realtime SSE cho ứng viên
+//        sseService.sendEvent(applicantId, "statusUpdated", dto);
+//
 //// Gửi mail cho ứng viên
 //        String candidateEmail = applicant.getCandidate().getUser().getEmail();
 //        String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
@@ -79,9 +82,102 @@ public class ApplicantService {
 //        String subject = "Cập nhật trạng thái đơn ứng tuyển";
 //        String content = emailTemplateHelper.buildStatusUpdateEmail(candidateName, jobTitle, newStatus.name(), note, applicant.getId());
 //        emailService.sendEmail(candidateEmail, subject, content);
+//
+//        return dto;
+//    }
 
-        return dto;
+// ApplicantService.java
+@Transactional
+public ApplicantResponseDto updateApplicantStatus(Long applicantId, ApplicantStatusUpdateRequest request) {
+
+    log.info("UpdateApplicantStatus request for applicantId={} request={}", applicantId, request);
+
+    if (request == null || request.getStatus() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing status in request body");
     }
+    Long employerId = authService.getCurrentUserEmployerId();
+    Applicant applicant = applicantRepository.findById(applicantId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+    if (!applicant.getJobPosting().getEmployer().getId().equals(employerId)) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền cập nhật");
+    }
+
+    ApplicationStatus currentStatus = applicant.getApplicationStatus();
+    ApplicationStatus newStatus = request.getStatus();
+
+    // === RÀNG BUỘC TRẠNG THÁI ===
+    Map<ApplicationStatus, List<ApplicationStatus>> allowedNextStatus = Map.of(
+            ApplicationStatus.PENDING, List.of(ApplicationStatus.CV_REVIEW),
+            ApplicationStatus.CV_REVIEW, List.of(ApplicationStatus.INTERVIEW, ApplicationStatus.REJECTED),
+            ApplicationStatus.INTERVIEW, List.of(ApplicationStatus.OFFER, ApplicationStatus.REJECTED),
+            ApplicationStatus.OFFER, List.of(ApplicationStatus.HIRED, ApplicationStatus.REJECTED),
+            ApplicationStatus.HIRED, List.of(),
+            ApplicationStatus.REJECTED, List.of()
+    );
+
+    // Nếu đã HIRED hoặc REJECTED thì không được update
+    if (currentStatus == ApplicationStatus.HIRED || currentStatus == ApplicationStatus.REJECTED) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Cannot update status. Applicant is already " + currentStatus.name());
+    }
+
+    // Kiểm tra trạng thái hợp lệ
+    List<ApplicationStatus> allowedNext = allowedNextStatus.getOrDefault(currentStatus, List.of());
+    if (!allowedNext.contains(newStatus)) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Invalid status update from " + currentStatus.name() + " to " + newStatus.name());
+    }
+
+    // === CẬP NHẬT TRẠNG THÁI ===
+    applicant.setApplicationStatus(newStatus);
+    applicantRepository.save(applicant);
+
+    // === Lưu lịch sử thay đổi ===
+    logHistory(applicant, newStatus, request.getNote());
+
+    ApplicantResponseDto dto = convertToDto(applicant);
+
+    // Push realtime SSE cho ứng viên
+    sseService.sendEvent(applicantId, "statusUpdated", dto);
+
+    // Gửi mail cho ứng viên
+    String candidateEmail = applicant.getCandidate().getUser().getEmail();
+    String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+    String jobTitle = applicant.getJobPosting().getTitle();
+
+    if (newStatus == ApplicationStatus.INTERVIEW) {
+        // ✅ Lưu lịch phỏng vấn
+        InterviewSchedule schedule = new InterviewSchedule();
+        schedule.setApplicant(applicant);
+        schedule.setScheduledAt(request.getScheduledAt());
+        schedule.setLocation(request.getLocation());
+        schedule.setInterviewer(request.getInterviewer());
+        interviewScheduleRepository.save(schedule);
+
+        // Gửi mail lịch phỏng vấn
+        String subject = "Thư mời phỏng vấn cho vị trí " + jobTitle;
+        String content = emailTemplateHelper.buildInterviewScheduleEmail(
+                candidateName,
+                jobTitle,
+                schedule.getScheduledAt(),
+                schedule.getLocation(),
+                schedule.getInterviewer()
+        );
+        emailService.sendEmail(candidateEmail, subject, content);
+
+    } else {
+        // Mail update status bình thường
+        String subject = "Cập nhật trạng thái đơn ứng tuyển";
+        String content = emailTemplateHelper.buildStatusUpdateEmail(
+                candidateName, jobTitle, newStatus.name(), request.getNote(), applicant.getId()
+        );
+        emailService.sendEmail(candidateEmail, subject, content);
+    }
+
+    return dto;
+}
+
     // Timeline
     public List<ApplicantHistory> getTimeline(Long applicantId) {
         return applicantHistoryRepository.findByApplicantIdOrderByChangedAtAsc(applicantId);
@@ -239,25 +335,109 @@ public class ApplicantService {
         }
         return dp[a.length()][b.length()];
     }
+    //chuẩn hóa học vấn
+    private String normalizeDegree(String degree) {
+        if (degree == null) return "";
+        return degree.trim().toLowerCase()
+                .replace("đại học", "bachelor")
+                .replace("cử nhân", "bachelor")
+                .replace("cao đẳng", "college")
+                .replace("thạc sĩ", "master")
+                .replace("tiến sĩ", "phd")
+                .replace("associate", "associate")
+                .replace("bachelor", "bachelor")
+                .replace("college", "college")
+                .replace("master", "master")
+                .replace("phd", "phd");
+    }
+    private int degreeLevel(String normDegree) {
+        return switch (normDegree) {
+            case "associate" -> 1; // Trung cấp / Associate
+            case "college"   -> 2; // Cao đẳng / College
+            case "bachelor"  -> 3; // Đại học / Bachelor
+            case "master"    -> 4; // Thạc sĩ / Master
+            case "phd"       -> 5; // Tiến sĩ / PhD
+            default -> 0;
+        };
+    }
     // Alias map: chuẩn hóa skill về dạng gốc
     private static final Map<String, String> SKILL_ALIASES = Map.ofEntries(
+            // JavaScript ecosystem
             Map.entry("js", "javascript"),
             Map.entry("javascript", "javascript"),
+            Map.entry("ecmascript", "javascript"),
             Map.entry("nodejs", "nodejs"),
             Map.entry("node", "nodejs"),
+            Map.entry("expressjs", "nodejs"),
             Map.entry("ts", "typescript"),
             Map.entry("typescript", "typescript"),
+
+            // React ecosystem
             Map.entry("reactjs", "react"),
             Map.entry("react", "react"),
+            Map.entry("nextjs", "react"),
+            Map.entry("redux", "react"),
+
+            // Spring / Java
             Map.entry("springboot", "spring"),
             Map.entry("spring boot", "spring"),
+            Map.entry("spring framework", "spring"),
+            Map.entry("hibernate orm", "hibernate"),
+
+            // SQL / Database
             Map.entry("sql", "sql"),
             Map.entry("mysql", "sql"),
             Map.entry("postgresql", "sql"),
+            Map.entry("postgres", "sql"),
+            Map.entry("mssql", "sql"),
+            Map.entry("oracle", "sql"),
+            Map.entry("sqlite", "sql"),
             Map.entry("nosql", "nosql"),
-            Map.entry("mongodb", "nosql")
-            // 👉 bạn có thể mở rộng thêm tùy nhu cầu
+            Map.entry("mongodb", "nosql"),
+            Map.entry("cassandra", "nosql"),
+            Map.entry("dynamodb", "nosql"),
+
+            // Cloud
+            Map.entry("amazon web services", "aws"),
+            Map.entry("aws", "aws"),
+            Map.entry("azure cloud", "azure"),
+            Map.entry("gcp", "gcp"),
+            Map.entry("google cloud", "gcp"),
+
+            // DevOps
+            Map.entry("k8s", "kubernetes"),
+            Map.entry("kubernetes", "kubernetes"),
+            Map.entry("docker-compose", "docker"),
+            Map.entry("ci/cd", "devops"),
+            Map.entry("jenkins pipeline", "jenkins"),
+
+            // Programming languages (aliases / abbreviations)
+            Map.entry("c++", "c++"),
+            Map.entry("cpp", "c++"),
+            Map.entry("c#", "c#"),
+            Map.entry("c sharp", "c#"),
+            Map.entry("py", "python"),
+            Map.entry("python", "python"),
+            Map.entry("golang", "go"),
+            Map.entry("go", "go"),
+            Map.entry("jsf", "java"),
+            Map.entry("jsp", "java"),
+
+            // Mobile
+            Map.entry("android sdk", "android"),
+            Map.entry("ios", "ios"),
+            Map.entry("swiftui", "swift"),
+            Map.entry("objective-c", "objective-c"),
+            Map.entry("rn", "react native"),
+            Map.entry("react native", "react native"),
+
+            // Tools
+            Map.entry("gitlab ci", "gitlab ci"),
+            Map.entry("github actions", "github actions"),
+            Map.entry("jira software", "jira"),
+            Map.entry("confluence wiki", "confluence")
     );
+
 
     // ✅ Kiểm tra 2 skill có giống nhau không (alias + typo nhỏ)
     private boolean isSimilarSkill(String skill1, String skill2) {
@@ -313,7 +493,7 @@ public class ApplicantService {
     }
     private String calculateExperienceDetail(Resume resume) {
         if (resume.getExperiences() == null || resume.getExperiences().isEmpty()) {
-            return "Chưa có kinh nghiệm";
+            return "No experience";
         }
 
         int totalYears = 0;
@@ -334,31 +514,86 @@ public class ApplicantService {
         totalMonths = totalMonths % 12;
 
         if (totalYears == 0 && totalMonths == 0) {
-            return "Chưa có kinh nghiệm";
+            return "No experience";
         } else if (totalYears == 0) {
-            return totalMonths + " tháng";
+            return totalMonths + " month";
         } else if (totalMonths == 0) {
-            return totalYears + " năm";
+            return totalYears + " years";
         } else {
-            return totalYears + " năm " + totalMonths + " tháng";
+            return totalYears + " years " + totalMonths + " month";
         }
     }
-    // ✅ Tính % skill match
-    private double calculateSkillMatchPercent(List<String> required, List<String> actual) {
-        List<String> normRequired = normalizeSkillList(required);
-        List<String> normActual = normalizeSkillList(actual);
+    //  Tính % skill match
+    private double calculateSkillMatchPercent(List<String> requiredSkills, List<String> candidateSkills) {
+        if (requiredSkills == null || requiredSkills.isEmpty()) return 0.0;
+        if (candidateSkills == null || candidateSkills.isEmpty()) return 0.0;
 
-        if (normRequired.isEmpty()) return 100.0; // không yêu cầu kỹ năng
-        if (normActual.isEmpty()) return 0.0;     // ứng viên không có kỹ năng nào
+        long matched = candidateSkills.stream()
+                .filter(c -> requiredSkills.stream()
+                        .anyMatch(req -> req.equalsIgnoreCase(c)))
+                .count();
 
-        List<String> missing = calculateMissingSkills(normRequired, normActual);
-        int matched = normRequired.size() - missing.size();
-        return ((double) matched / normRequired.size()) * 100.0;
+        // lấy trung bình giữa tỉ lệ match so với job và so với ứng viên
+        double percentByJob = (matched * 100.0) / requiredSkills.size();
+        double percentByCandidate = (matched * 100.0) / candidateSkills.size();
+
+        return (percentByJob + percentByCandidate) / 2.0;
+    }
+    // Tính kinh nghiệm
+    public double calculateExperienceScore(double totalExpYears, double requiredExp) {
+        if (totalExpYears <= 0) {
+            return 0; // Không có kinh nghiệm
+        }
+
+        if (requiredExp <= 0) {
+            return 100; // Job không yêu cầu kinh nghiệm
+        }
+
+        if (totalExpYears >= requiredExp) {
+            return 100; // Đủ hoặc nhiều hơn yêu cầu
+        }
+
+        // Nếu ít hơn yêu cầu thì tính tỉ lệ %
+        double ratio = (double) totalExpYears / requiredExp;
+        return (int) Math.round(ratio * 100);
+    }
+    public double calculateEducationScore(String requiredDegree, List<String> candidateDegrees) {
+        if (requiredDegree == null || requiredDegree.isBlank()) {
+            return 100; // Không yêu cầu / No requirement
+        }
+        if (candidateDegrees == null || candidateDegrees.isEmpty()) {
+            return 0; // Không có học vấn / No education info
+        }
+
+        String requiredNorm = normalizeDegree(requiredDegree);
+        double requiredLevel = degreeLevel(requiredNorm);
+
+        // Lấy mức học vấn cao nhất của ứng viên / Get candidate's highest degree
+        double maxCandidateLevel = candidateDegrees.stream()
+                .map(this::normalizeDegree)
+                .mapToInt(this::degreeLevel)
+                .max()
+                .orElse(0);
+
+        if (requiredLevel == 0) return 0;
+
+        if (maxCandidateLevel >= requiredLevel) {
+            return 100; // Đủ hoặc cao hơn yêu cầu / Equal or higher than required
+        }
+
+        // Tính tỷ lệ nếu thấp hơn yêu cầu / Scale proportionally if lower
+        return (double) Math.round(((double) maxCandidateLevel / requiredLevel) * 100);
+    }
+    public double calculateTotalMatchWeighted(double skillScore, double expScore, double eduScore) {
+        double skillWeight = 0.6; // 60%
+        double expWeight   = 0.2; // 20%
+        double eduWeight   = 0.2; // 20%
+
+        return (skillScore * skillWeight) + (expScore * expWeight) + (eduScore * eduWeight);
     }
 
-
     @Transactional
-    public ApplicantResponseDto applyJob(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
+    public RestResponse<ApplicantResponseDto> applyJob(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
         Long candidateId = authService.getCurrentUserCandidateId();
 
         Candidate candidate = candidateJpaRepository.findById(candidateId)
@@ -439,19 +674,22 @@ public class ApplicantService {
 //            resumeLink = saveResumeFile(file);
                 resumeLink = firebaseStorageService.uploadFile(file);
                 String extractedText = resumeParserService.extractText(file);
+
+                // 👉 Trích xuất skill
                 List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
                  totalExpYears = resumeParserService.extractExperienceYears(extractedText);
 
 // 👉 check skill match
                 missingSkills = calculateMissingSkills(jobPosting.getRequiredSkills(), extractedSkills);
                 skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), extractedSkills);
-                 requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
+                requiredSkillPercent = Optional.ofNullable(jobPosting.getMinSkillMatchPercent()).orElse(30.0);
                 skillQualified = skillMatchPercent >= requiredSkillPercent;
                 skillMatchMessage = skillQualified
                         ? String.format("You have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent)
                         : String.format("You only have %.1f%% skill match (minimum requirement %.1f%%)", skillMatchPercent, requiredSkillPercent);
 
-// 👉 check kinh nghiệm
+                // 👉 Trích xuất kinh nghiệm
+                totalExpYears = resumeParserService.extractExperienceYears(extractedText);
                 expQualified = totalExpYears >= jobPosting.getMinExperience();
                 if (!expQualified) {
                     minExperienceMessage = "You do not have enough " + jobPosting.getMinExperience()
@@ -488,23 +726,23 @@ public class ApplicantService {
         try {
             applicantRepository.save(applicant);
 
-//            // Gửi mail cho ứng viên
-//            String candidateEmail = applicant.getCandidate().getUser().getEmail();
-//            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
-//            String jobTitle = applicant.getJobPosting().getTitle();
+            // Gửi mail cho ứng viên
+            String candidateEmail = applicant.getCandidate().getUser().getEmail();
+            String candidateName = applicant.getResume() != null ? applicant.getResume().getFullName() : "Ứng viên";
+            String jobTitle = applicant.getJobPosting().getTitle();
 
-//            String subjectCandidate = "Xác nhận ứng tuyển thành công";
-//            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
-//            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
+            String subjectCandidate = "Xác nhận ứng tuyển thành công";
+            String contentCandidate = emailTemplateHelper.buildApplySuccessEmail(candidateName, jobTitle, applicant.getId());
+            emailService.sendEmail(candidateEmail, subjectCandidate, contentCandidate);
 
 // Gửi mail cho Employer
-//            Employers employer = applicant.getJobPosting().getEmployer();
-//            String employerEmail = employer.getUser().getEmail();
-//            String employerName = employer.getUser().getFullName();
-//
-//            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
-//            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
-//            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
+            Employers employer = applicant.getJobPosting().getEmployer();
+            String employerEmail = employer.getUser().getEmail();
+            String employerName = employer.getUser().getFullName();
+
+            String subjectEmployer = "Có ứng viên mới ứng tuyển vào công việc " + jobTitle;
+            String contentEmployer = emailTemplateHelper.buildNewApplicantEmail(employerName, jobTitle, candidateName, applicant.getId());
+            emailService.sendEmail(employerEmail, subjectEmployer, contentEmployer);
 
             logHistory(applicant, ApplicationStatus.PENDING, "Candidates who have just applied for the job");
         } catch (DataIntegrityViolationException ex) {
@@ -519,7 +757,13 @@ public class ApplicantService {
         // Gửi notification (mock)
         log.info("Gửi thông báo tới Employer {}: Ứng viên {} vừa apply job {}", jobPosting.getEmployer().getId(), candidateId, jobId);
 
-        return convertToDto(applicant);
+        ApplicantResponseDto dto = convertToDto(applicant);
+        // ✅ Bọc response
+        return RestResponse.<ApplicantResponseDto>builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Ứng tuyển thành công")
+                .data(dto)
+                .build();
     }
 
     public PaginatedAppResponseDto getAllAppsByPage(int page, int size, String sortBy, String sortDir) {
@@ -672,4 +916,122 @@ public Page<ListApplicantResponseDTO> getApplicantsByEmployerAndPeriod(
             employerId, jobPostingId, status, startDate, endDate, pageable
     );
 }
+
+// Tính tỷ lệ % matching cv
+//@Transactional(readOnly = true)
+//public RestResponse<PreviewResponseDto> previewJobApplication(Long jobId, @Valid ApplicantRequestDto applicantRequestDto) {
+//    Long candidateId = authService.getCurrentUserCandidateId();
+//
+//    Candidate candidate = candidateJpaRepository.findById(candidateId)
+//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidate not found"));
+//
+//    JobPosting jobPosting = jobPostingRepository.findById(jobId)
+//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job posting not found"));
+//
+//    double skillMatchPercent = 0.0;
+//
+//    if (applicantRequestDto.getResumesId() != null) {
+//        Resume resume = resumeJpaRepository.findById(applicantRequestDto.getResumesId())
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+//
+//        if (!resume.getCandidate().getId().equals(candidateId)) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resume không thuộc về tài khoản của bạn");
+//        }
+//
+//        skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), resume.getSkillsResumes());
+//
+//    } else if (applicantRequestDto.getResumeFile() != null && !applicantRequestDto.getResumeFile().isEmpty()) {
+//        MultipartFile file = applicantRequestDto.getResumeFile();
+//        validateFile(file);
+//
+//        String extractedText = resumeParserService.extractText(file);
+//        List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
+//        log.info("Extracted text length: {}", extractedText.length());
+//        log.info("Extracted text sample: {}", extractedText.substring(0, Math.min(500, extractedText.length())));
+//        log.info("Uploaded file: {}, size: {}", file.getOriginalFilename(), file.getSize());
+//        log.info("Job required skills: {}", jobPosting.getRequiredSkills());
+//        log.info("Extracted skills from CV: {}", extractedSkills);
+//
+//        skillMatchPercent = calculateSkillMatchPercent(jobPosting.getRequiredSkills(), extractedSkills);
+//    } else {
+//        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn cần chọn Resume hoặc upload file");
+//    }
+//
+//    PreviewResponseDto dto = PreviewResponseDto.builder()
+//            .skillMatchPercent(skillMatchPercent)
+//            .build();
+//
+//    return RestResponse.<PreviewResponseDto>builder()
+//            .statusCode(HttpStatus.OK.value())
+//            .message("Preview successful")
+//            .data(dto)
+//            .build();
+//}
+
+    @Transactional(readOnly = true)
+    public PreviewResponseDto previewJobApplication(Long jobId,
+                                                          @Valid ApplicantRequestDto applicantRequestDto) {
+        Long candidateId = authService.getCurrentUserCandidateId();
+
+        Candidate candidate = candidateJpaRepository.findById(candidateId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidate not found"));
+
+        JobPosting jobPosting = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job posting not found"));
+
+        double skillMatchPercent = 0.0;
+
+        if (applicantRequestDto.getResumesId() != null) {
+            Resume resume = resumeJpaRepository.findById(applicantRequestDto.getResumesId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+
+            if (!resume.getCandidate().getId().equals(candidateId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resume không thuộc về tài khoản của bạn");
+            }
+
+            // ✅ Tính toán % match từ resume đã lưu
+            double skillScore  = calculateSkillMatchPercent(
+                    jobPosting.getRequiredSkills(),
+                    resume.getSkillsResumes()
+            );
+            // ✅ Exp
+            double totalExpYears = calculateExperienceYears(resume);
+            double expScore = calculateExperienceScore(totalExpYears, jobPosting.getMinExperience());
+            // ✅ Edu
+            List<String> candidateEdu = resume.getEducations().stream().map(Education::getDegree).toList();   // ví dụ Bachelor = 3
+            String requiredEdu  = jobPosting.getRequiredDegree();  // ví dụ Master = 4
+            double eduScore = calculateEducationScore(requiredEdu, candidateEdu);
+
+            skillMatchPercent = calculateTotalMatchWeighted(skillScore,expScore,eduScore);
+
+            return PreviewResponseDto.builder()
+                    .resumesId(resume.getId())
+                    .skillMatchPercent(skillMatchPercent)
+                    .build();
+
+        } else if (applicantRequestDto.getResumeFile() != null
+                && !applicantRequestDto.getResumeFile().isEmpty()) {
+
+            MultipartFile file = applicantRequestDto.getResumeFile();
+            validateFile(file);
+
+            // ❌ Preview: không upload Firebase, chỉ phân tích text
+            String extractedText = resumeParserService.extractText(file);
+            List<String> extractedSkills = resumeParserService.extractSkills(extractedText);
+
+            skillMatchPercent = calculateSkillMatchPercent(
+                    jobPosting.getRequiredSkills(),
+                    extractedSkills
+            );
+
+            return PreviewResponseDto.builder()
+                    .resumesId(null)
+                    .skillMatchPercent(skillMatchPercent)
+                    .build();
+        }
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn phải chọn resumeId hoặc upload file");
+    }
+
+
 }

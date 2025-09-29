@@ -23,10 +23,8 @@ public class CreateCompanyInformationRequesDto {
     @Size(max = 255, message = "Tên công ty không được vượt quá 255 ký tự")
     private String companyName;
 
-    @Size(max = 500, message = "Logo URL không được vượt quá 500 ký tự")
     private MultipartFile logo;
 
-    @Size(max = 500, message = "Banner URL không được vượt quá 500 ký tự")
     private MultipartFile banner;
 
     @Email(message = "Email không hợp lệ")
