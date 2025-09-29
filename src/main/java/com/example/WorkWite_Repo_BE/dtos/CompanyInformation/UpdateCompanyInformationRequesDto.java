@@ -19,11 +19,7 @@ public class UpdateCompanyInformationRequesDto {
     @NotBlank(message = "Tên công ty không được để trống")
     @Size(max = 255, message = "Tên công ty không được vượt quá 255 ký tự")
     private String companyName;
-
-    @Size(max = 500, message = "Logo URL không được vượt quá 500 ký tự")
     private String logoUrl;
-
-    @Size(max = 500, message = "Banner URL không được vượt quá 500 ký tự")
     private String bannerUrl;
 
     @Email(message = "Email không hợp lệ")

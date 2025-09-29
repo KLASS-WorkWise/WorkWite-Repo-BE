@@ -53,7 +53,7 @@ public class ResumeService {
     public ResumeResponseDto creatResume(Long candidateId, CreatResumeRequestDto creatResumeRequestDto) {
         Resume resume1 = new Resume();
         Candidate candidate = candidateJpaRepository.findById(candidateId).orElse(null);
-        String urlLink = UUID.randomUUID().toString();
+//        String urlLink = UUID.randomUUID().toString();
         resume1.setCandidate(candidate);
         resume1.setFullName(creatResumeRequestDto.getFullName());
         resume1.setEmail(creatResumeRequestDto.getEmail());
@@ -64,7 +64,7 @@ public class ResumeService {
         resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setTemplate(creatResumeRequestDto.getTemplate());
         resume1.setCreatedAt(LocalDateTime.now());
-        resume1.setResumeLink(urlLink);
+        resume1.setResumeLink(creatResumeRequestDto.getResumeLink());
         resumeRepository.save(resume1);
 
         if (creatResumeRequestDto.getEducations() != null) {
@@ -109,13 +109,13 @@ public class ResumeService {
         resumeWithChildren.setExperiences(experiences);
         resumeWithChildren.setSkillsResumes(skillsResumes);
 
-        // ✅ Sinh PDF
-        byte[] pdfBytes = pdfGeneratorService.generateResumePdf(resumeWithChildren);
-        String pdfFilename = "Resume_" + resume1.getFullName() + ".pdf";
-        // ✅ Upload lên Firebase
-        String resumeLink = firebaseStorageService.uploadPdf(pdfBytes, pdfFilename);
-        // ✅ Lưu lại resumeLink
-        resume1.setResumeLink(resumeLink);
+//        // ✅ Sinh PDF
+//        byte[] pdfBytes = pdfGeneratorService.generateResumePdf(resumeWithChildren);
+//        String pdfFilename = "Resume_" + resume1.getFullName() + ".pdf";
+//        // ✅ Upload lên Firebase
+//        String resumeLink = firebaseStorageService.uploadPdf(pdfBytes, pdfFilename);
+//        // ✅ Lưu lại resumeLink
+//        resume1.setResumeLink(resumeLink);
         resumeRepository.save(resume1);
         return convertToDto(resume1);
     }
